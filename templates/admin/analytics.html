@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Analytics - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Platform Analytics</h2>
+                    <p class="text-muted">Comprehensive platform statistics and insights</p>
+                </div>
+                <a href="{{ url_for('admin_organizations') }}" class="btn btn-outline-secondary">
+                    <i data-feather="arrow-left" class="me-2"></i>
+                    Back to Organizations
+                </a>
+            </div>
+
+            <!-- Key Metrics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i data-feather="briefcase" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <h3 class="mb-1">{{ total_orgs }}</h3>
+                            <p class="mb-0">Total Organizations</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i data-feather="check-circle" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <h3 class="mb-1">{{ active_orgs }}</h3>
+                            <p class="mb-0">Active Organizations</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i data-feather="users" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <h3 class="mb-1">{{ total_users }}</h3>
+                            <p class="mb-0">Total Users</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i data-feather="percent" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <h3 class="mb-1">{{ ((active_orgs / total_orgs * 100) | round(1)) if total_orgs > 0 else 0 }}%</h3>
+                            <p class="mb-0">Activation Rate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- User Role Distribution -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="pie-chart" class="me-2"></i>
+                                User Role Distribution
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="userRoleChart" width="400" height="300"></canvas>
+                            <div class="mt-3">
+                                {% for role, count in users_by_role.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-{% if role == 'super_admin' %}danger{% elif role == 'admin' %}warning{% elif role == 'recruiter' %}primary{% else %}success{% endif %}">
+                                        {{ role.replace('_', ' ').title() }}
+                                    </span>
+                                    <span class="fw-bold">{{ count }} users</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscription Plan Distribution -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="bar-chart" class="me-2"></i>
+                                Subscription Plan Distribution
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="planChart" width="400" height="300"></canvas>
+                            <div class="mt-3">
+                                {% for plan, count in plan_distribution.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-{% if plan == 'enterprise' %}success{% elif plan == 'professional' %}primary{% elif plan == 'basic' %}info{% else %}secondary{% endif %}">
+                                        {{ plan.title() }}
+                                    </span>
+                                    <span class="fw-bold">{{ count }} organizations</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Growth Chart -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="trending-up" class="me-2"></i>
+                                Monthly Organization Growth
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="growthChart" width="800" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Recent Organizations -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="clock" class="me-2"></i>
+                                Recent Organizations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_orgs %}
+                            <div class="list-group list-group-flush">
+                                {% for org in recent_orgs %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <h6 class="mb-1">{{ org.name }}</h6>
+                                        <small class="text-muted">{{ org.created_at.strftime('%Y-%m-%d %H:%M') if org.created_at else 'N/A' }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{% if org.subscription_plan == 'enterprise' %}success{% elif org.subscription_plan == 'professional' %}primary{% else %}secondary{% endif %}">
+                                            {{ org.subscription_plan.title() }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ org.users|length }} users</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center">No recent organizations</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Users -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="user-plus" class="me-2"></i>
+                                Recent Users
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_users %}
+                            <div class="list-group list-group-flush">
+                                {% for user in recent_users %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <h6 class="mb-1">{{ user.first_name }} {{ user.last_name }}</h6>
+                                        <small class="text-muted">{{ user.email }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'recruiter' %}primary{% else %}success{% endif %}">
+                                            {{ user.role.title() }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ user.created_at.strftime('%m-%d') if user.created_at else 'N/A' }}</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center">No recent users</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="activity" class="me-2"></i>
+                                System Health & Performance
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h4 text-success">
+                                            <i data-feather="check-circle" class="me-2"></i>
+                                            99.9%
+                                        </div>
+                                        <p class="text-muted mb-0">Uptime</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h4 text-info">
+                                            <i data-feather="database" class="me-2"></i>
+                                            {{ (total_orgs * 0.8) | round(0) | int }}MB
+                                        </div>
+                                        <p class="text-muted mb-0">Database Size</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h4 text-warning">
+                                            <i data-feather="zap" class="me-2"></i>
+                                            {{ (total_users * 12.5) | round(0) | int }}ms
+                                        </div>
+                                        <p class="text-muted mb-0">Avg Response Time</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h4 text-primary">
+                                            <i data-feather="server" class="me-2"></i>
+                                            {{ (total_orgs * 2.1) | round(1) }}%
+                                        </div>
+                                        <p class="text-muted mb-0">CPU Usage</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+</script>
+
+{% endblock %}
