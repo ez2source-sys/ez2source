@@ -1,0 +1,987 @@
+/* Light Theme for Job2Hire Platform */
+
+:root {
+    /* Light Theme Color Palette */
+    --light-primary: #0d6efd;
+    --light-secondary: #6c757d;
+    --light-success: #198754;
+    --light-info: #0dcaf0;
+    --light-warning: #ffc107;
+    --light-danger: #dc3545;
+    --light-light: #f8f9fa;
+    --light-dark: #212529;
+    
+    /* Light Theme Backgrounds */
+    --light-bg-primary: #ffffff;
+    --light-bg-secondary: #f8f9fa;
+    --light-bg-tertiary: #e9ecef;
+    --light-bg-accent: #e7f3ff;
+    
+    /* Light Theme Text Colors */
+    --light-text-primary: #212529;
+    --light-text-secondary: #6c757d;
+    --light-text-muted: #868e96;
+    --light-text-inverse: #ffffff;
+    
+    /* Light Theme Borders */
+    --light-border-primary: #dee2e6;
+    --light-border-secondary: #e9ecef;
+    --light-border-accent: #b3d9ff;
+    
+    /* Light Theme Shadows */
+    --light-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --light-shadow-md: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    --light-shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    
+    /* Light Theme Sidebar */
+    --light-sidebar-bg: #ffffff;
+    --light-sidebar-text: #212529;
+    --light-sidebar-text-secondary: #6c757d;
+    --light-sidebar-border: #dee2e6;
+    --light-sidebar-hover: #f1f8ff;
+    --light-sidebar-active: #e3f2fd;
+    --light-sidebar-active-text: #1976d2;
+    
+    /* Light Theme Input Fields */
+    --light-input-bg: #ffffff;
+    --light-input-border: #dee2e6;
+    --light-input-focus-border: #86b7fe;
+    --light-input-text: #212529;
+    --light-input-placeholder: #6c757d;
+}
+
+/* Apply Light Theme to Body */
+body {
+    background-color: var(--light-bg-secondary) !important;
+    color: var(--light-text-primary) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Light Theme Sidebar */
+.sidebar {
+    background-color: var(--light-sidebar-bg) !important;
+    color: var(--light-sidebar-text) !important;
+    border-right: 1px solid var(--light-sidebar-border) !important;
+    box-shadow: var(--light-shadow-md) !important;
+}
+
+.sidebar * {
+    color: var(--light-sidebar-text) !important;
+}
+
+.sidebar .item-text {
+    color: var(--light-sidebar-text) !important;
+}
+
+.sidebar .sidebar-brand {
+    color: var(--light-sidebar-text) !important;
+    font-weight: 600;
+}
+
+.sidebar-header {
+    border-bottom: 1px solid var(--light-sidebar-border);
+    background-color: var(--light-sidebar-bg);
+}
+
+.sidebar-nav {
+    padding: 0.5rem 0;
+}
+
+.sidebar-nav .nav-item {
+    margin: 0.125rem 0.75rem;
+}
+
+.sidebar-nav .nav-link {
+    color: var(--light-sidebar-text) !important;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-nav .nav-link:hover {
+    background-color: var(--light-sidebar-hover) !important;
+    color: var(--light-sidebar-text) !important;
+    transform: translateX(2px);
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav .nav-link:hover i,
+.sidebar-nav .nav-link:hover svg {
+    color: var(--light-sidebar-text) !important;
+}
+
+.sidebar-nav .nav-link.active {
+    background-color: var(--light-sidebar-active) !important;
+    color: var(--light-sidebar-active-text) !important;
+    font-weight: 600 !important;
+    border-left: 3px solid var(--light-primary) !important;
+    margin-left: 0.625rem !important;
+}
+
+.sidebar-nav .nav-link.active i,
+.sidebar-nav .nav-link.active svg {
+    color: var(--light-sidebar-active-text) !important;
+}
+
+/* Additional Active Tab Overrides */
+.sidebar .nav-link.active,
+.sidebar-nav .nav-item .nav-link.active,
+.nav-pills .nav-link.active,
+.nav-tabs .nav-link.active {
+    background-color: var(--light-sidebar-active) !important;
+    color: var(--light-sidebar-active-text) !important;
+    font-weight: 600 !important;
+}
+
+/* Ensure no black background on active tabs */
+.nav-link.active,
+.nav-tabs .nav-link.active,
+.nav-pills .nav-link.active {
+    background-color: var(--light-sidebar-active) !important;
+    color: var(--light-sidebar-active-text) !important;
+}
+
+.nav-link.active:hover,
+.nav-tabs .nav-link.active:hover,
+.nav-pills .nav-link.active:hover {
+    background-color: var(--light-sidebar-active) !important;
+    color: var(--light-sidebar-active-text) !important;
+}
+
+/* Bootstrap Override for Active Navigation Links */
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: var(--light-sidebar-active) !important;
+    color: var(--light-sidebar-active-text) !important;
+}
+
+/* Fix for any remaining black backgrounds */
+.bg-dark,
+.navbar-dark,
+.btn-dark,
+.alert-dark {
+    background-color: var(--light-bg-primary) !important;
+    color: var(--light-text-primary) !important;
+    border-color: var(--light-border-primary) !important;
+}
+
+/* Ensure active state visibility */
+.active,
+.nav-link.active,
+.list-group-item.active {
+    background-color: var(--light-sidebar-active) !important;
+    color: var(--light-sidebar-active-text) !important;
+    border-color: var(--light-primary) !important;
+}
+
+/* Comprehensive Hover State Overrides */
+.nav-link:hover,
+.sidebar-nav .nav-link:hover,
+.nav-pills .nav-link:hover,
+.nav-tabs .nav-link:hover,
+.list-group-item:hover,
+.dropdown-item:hover,
+.btn:hover,
+.sidebar .nav-link:hover,
+.sidebar-nav .nav-item .nav-link:hover,
+a.nav-link:hover {
+    background-color: var(--light-sidebar-hover) !important;
+    color: var(--light-sidebar-text) !important;
+}
+
+/* Prevent any black hover backgrounds */
+.bg-dark:hover,
+.navbar-dark .navbar-nav .nav-link:hover,
+.btn-dark:hover,
+.dropdown-menu .dropdown-item:hover {
+    background-color: var(--light-sidebar-hover) !important;
+    color: var(--light-text-primary) !important;
+}
+
+/* Sidebar specific hover states */
+.sidebar .nav-link:hover,
+.sidebar-nav .nav-item .nav-link:hover {
+    background-color: var(--light-sidebar-hover) !important;
+    color: var(--light-sidebar-text) !important;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.sidebar .nav-link:hover i,
+.sidebar .nav-link:hover svg {
+    color: var(--light-sidebar-text) !important;
+}
+
+.sidebar-nav .nav-link i,
+.sidebar-nav .nav-link svg {
+    margin-right: 0.75rem;
+    width: 16px;
+    height: 16px;
+}
+
+.sidebar-section {
+    margin: 1rem 0;
+}
+
+.sidebar-section-title {
+    color: var(--light-sidebar-text-secondary) !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Light Theme Header/Topbar */
+.topbar {
+    background-color: var(--light-bg-primary) !important;
+    color: var(--light-text-primary) !important;
+    border-bottom: 1px solid var(--light-border-primary);
+    box-shadow: var(--light-shadow-sm);
+}
+
+.topbar .navbar-brand {
+    color: var(--light-text-primary) !important;
+    font-weight: 600;
+}
+
+.topbar .nav-link {
+    color: var(--light-text-primary) !important;
+}
+
+.topbar .nav-link:hover {
+    color: var(--light-primary) !important;
+}
+
+/* Light Theme Cards */
+.card {
+    background-color: var(--light-bg-primary) !important;
+    border: 1px solid var(--light-border-primary);
+    border-radius: 0.75rem;
+    box-shadow: var(--light-shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: var(--light-shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background-color: var(--light-bg-secondary) !important;
+    border-bottom: 1px solid var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+    font-weight: 600;
+}
+
+.card-footer {
+    background-color: var(--light-bg-secondary) !important;
+    border-top: 1px solid var(--light-border-primary);
+    color: var(--light-text-secondary) !important;
+}
+
+.card-body {
+    color: var(--light-text-primary) !important;
+}
+
+.card-title {
+    color: var(--light-text-primary) !important;
+    font-weight: 600;
+}
+
+.card-text {
+    color: var(--light-text-secondary) !important;
+}
+
+/* Light Theme Buttons */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-width: 1px;
+}
+
+.btn-primary {
+    background-color: var(--light-primary) !important;
+    border-color: var(--light-primary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.btn-secondary {
+    background-color: var(--light-secondary) !important;
+    border-color: var(--light-secondary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.btn-outline-primary {
+    border-color: var(--light-primary) !important;
+    color: var(--light-primary) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--light-primary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.btn-outline-secondary {
+    border-color: var(--light-border-primary) !important;
+    color: var(--light-text-primary) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--light-bg-secondary) !important;
+    color: var(--light-text-primary) !important;
+}
+
+/* Light Theme Forms */
+.form-control {
+    background-color: var(--light-bg-primary) !important;
+    border: 1px solid var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+    border-radius: 0.5rem;
+}
+
+.form-control:focus {
+    border-color: var(--light-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    background-color: var(--light-bg-primary) !important;
+}
+
+.form-label {
+    color: var(--light-text-primary) !important;
+    font-weight: 500;
+}
+
+.form-text {
+    color: var(--light-text-secondary) !important;
+}
+
+.form-select {
+    background-color: var(--light-bg-primary) !important;
+    border: 1px solid var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+}
+
+.input-group-text {
+    background-color: var(--light-bg-secondary) !important;
+    border-color: var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+}
+
+/* Additional Input Field Styling */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+    background-color: var(--light-bg-primary) !important;
+    color: var(--light-text-primary) !important;
+    border: 1px solid var(--light-border-primary) !important;
+    border-radius: 0.375rem !important;
+    padding: 0.375rem 0.75rem !important;
+}
+
+/* Input focus states */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus,
+select:focus {
+    background-color: var(--light-bg-primary) !important;
+    color: var(--light-text-primary) !important;
+    border-color: var(--light-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    outline: 0 !important;
+}
+
+/* Input placeholder styling */
+input::placeholder,
+textarea::placeholder {
+    color: var(--light-text-secondary) !important;
+    opacity: 1 !important;
+}
+
+/* Form check inputs */
+.form-check-input {
+    background-color: var(--light-bg-primary) !important;
+    border: 1px solid var(--light-border-primary) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--light-primary) !important;
+    border-color: var(--light-primary) !important;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Disabled form controls */
+.form-control:disabled,
+.form-select:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+    background-color: var(--light-bg-secondary) !important;
+    color: var(--light-text-secondary) !important;
+    opacity: 1 !important;
+}
+
+/* Form validation states */
+.form-control.is-valid,
+input.is-valid {
+    background-color: var(--light-bg-primary) !important;
+    border-color: var(--light-success) !important;
+}
+
+.form-control.is-invalid,
+input.is-invalid {
+    background-color: var(--light-bg-primary) !important;
+    border-color: var(--light-danger) !important;
+}
+
+/* Light Theme Tables */
+.table {
+    background-color: var(--light-bg-primary) !important;
+    color: var(--light-text-primary) !important;
+}
+
+.table thead th {
+    background-color: var(--light-bg-secondary) !important;
+    color: var(--light-text-primary) !important;
+    border-color: var(--light-border-primary);
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background-color: var(--light-bg-secondary) !important;
+}
+
+.table td {
+    border-color: var(--light-border-primary);
+}
+
+/* Light Theme Modals */
+.modal-content {
+    background-color: var(--light-bg-primary) !important;
+    border: 1px solid var(--light-border-primary);
+    border-radius: 0.75rem;
+}
+
+.modal-header {
+    background-color: var(--light-bg-secondary) !important;
+    border-bottom: 1px solid var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+}
+
+.modal-title {
+    color: var(--light-text-primary) !important;
+    font-weight: 600;
+}
+
+.modal-body {
+    color: var(--light-text-primary) !important;
+}
+
+.modal-footer {
+    background-color: var(--light-bg-secondary) !important;
+    border-top: 1px solid var(--light-border-primary);
+}
+
+/* Light Theme Alerts */
+.alert {
+    border-radius: 0.5rem;
+    border-width: 1px;
+}
+
+.alert-primary {
+    background-color: #cce7ff !important;
+    border-color: #99d5ff !important;
+    color: #084298 !important;
+}
+
+.alert-success {
+    background-color: #d1e7dd !important;
+    border-color: #a3cfbb !important;
+    color: #0f5132 !important;
+}
+
+.alert-warning {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+    color: #664d03 !important;
+}
+
+.alert-danger {
+    background-color: #f8d7da !important;
+    border-color: #f1aeb5 !important;
+    color: #721c24 !important;
+}
+
+/* Light Theme Badges */
+.badge {
+    font-weight: 500;
+    border-radius: 0.375rem;
+}
+
+.badge.bg-primary {
+    background-color: var(--light-primary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--light-secondary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--light-success) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--light-warning) !important;
+    color: var(--light-text-primary) !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--light-danger) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+/* Light Theme AI-Powered Badge */
+.ai-powered-badge {
+    background-color: var(--light-bg-primary) !important;
+    color: var(--light-text-primary) !important;
+    border: 1px solid var(--light-border-primary) !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 0.375rem !important;
+    box-shadow: var(--light-shadow-sm) !important;
+}
+
+/* Light Theme Dropdowns */
+.dropdown-menu {
+    background-color: var(--light-bg-primary) !important;
+    border: 1px solid var(--light-border-primary);
+    border-radius: 0.5rem;
+    box-shadow: var(--light-shadow-md);
+}
+
+.dropdown-item {
+    color: var(--light-text-primary) !important;
+}
+
+.dropdown-item:hover {
+    background-color: var(--light-bg-secondary) !important;
+    color: var(--light-text-primary) !important;
+}
+
+.dropdown-divider {
+    border-color: var(--light-border-primary);
+}
+
+/* Light Theme Main Content */
+.main-content {
+    background-color: var(--light-bg-secondary) !important;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+/* Light Theme Container */
+.container,
+.container-fluid {
+    color: var(--light-text-primary) !important;
+}
+
+/* Light Theme Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--light-text-primary) !important;
+}
+
+/* Light Theme Text Elements */
+.text-primary {
+    color: var(--light-primary) !important;
+}
+
+.text-secondary {
+    color: var(--light-text-secondary) !important;
+}
+
+.text-muted {
+    color: var(--light-text-muted) !important;
+}
+
+.text-dark {
+    color: var(--light-text-primary) !important;
+}
+
+/* Light Theme List Groups */
+.list-group {
+    background-color: var(--light-bg-primary) !important;
+    border-radius: 0.5rem;
+}
+
+.list-group-item {
+    background-color: var(--light-bg-primary) !important;
+    border-color: var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+}
+
+.list-group-item:hover {
+    background-color: var(--light-bg-secondary) !important;
+}
+
+.list-group-item.active {
+    background-color: var(--light-primary) !important;
+    border-color: var(--light-primary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+/* Light Theme Progress Bars */
+.progress {
+    background-color: var(--light-bg-tertiary) !important;
+    border-radius: 0.5rem;
+}
+
+.progress-bar {
+    background-color: var(--light-primary) !important;
+}
+
+/* Light Theme Navs and Tabs */
+.nav-tabs {
+    border-bottom: 1px solid var(--light-border-primary);
+}
+
+.nav-tabs .nav-link {
+    color: var(--light-text-secondary) !important;
+    border-color: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--light-text-primary) !important;
+    border-color: var(--light-border-primary);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--light-text-primary) !important;
+    background-color: var(--light-bg-primary) !important;
+    border-color: var(--light-border-primary);
+}
+
+/* Light Theme Pagination */
+.pagination .page-link {
+    background-color: var(--light-bg-primary) !important;
+    border-color: var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+}
+
+.pagination .page-link:hover {
+    background-color: var(--light-bg-secondary) !important;
+    color: var(--light-text-primary) !important;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--light-primary) !important;
+    border-color: var(--light-primary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+/* Light Theme Tooltips and Popovers */
+.tooltip-inner {
+    background-color: var(--light-text-primary) !important;
+    color: var(--light-text-inverse) !important;
+}
+
+.popover {
+    background-color: var(--light-bg-primary) !important;
+    border: 1px solid var(--light-border-primary);
+}
+
+.popover-header {
+    background-color: var(--light-bg-secondary) !important;
+    border-bottom: 1px solid var(--light-border-primary);
+    color: var(--light-text-primary) !important;
+}
+
+.popover-body {
+    color: var(--light-text-primary) !important;
+}
+
+/* Light Theme Responsive Adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+/* Light Theme Focus States */
+*:focus {
+    outline: 2px solid var(--light-primary) !important;
+    outline-offset: 2px !important;
+}
+
+/* Light Theme Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--light-border-primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--light-text-secondary);
+}
+
+/* COMPREHENSIVE INPUT FIELD LIGHT THEME FIX */
+/* Target all input types and form controls in all contexts */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+input[type="color"],
+input[type="file"],
+textarea,
+select,
+.form-control,
+.form-select,
+.modal input[type="text"],
+.modal input[type="email"],
+.modal input[type="password"],
+.modal input[type="number"],
+.modal input[type="tel"],
+.modal input[type="url"],
+.modal input[type="search"],
+.modal input[type="date"],
+.modal input[type="time"],
+.modal input[type="datetime-local"],
+.modal input[type="month"],
+.modal input[type="week"],
+.modal input[type="color"],
+.modal input[type="file"],
+.modal textarea,
+.modal select,
+.modal .form-control,
+.modal .form-select,
+.modal-body input,
+.modal-body textarea,
+.modal-body select,
+.modal-body .form-control,
+.modal-body .form-select,
+.profile-form input,
+.profile-form textarea,
+.profile-form select,
+.work-experience-form input,
+.work-experience-form textarea,
+.education-form input,
+.education-form textarea {
+    background-color: var(--light-input-bg) !important;
+    border-color: var(--light-input-border) !important;
+    color: var(--light-input-text) !important;
+    border-radius: 0.375rem !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    padding: 0.5rem 0.75rem !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+}
+
+/* Focus states for all input types */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+input[type="month"]:focus,
+input[type="week"]:focus,
+input[type="color"]:focus,
+input[type="file"]:focus,
+textarea:focus,
+select:focus,
+.form-control:focus,
+.form-select:focus,
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus,
+.modal .form-control:focus,
+.modal .form-select:focus,
+.modal-body input:focus,
+.modal-body textarea:focus,
+.modal-body select:focus,
+.modal-body .form-control:focus,
+.modal-body .form-select:focus,
+.profile-form input:focus,
+.profile-form textarea:focus,
+.profile-form select:focus,
+.work-experience-form input:focus,
+.work-experience-form textarea:focus,
+.education-form input:focus,
+.education-form textarea:focus {
+    background-color: var(--light-input-bg) !important;
+    border-color: var(--light-input-focus-border) !important;
+    color: var(--light-input-text) !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    outline: none !important;
+}
+
+/* Placeholder text for all input types */
+input::placeholder,
+textarea::placeholder,
+.form-control::placeholder,
+.modal input::placeholder,
+.modal textarea::placeholder,
+.modal .form-control::placeholder,
+.modal-body input::placeholder,
+.modal-body textarea::placeholder,
+.modal-body .form-control::placeholder,
+.profile-form input::placeholder,
+.profile-form textarea::placeholder,
+.work-experience-form input::placeholder,
+.work-experience-form textarea::placeholder,
+.education-form input::placeholder,
+.education-form textarea::placeholder {
+    color: var(--light-input-placeholder) !important;
+    opacity: 1 !important;
+}
+
+/* Force webkit date/time input styling */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="time"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit-text,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="datetime-local"]::-webkit-datetime-edit,
+input[type="datetime-local"]::-webkit-datetime-edit-text,
+input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
+.modal input[type="date"]::-webkit-datetime-edit,
+.modal input[type="date"]::-webkit-datetime-edit-text,
+.modal input[type="date"]::-webkit-datetime-edit-month-field,
+.modal input[type="date"]::-webkit-datetime-edit-day-field,
+.modal input[type="date"]::-webkit-datetime-edit-year-field,
+.modal input[type="time"]::-webkit-datetime-edit,
+.modal input[type="time"]::-webkit-datetime-edit-text,
+.modal input[type="time"]::-webkit-datetime-edit-hour-field,
+.modal input[type="time"]::-webkit-datetime-edit-minute-field,
+.modal input[type="datetime-local"]::-webkit-datetime-edit,
+.modal input[type="datetime-local"]::-webkit-datetime-edit-text,
+.modal input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
+    background-color: transparent !important;
+    color: var(--light-input-text) !important;
+}
+
+/* Override any Bootstrap dark theme styling */
+[data-bs-theme="dark"] input,
+[data-bs-theme="dark"] textarea,
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+.dark input,
+.dark textarea,
+.dark select,
+.dark .form-control,
+.dark .form-select,
+body[data-theme="dark"] input,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] select,
+body[data-theme="dark"] .form-control,
+body[data-theme="dark"] .form-select {
+    background-color: var(--light-input-bg) !important;
+    color: var(--light-input-text) !important;
+    border-color: var(--light-input-border) !important;
+}
+
+/* Force any remaining dark inputs to light theme */
+input[style*="background-color: rgb(33, 41, 52)"],
+input[style*="background-color: #2d3748"],
+input[style*="background-color: rgb(45, 55, 72)"],
+input[style*="background-color: #1a202c"],
+input[style*="background-color: rgb(26, 32, 44)"],
+textarea[style*="background-color: rgb(33, 41, 52)"],
+textarea[style*="background-color: #2d3748"],
+textarea[style*="background-color: rgb(45, 55, 72)"],
+textarea[style*="background-color: #1a202c"],
+textarea[style*="background-color: rgb(26, 32, 44)"],
+select[style*="background-color: rgb(33, 41, 52)"],
+select[style*="background-color: #2d3748"],
+select[style*="background-color: rgb(45, 55, 72)"],
+select[style*="background-color: #1a202c"],
+select[style*="background-color: rgb(26, 32, 44)"] {
+    background-color: var(--light-input-bg) !important;
+    color: var(--light-input-text) !important;
+    border-color: var(--light-input-border) !important;
+}
+
+/* Any input with dark classes or attributes */
+.dark-input,
+.dark-form-control,
+.dark-textarea,
+.dark-select,
+input[data-theme="dark"],
+textarea[data-theme="dark"],
+select[data-theme="dark"],
+.form-control[data-theme="dark"],
+.form-select[data-theme="dark"] {
+    background-color: var(--light-input-bg) !important;
+    color: var(--light-input-text) !important;
+    border-color: var(--light-input-border) !important;
+}

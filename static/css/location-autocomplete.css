@@ -1,0 +1,253 @@
+/**
+ * Location Autocomplete Styling
+ * CSS for country and city autocomplete functionality
+ */
+
+/* Autocomplete wrapper */
+.location-autocomplete-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* Ensure parent containers don't clip dropdown */
+.form-control {
+    position: relative;
+}
+
+/* Fix for Bootstrap form groups */
+.col-md-2, .col-md-3, .col-md-4 {
+    position: relative;
+    overflow: visible !important;
+}
+
+/* Ensure dropdown appears above all other elements */
+.autocomplete-dropdown {
+    position: absolute !important;
+    z-index: 9999 !important;
+}
+
+/* Fix for Bootstrap row and card containers */
+.row {
+    overflow: visible !important;
+}
+
+.card, .card-body {
+    overflow: visible !important;
+}
+
+/* Ensure form containers don't clip dropdown */
+form {
+    overflow: visible !important;
+}
+
+/* Specific fix for the job scheduler form */
+.job-scheduler-form {
+    overflow: visible !important;
+}
+
+.job-scheduler-form .row {
+    overflow: visible !important;
+}
+
+.job-scheduler-form .col-md-2,
+.job-scheduler-form .col-md-3,
+.job-scheduler-form .col-md-4 {
+    overflow: visible !important;
+    position: relative;
+}
+
+/* Autocomplete dropdown */
+.autocomplete-dropdown {
+    position: fixed !important;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 0.375rem 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10000 !important;
+    display: none;
+    min-width: 200px;
+}
+
+/* Autocomplete items */
+.autocomplete-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.15s ease-in-out;
+    font-size: 0.875rem;
+    color: #495057;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.autocomplete-item:active {
+    background-color: #e9ecef;
+}
+
+/* Location input fields */
+.location-input {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.location-input:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.location-input::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+/* Location section styling */
+.location-section {
+    margin-bottom: 1rem;
+}
+
+.location-section .form-label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #212529;
+}
+
+/* Country and city specific styling */
+.country-input-wrapper,
+.city-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.country-dropdown,
+.city-dropdown {
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 0.375rem 0.375rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .autocomplete-dropdown {
+        max-height: 150px;
+    }
+    
+    .autocomplete-item {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Form row for country/city layout */
+.location-form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.location-form-row .form-group {
+    flex: 1;
+}
+
+/* Error state styling */
+.location-input.is-invalid {
+    border-color: #dc3545;
+}
+
+.location-input.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+/* Success state styling */
+.location-input.is-valid {
+    border-color: #198754;
+}
+
+.location-input.is-valid:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+/* Loading state */
+.location-input.loading {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='currentColor'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='M6 1.5v3M6 7.5v3M1.5 6h3M7.5 6h3'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem 1rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Accessibility improvements */
+.autocomplete-item:focus {
+    background-color: #0d6efd;
+    color: #ffffff;
+    outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .autocomplete-dropdown {
+        border: 2px solid #000;
+    }
+    
+    .autocomplete-item {
+        border-bottom: 1px solid #000;
+    }
+    
+    .autocomplete-item:hover {
+        background-color: #000;
+        color: #fff;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .autocomplete-item {
+        transition: none;
+    }
+    
+    .location-input {
+        transition: none;
+    }
+}
+
+/* Custom scrollbar for dropdown */
+.autocomplete-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

@@ -1,0 +1,165 @@
+/* Enhanced Calendar and Date Picker Styles */
+.calendar-container {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.date-picker-wrapper {
+    position: relative;
+}
+
+.date-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-display {
+    background: white;
+    cursor: pointer;
+    padding-right: 40px;
+}
+
+.date-picker-hidden {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    border: none;
+    background: transparent;
+}
+
+.date-picker-hidden::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.date-picker-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #007bff;
+    pointer-events: none;
+    z-index: 1;
+    font-size: 16px;
+}
+
+.date-picker-wrapper input[type="date"] {
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 16px;
+    width: 100%;
+    transition: border-color 0.3s ease;
+}
+
+.date-picker-wrapper input[type="date"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.time-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.time-slot {
+    padding: 10px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #ffffff;
+}
+
+.time-slot:hover {
+    border-color: #007bff;
+    background: #f8f9fa;
+}
+
+.time-slot.selected {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.time-slot.unavailable {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    border-color: #ddd;
+}
+
+.schedule-summary {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.schedule-summary h6 {
+    margin: 0 0 10px 0;
+    color: #495057;
+}
+
+.schedule-summary p {
+    margin: 5px 0;
+    color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .time-slot-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .time-slot {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
+
+/* Date input styling for better UX */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>') no-repeat;
+    background-size: 20px 20px;
+    cursor: pointer;
+}
+
+.form-floating {
+    position: relative;
+}
+
+.form-floating > .form-control {
+    padding: 1rem 0.75rem;
+}
+
+.form-floating > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
