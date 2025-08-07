@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Universal Candidate Access - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="h4 fw-bold">
+                <i data-feather="globe" class="me-2"></i>
+                Universal Candidate Access
+            </h2>
+            <p class="text-muted">Access candidates across organizations with public profiles and employee status management.</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Summary -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i data-feather="users" class="text-primary" style="width: 40px; height: 40px;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">Organization Candidates</h5>
+                            <h3 class="text-primary mb-0">{{ candidates|selectattr('access_type', 'in', ['organization_affiliated', 'organization_employee'])|list|length }}</h3>
+                            <small class="text-muted">Candidates belonging to your organization</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i data-feather="globe" class="text-success" style="width: 40px; height: 40px;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">Public Candidates</h5>
+                            <h3 class="text-success mb-0">{{ dashboard_data.total_public }}</h3>
+                            <small class="text-muted">Cross-organization candidates with public profiles</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0">
+            <ul class="nav nav-tabs card-header-tabs" id="candidateTypeTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-candidates" type="button" role="tab">
+                        <i data-feather="users" class="me-2"></i>
+                        All Candidates ({{ candidates|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="employees-tab" data-bs-toggle="tab" data-bs-target="#employee-candidates" type="button" role="tab">
+                        <i data-feather="briefcase" class="me-2"></i>
+                        Organization Candidates ({{ dashboard_data.organization_candidates|length if dashboard_data.organization_candidates else candidates|selectattr('access_type', 'equalto', 'organization_affiliated')|list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="public-tab" data-bs-toggle="tab" data-bs-target="#public-candidates" type="button" role="tab">
+                        <i data-feather="globe" class="me-2"></i>
+                        Public Profiles ({{ dashboard_data.total_public }})
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content" id="candidateTypeTabContent">
+                <!-- All Candidates Tab -->
+                <div class="tab-pane fade show active" id="all-candidates" role="tabpanel">
+                    <div class="row">
+                        {% for candidate in candidates %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="flex-shrink-0 me-3">
+                                            {% if candidate.profile_photo_url %}
+                                            <img src="{{ candidate.profile_photo_url }}" alt="Profile" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="bg-secondary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                <i data-feather="user" class="text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ candidate.first_name }} {{ candidate.last_name }}</h6>
+                                            <p class="text-muted mb-1 small">{{ candidate.job_title or 'No job title specified' }}</p>
+                                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                                <!-- Access Type Badge -->
+                                                {% if candidate.access_type == 'organization_employee' %}
+                                                <span class="badge bg-primary">Employee</span>
+                                                {% elif candidate.access_type == 'organization_affiliated' %}
+                                                <span class="badge bg-info">Organization</span>
+                                                {% else %}
+                                                <span class="badge bg-success">Public</span>
+                                                {% endif %}
+                                                
+                                                <!-- Pipeline Type Badge -->
+                                                {% if candidate.interview_pipeline == 'employee' %}
+                                                <span class="badge bg-outline-primary">EMP Pipeline</span>
+                                                {% elif candidate.interview_pipeline == 'public_only' %}
+                                                <span class="badge bg-outline-success">Public Only</span>
+                                                {% else %}
+                                                <span class="badge bg-outline-secondary">Standard</span>
+                                                {% endif %}
+                                                
+                                                <!-- Priority Badge -->
+                                                {% if candidate.priority == 'high' %}
+                                                <span class="badge bg-warning">High Priority</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Skills Preview -->
+                                    {% if candidate.skills %}
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block mb-1">Skills:</small>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% set skills_list = candidate.skills|from_json if candidate.skills else [] %}
+                                            {% for skill in skills_list[:3] %}
+                                            <span class="badge bg-light text-dark">{{ skill }}</span>
+                                            {% endfor %}
+                                            {% if skills_list|length > 3 %}
+                                            <span class="badge bg-light text-muted">+{{ skills_list|length - 3 }} more</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Action Buttons -->
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('candidate_profile', user_id=candidate.id) }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                            <i data-feather="eye" class="me-1"></i>
+                                            View Profile
+                                        </a>
+                                        
+                                        {% if candidate.can_invite %}
+                                        <a href="{{ url_for('send_public_invitation_page', candidate_id=candidate.id) }}" class="btn btn-sm btn-primary">
+                                            <i data-feather="mail" class="me-1"></i>
+                                            Invite
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if candidate.access_type == 'organization_affiliated' %}
+                                        <button class="btn btn-sm {% if candidate.is_organization_employee %}btn-warning{% else %}btn-outline-warning{% endif %}" 
+                                                onclick="toggleEmployeeStatus('{{ candidate.id }}', {{ not candidate.is_organization_employee }})">
+                                            <i data-feather="briefcase" class="me-1"></i>
+                                            {% if candidate.is_organization_employee %}Remove Emp{% else %}Mark Emp{% endif %}
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Organization Candidates Tab -->
+                <div class="tab-pane fade" id="employee-candidates" role="tabpanel">
+                    <div class="row">
+                        {% for candidate in candidates %}
+                        {% if candidate.access_type == 'organization_affiliated' or candidate.access_type == 'organization_employee' %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-primary border-opacity-25 h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="flex-shrink-0 me-3">
+                                            {% if candidate.profile_photo_url %}
+                                            <img src="{{ candidate.profile_photo_url }}" alt="Profile" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="bg-primary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                <i data-feather="user" class="text-primary"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ candidate.first_name }} {{ candidate.last_name }}</h6>
+                                            <p class="text-muted mb-1 small">{{ candidate.job_title or 'No job title specified' }}</p>
+                                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                                <span class="badge bg-primary">Organization</span>
+                                                <span class="badge bg-outline-secondary">Standard</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mb-3">Organization candidate with full access to organization interviews and pipeline.</p>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('candidate_profile', user_id=candidate.id) }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                            <i data-feather="eye" class="me-1"></i>
+                                            View Profile
+                                        </a>
+                                        <a href="{{ url_for('send_public_invitation_page', candidate_id=candidate.id) }}" class="btn btn-sm btn-primary">
+                                            <i data-feather="mail" class="me-1"></i>
+                                            Invite
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Public Candidates Tab -->
+                <div class="tab-pane fade" id="public-candidates" role="tabpanel">
+                    <div class="row">
+                        {% for candidate in dashboard_data.public_candidates %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-success border-opacity-25 h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i data-feather="globe" class="text-success"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ candidate.first_name }} {{ candidate.last_name }}</h6>
+                                            <small class="text-muted">{{ candidate.job_title or 'Public Candidate' }}</small>
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mb-3">Cross-organization candidate with public profile. Can only access public interviews.</p>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('candidate_profile', user_id=candidate.id) }}" class="btn btn-sm btn-outline-success flex-grow-1">View Profile</a>
+                                        <a href="{{ url_for('send_public_invitation_page', candidate_id=candidate.id) }}" class="btn btn-sm btn-success">Public Invite</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal removed - now using dedicated page approach -->
+
+<script>
+// Modal-related functions removed - now using dedicated page approach
+
+function toggleEmployeeStatus(candidateId, makeEmployee) {
+    fetch('/api/toggle-employee-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            candidate_id: candidateId,
+            is_employee: makeEmployee
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating employee status');
+    });
+}
+</script>
+
+<style>
+.badge.bg-outline-primary {
+    color: var(--bs-primary);
+    border: 1px solid var(--bs-primary);
+    background: transparent;
+}
+
+.badge.bg-outline-success {
+    color: var(--bs-success);
+    border: 1px solid var(--bs-success);
+    background: transparent;
+}
+
+.badge.bg-outline-secondary {
+    color: var(--bs-secondary);
+    border: 1px solid var(--bs-secondary);
+    background: transparent;
+}
+</style>
+{% endblock %}
