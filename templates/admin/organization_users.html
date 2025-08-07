@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}{{ organization.name }} Users - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('admin_organizations') }}" class="btn btn-outline-secondary me-3">
+                    <i data-feather="arrow-left"></i>
+                </a>
+                <div class="flex-grow-1">
+                    <h2 class="mb-1">{{ organization.name }} Users</h2>
+                    <p class="text-muted mb-0">Manage users in {{ organization.name }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('admin_edit_organization', org_id=organization.id) }}" 
+                       class="btn btn-outline-primary">
+                        <i data-feather="edit" class="me-2"></i>
+                        Edit Organization
+                    </a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i data-feather="user-plus" class="me-2"></i>
+                        Add User
+                    </button>
+                </div>
+            </div>
+
+            <!-- Organization Info Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    {{ organization.name[0].upper() }}
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ organization.name }}</h5>
+                                    <div class="d-flex gap-3">
+                                        <span class="badge bg-{% if organization.subscription_plan == 'enterprise' %}success{% elif organization.subscription_plan == 'professional' %}primary{% else %}secondary{% endif %}">
+                                            {{ organization.subscription_plan.title() }}
+                                        </span>
+                                        <span class="badge bg-{% if organization.is_active %}success{% else %}danger{% endif %}">
+                                            {% if organization.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                        <small class="text-muted">Created: {{ organization.created_at.strftime('%B %d, %Y') if organization.created_at else 'N/A' }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <h3 class="mb-0">{{ users|length }}</h3>
+                            <small class="text-muted">Total Users</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Organization Users</h5>
+                    <div class="d-flex gap-2">
+                        <div class="input-group" style="width: 300px;">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search users..." id="userSearch">
+                            <button class="btn btn-outline-secondary btn-sm" type="button">
+                                <i data-feather="search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-3">
+                                                {% if user.profile_image_url %}
+                                                <img src="{{ user.profile_image_url }}" class="rounded-circle" width="32" height="32">
+                                                {% else %}
+                                                <div class="avatar-circle-sm">{{ user.first_name[0] if user.first_name else user.username[0] }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ user.first_name }} {{ user.last_name }}</h6>
+                                                <small class="text-muted">@{{ user.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'recruiter' %}primary{% elif user.role == 'candidate' %}success{% else %}secondary{% endif %}">
+                                            {{ user.role.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ user.email }}" class="text-decoration-none">{{ user.email }}</a>
+                                    </td>
+                                    <td>
+                                        {% if user.phone %}
+                                        <a href="tel:{{ user.phone }}" class="text-decoration-none">{{ user.phone }}</a>
+                                        {% else %}
+                                        <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if user.profile_completed %}success{% else %}warning{% endif %}">
+                                            {% if user.profile_completed %}Complete{% else %}Incomplete{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-secondary" title="View Profile">
+                                                <i data-feather="eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" title="Edit User">
+                                                <i data-feather="edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" title="Remove User" 
+                                                    onclick="confirmRemoveUser({{ user.id }}, '{{ user.first_name }} {{ user.last_name }}')">
+                                                <i data-feather="user-minus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-5">
+                        <i data-feather="users" size="48" class="text-muted mb-3"></i>
+                        <h5 class="text-muted">No Users Found</h5>
+                        <p class="text-muted">This organization doesn't have any users yet.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Add First User
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- User Statistics -->
+            {% if users %}
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-danger">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</h3>
+                            <p class="text-muted mb-0">Admins</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-primary">{{ users|selectattr('role', 'equalto', 'recruiter')|list|length }}</h3>
+                            <p class="text-muted mb-0">Recruiters</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-success">{{ users|selectattr('role', 'equalto', 'candidate')|list|length }}</h3>
+                            <p class="text-muted mb-0">Candidates</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-info">{{ users|selectattr('profile_completed')|list|length }}</h3>
+                            <p class="text-muted mb-0">Complete Profiles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">
+                    <i data-feather="user-plus" class="me-2"></i>
+                    Add User to {{ organization.name }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin_add_user_to_organization', org_id=organization.id) }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="form-text">This will be their login email</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="candidate">Candidate</option>
+                            <option value="recruiter">Recruiter</option>
+                            <option value="admin">Admin</option>
+                            <option value="technical_person">Technical Interviewer</option>
+                        </select>
+                        <div class="form-text">
+                            <strong>Admin:</strong> Full organization access<br>
+                            <strong>Recruiter:</strong> Interview management<br>
+                            <strong>Candidate:</strong> Interview participation<br>
+                            <strong>Technical Interviewer:</strong> Conduct technical interviews
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i data-feather="info" class="me-2"></i>
+                        <strong>Default Password:</strong> Welcome2025!<br>
+                        <small>Users should change this password on first login.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="plus" class="me-2"></i>
+                        Add User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Remove User Modal -->
+<div class="modal fade" id="removeUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove <strong id="userName"></strong> from this organization?</p>
+                <p class="text-warning">
+                    <i data-feather="alert-triangle" class="me-2"></i>
+                    This will remove their access to organization features but won't delete their account.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveUser">Remove User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmRemoveUser(userId, userName) {
+    document.getElementById('userName').textContent = userName;
+    document.getElementById('confirmRemoveUser').onclick = function() {
+        // Handle user removal logic here
+        console.log('Remove user:', userId);
+        bootstrap.Modal.getInstance(document.getElementById('removeUserModal')).hide();
+    };
+    new bootstrap.Modal(document.getElementById('removeUserModal')).show();
+}
+
+// Search functionality
+document.getElementById('userSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+    
+    // Debug modal functionality
+    console.log('Modal element:', document.getElementById('addUserModal'));
+    console.log('Add User buttons:', document.querySelectorAll('[data-bs-target="#addUserModal"]'));
+    
+    // Test modal manually
+    const addUserButtons = document.querySelectorAll('[data-bs-target="#addUserModal"]');
+    addUserButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            console.log('Add User button clicked');
+            const modalElement = document.getElementById('addUserModal');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } else {
+                console.error('Modal element not found');
+            }
+        });
+    });
+    
+    // Re-initialize feather icons when modal is shown
+    const modalElement = document.getElementById('addUserModal');
+    if (modalElement) {
+        modalElement.addEventListener('shown.bs.modal', function() {
+            feather.replace();
+        });
+    }
+});
+</script>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.avatar-circle-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+</style>
+
+{% endblock %}

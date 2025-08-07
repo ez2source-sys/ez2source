@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ organization.name }} - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('admin_organizations') }}" class="btn btn-outline-secondary me-3">
+                    <i data-feather="arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="mb-1">Edit Organization</h2>
+                    <p class="text-muted mb-0">Update {{ organization.name }} details</p>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Organization Details</h5>
+                    <span class="badge bg-{% if organization.is_active %}success{% else %}danger{% endif %}">
+                        {% if organization.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Organization Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" 
+                                           value="{{ organization.name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="slug" class="form-label">Slug *</label>
+                                    <input type="text" class="form-control" id="slug" name="slug" 
+                                           value="{{ organization.slug }}" required>
+                                    <div class="form-text">Used in URLs and API endpoints</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subscription_plan" class="form-label">Subscription Plan</label>
+                                    <select class="form-select" id="subscription_plan" name="subscription_plan">
+                                        <option value="trial" {% if organization.subscription_plan == 'trial' %}selected{% endif %}>Trial</option>
+                                        <option value="basic" {% if organization.subscription_plan == 'basic' %}selected{% endif %}>Basic</option>
+                                        <option value="professional" {% if organization.subscription_plan == 'professional' %}selected{% endif %}>Professional</option>
+                                        <option value="enterprise" {% if organization.subscription_plan == 'enterprise' %}selected{% endif %}>Enterprise</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                               {% if organization.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            Active Organization
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Inactive organizations cannot access features</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Organization Stats -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h4 class="text-primary">{{ organization.users|length }}</h4>
+                                        <small class="text-muted">Total Users</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h4 class="text-success">{{ organization.interviews|length if organization.interviews else 0 }}</h4>
+                                        <small class="text-muted">Interviews</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h4 class="text-info">{{ organization.created_at.strftime('%b %Y') if organization.created_at else 'N/A' }}</h4>
+                                        <small class="text-muted">Created</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin_organization_users', org_id=organization.id) }}" 
+                               class="btn btn-outline-info">
+                                <i data-feather="users" class="me-2"></i>
+                                View Users ({{ organization.users|length }})
+                            </a>
+                            
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('admin_organizations') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-feather="save" class="me-2"></i>
+                                    Update Organization
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>User Management</h6>
+                            <ul class="list-unstyled">
+                                <li><a href="{{ url_for('admin_organization_users', org_id=organization.id) }}" class="text-decoration-none">View All Users</a></li>
+                                <li><a href="#" class="text-decoration-none">Export User List</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Organization Settings</h6>
+                            <ul class="list-unstyled">
+                                <li><a href="#" class="text-decoration-none">Configure Integrations</a></li>
+                                <li><a href="#" class="text-decoration-none">Branding Settings</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+</script>
+
+{% endblock %}

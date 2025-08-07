@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Organization Analytics - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                <i data-feather="bar-chart-2" class="me-3"></i>
+                Organization Analytics
+                <span class="badge bg-success ms-2">{{ organization.name }}</span>
+            </h1>
+            <p class="lead text-muted">
+                Analytics and insights for your organization's recruitment activities.
+            </p>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center">
+                    <i data-feather="users" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-primary);"></i>
+                    <h3 class="fw-bold text-primary">{{ total_users }}</h3>
+                    <p class="mb-0">Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <i data-feather="clipboard" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-success);"></i>
+                    <h3 class="fw-bold text-success">{{ total_interviews }}</h3>
+                    <p class="mb-0">Total Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <i data-feather="activity" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-warning);"></i>
+                    <h3 class="fw-bold text-warning">{{ active_interviews }}</h3>
+                    <p class="mb-0">Active Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center">
+                    <i data-feather="percent" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-info);"></i>
+                    <h3 class="fw-bold text-info">{{ "%.1f"|format((active_interviews / total_interviews * 100) if total_interviews > 0 else 0) }}%</h3>
+                    <p class="mb-0">Activity Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Distribution -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0 text-primary">
+                        <i data-feather="pie-chart" class="me-2"></i>
+                        User Distribution by Role
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if users_by_role %}
+                        {% for role, count in users_by_role.items() %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-capitalize">{{ role.replace('_', ' ') }}</span>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress me-2" style="width: 100px; height: 8px;">
+                                        <div class="progress-bar" style="width: {{ (count / total_users * 100) if total_users > 0 else 0 }}%"></div>
+                                    </div>
+                                    <span class="badge bg-secondary">{{ count }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No user data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h5 class="mb-0 text-success">
+                        <i data-feather="trending-up" class="me-2"></i>
+                        Organization Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Organization Type</label>
+                        <p class="form-control-plaintext">{{ organization.organization_type or 'Standard' }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Subscription Plan</label>
+                        <p class="form-control-plaintext">
+                            <span class="badge bg-primary">{{ organization.subscription_plan or 'Basic' }}</span>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Status</label>
+                        <p class="form-control-plaintext">
+                            {% if organization.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-warning">Inactive</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info bg-opacity-10">
+                    <h5 class="mb-0 text-info">
+                        <i data-feather="user-plus" class="me-2"></i>
+                        Recent Users
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_users %}
+                        <div class="list-group list-group-flush">
+                            {% for user in recent_users %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                    <div>
+                                        <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ user.email }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ 'primary' if user.role == 'admin' else 'secondary' if user.role == 'recruiter' else 'success' }}">
+                                            {{ user.role.replace('_', ' ').title() }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ user.created_at.strftime('%b %d') if user.created_at else 'N/A' }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No recent user activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning bg-opacity-10">
+                    <h5 class="mb-0 text-warning">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Recent Interviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_interviews %}
+                        <div class="list-group list-group-flush">
+                            {% for interview in recent_interviews %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                    <div>
+                                        <strong>{{ interview.interview_name or 'Interview' }}</strong>
+                                        <br>
+                                        <small class="text-muted">Created by {{ interview.created_by_user.first_name if interview.created_by_user else 'System' }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ 'success' if interview.is_active else 'secondary' }}">
+                                            {{ 'Active' if interview.is_active else 'Inactive' }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ interview.created_at.strftime('%b %d') if interview.created_at else 'N/A' }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No recent interview activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i data-feather="zap" class="me-2"></i>
+                        Quick Actions
+                    </h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                            <i data-feather="arrow-left" class="me-2"></i>
+                            Back to Dashboard
+                        </a>
+                        <a href="{{ url_for('organization_settings') }}" class="btn btn-outline-success">
+                            <i data-feather="settings" class="me-2"></i>
+                            Organization Settings
+                        </a>
+                        <a href="{{ url_for('team_directory') }}" class="btn btn-outline-info">
+                            <i data-feather="users" class="me-2"></i>
+                            Team Directory
+                        </a>
+                        <a href="{{ url_for('add_candidate') }}" class="btn btn-outline-warning">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Add User
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

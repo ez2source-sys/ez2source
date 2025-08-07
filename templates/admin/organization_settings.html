@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}{{ organization.name }} Settings - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('admin_organizations') }}" class="btn btn-outline-secondary me-3">
+                    <i data-feather="arrow-left"></i>
+                </a>
+                <div class="flex-grow-1">
+                    <h2 class="mb-1">{{ organization.name }} Settings</h2>
+                    <p class="text-muted mb-0">Configure branding, integrations, and API settings</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('admin_edit_organization', org_id=organization.id) }}" class="btn btn-outline-primary">
+                        <i data-feather="edit" class="me-2"></i>
+                        Edit Organization
+                    </a>
+                    <a href="{{ url_for('admin_organization_users', org_id=organization.id) }}" class="btn btn-outline-info">
+                        <i data-feather="users" class="me-2"></i>
+                        View Users
+                    </a>
+                </div>
+            </div>
+
+            <form method="POST">
+                <div class="row">
+                    <!-- Branding Settings -->
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i data-feather="palette" class="me-2"></i>
+                                    Branding Settings
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="logo_url" class="form-label">Logo URL</label>
+                                    <input type="url" class="form-control" id="logo_url" name="logo_url" 
+                                           value="{{ organization.branding_config.logo_url if organization.branding_config else '' }}"
+                                           placeholder="https://example.com/logo.png">
+                                    <div class="form-text">URL to the organization's logo image</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="primary_color" class="form-label">Primary Color</label>
+                                            <input type="color" class="form-control form-control-color" id="primary_color" name="primary_color" 
+                                                   value="{{ organization.branding_config.primary_color if organization.branding_config else '#007bff' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="secondary_color" class="form-label">Secondary Color</label>
+                                            <input type="color" class="form-control form-control-color" id="secondary_color" name="secondary_color" 
+                                                   value="{{ organization.branding_config.secondary_color if organization.branding_config else '#6c757d' }}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="custom_domain" class="form-label">Custom Domain</label>
+                                    <input type="text" class="form-control" id="custom_domain" name="custom_domain" 
+                                           value="{{ organization.branding_config.custom_domain if organization.branding_config else '' }}"
+                                           placeholder="talent.yourcompany.com">
+                                    <div class="form-text">Custom subdomain for this organization</div>
+                                </div>
+
+                                <!-- Color Preview -->
+                                <div class="alert alert-light">
+                                    <h6>Color Preview</h6>
+                                    <div class="d-flex gap-2">
+                                        <div class="color-preview" id="primaryPreview" style="background-color: {{ organization.branding_config.primary_color if organization.branding_config else '#007bff' }};">Primary</div>
+                                        <div class="color-preview" id="secondaryPreview" style="background-color: {{ organization.branding_config.secondary_color if organization.branding_config else '#6c757d' }};">Secondary</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- API Settings -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i data-feather="code" class="me-2"></i>
+                                    API Settings
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="api_access_enabled" name="api_access_enabled" 
+                                           {% if settings and settings.api_settings and settings.api_settings.api_access_enabled %}checked{% endif %}>
+                                    <label class="form-check-label" for="api_access_enabled">
+                                        Enable API Access
+                                    </label>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="rate_limit" class="form-label">Rate Limit (requests/hour)</label>
+                                    <input type="number" class="form-control" id="rate_limit" name="rate_limit" 
+                                           value="{{ settings.api_settings.rate_limit if settings and settings.api_settings else 1000 }}"
+                                           min="100" max="10000">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="webhook_url" class="form-label">Webhook URL</label>
+                                    <input type="url" class="form-control" id="webhook_url" name="webhook_url" 
+                                           value="{{ settings.api_settings.webhook_url if settings and settings.api_settings else '' }}"
+                                           placeholder="https://api.yourcompany.com/webhooks/talentiq">
+                                    <div class="form-text">URL to receive webhook notifications</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integration Settings -->
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i data-feather="link" class="me-2"></i>
+                                    Integrations
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="email_provider" class="form-label">Email Provider</label>
+                                    <select class="form-select" id="email_provider" name="email_provider">
+                                        <option value="sendgrid" {% if settings and settings.email_provider == 'sendgrid' %}selected{% endif %}>SendGrid</option>
+                                        <option value="mailgun" {% if settings and settings.email_provider == 'mailgun' %}selected{% endif %}>Mailgun</option>
+                                        <option value="smtp" {% if settings and settings.email_provider == 'smtp' %}selected{% endif %}>SMTP</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sms_provider" class="form-label">SMS Provider</label>
+                                    <select class="form-select" id="sms_provider" name="sms_provider">
+                                        <option value="twilio" {% if settings and settings.sms_provider == 'twilio' %}selected{% endif %}>Twilio</option>
+                                        <option value="aws_sns" {% if settings and settings.sms_provider == 'aws_sns' %}selected{% endif %}>AWS SNS</option>
+                                        <option value="vonage" {% if settings and settings.sms_provider == 'vonage' %}selected{% endif %}>Vonage</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="calendar_integration" name="calendar_integration" 
+                                           {% if settings and settings.calendar_integration %}checked{% endif %}>
+                                    <label class="form-check-label" for="calendar_integration">
+                                        Google Calendar Integration
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="slack_integration" name="slack_integration" 
+                                           {% if settings and settings.slack_integration %}checked{% endif %}>
+                                    <label class="form-check-label" for="slack_integration">
+                                        Slack Integration
+                                    </label>
+                                </div>
+
+                                <!-- Integration Status -->
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">Integration Status</h6>
+                                    <ul class="mb-0">
+                                        <li>
+                                            <i data-feather="mail" class="me-2"></i>
+                                            Email: <span class="badge bg-success">Connected</span>
+                                        </li>
+                                        <li>
+                                            <i data-feather="message-square" class="me-2"></i>
+                                            SMS: <span class="badge bg-success">Connected</span>
+                                        </li>
+                                        <li>
+                                            <i data-feather="calendar" class="me-2"></i>
+                                            Calendar: <span class="badge bg-{{ 'success' if settings and settings.calendar_integration else 'secondary' }}">
+                                                {{ 'Enabled' if settings and settings.calendar_integration else 'Disabled' }}
+                                            </span>
+                                        </li>
+                                        <li>
+                                            <i data-feather="slack" class="me-2"></i>
+                                            Slack: <span class="badge bg-{{ 'success' if settings and settings.slack_integration else 'secondary' }}">
+                                                {{ 'Enabled' if settings and settings.slack_integration else 'Disabled' }}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Organization Stats -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i data-feather="activity" class="me-2"></i>
+                                    Organization Statistics
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <h4 class="text-primary">{{ organization.users|length }}</h4>
+                                        <small class="text-muted">Total Users</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4 class="text-success">{{ organization.interviews|length if organization.interviews else 0 }}</h4>
+                                        <small class="text-muted">Interviews</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <h4 class="text-info">{{ organization.subscription_plan.title() }}</h4>
+                                        <small class="text-muted">Current Plan</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4 class="text-{{ 'success' if organization.is_active else 'danger' }}">
+                                            {{ 'Active' if organization.is_active else 'Inactive' }}
+                                        </h4>
+                                        <small class="text-muted">Status</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('admin_organizations') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="save" class="me-2"></i>
+                                Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+    
+    // Color preview updates
+    document.getElementById('primary_color').addEventListener('change', function() {
+        document.getElementById('primaryPreview').style.backgroundColor = this.value;
+    });
+    
+    document.getElementById('secondary_color').addEventListener('change', function() {
+        document.getElementById('secondaryPreview').style.backgroundColor = this.value;
+    });
+});
+</script>
+
+<style>
+.color-preview {
+    padding: 10px 15px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    min-width: 80px;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}Organization Management - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Organization Management</h2>
+                    <p class="text-muted">Manage all organizations in the platform</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('admin_analytics') }}" class="btn btn-outline-info">
+                        <i data-feather="bar-chart" class="me-2"></i>
+                        Analytics
+                    </a>
+                    <a href="{{ url_for('admin_export_organizations') }}" class="btn btn-outline-success">
+                        <i data-feather="download" class="me-2"></i>
+                        Export All
+                    </a>
+                    <a href="{{ url_for('admin_create_organization') }}" class="btn btn-primary">
+                        <i data-feather="plus" class="me-2"></i>
+                        Add Organization
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label for="searchFilter" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="searchFilter" placeholder="Search organizations...">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="statusFilter" class="form-label">Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="planFilter" class="form-label">Plan</label>
+                            <select class="form-select" id="planFilter">
+                                <option value="">All Plans</option>
+                                <option value="trial">Trial</option>
+                                <option value="basic">Basic</option>
+                                <option value="professional">Professional</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="usersFilter" class="form-label">Users Count</label>
+                            <select class="form-select" id="usersFilter">
+                                <option value="">All</option>
+                                <option value="0">No Users</option>
+                                <option value="1-10">1-10 Users</option>
+                                <option value="11-50">11-50 Users</option>
+                                <option value="50+">50+ Users</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i data-feather="x" class="me-2"></i>
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Operations -->
+            <div class="card mb-4" id="bulkOperationsCard" style="display: none;">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin_bulk_operations') }}" id="bulkForm">
+                        <div class="row align-items-end">
+                            <div class="col-md-3">
+                                <label for="bulkAction" class="form-label">Action</label>
+                                <select class="form-select" id="bulkAction" name="action" required>
+                                    <option value="">Select Action</option>
+                                    <option value="activate">Activate</option>
+                                    <option value="deactivate">Deactivate</option>
+                                    <option value="change_plan">Change Plan</option>
+                                    <option value="export">Export Selected</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3" id="planChangeDiv" style="display: none;">
+                                <label for="newPlan" class="form-label">New Plan</label>
+                                <select class="form-select" id="newPlan" name="new_plan">
+                                    <option value="trial">Trial</option>
+                                    <option value="basic">Basic</option>
+                                    <option value="professional">Professional</option>
+                                    <option value="enterprise">Enterprise</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-feather="check" class="me-2"></i>
+                                    Apply to <span id="selectedCount">0</span> organizations
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-outline-secondary" onclick="clearSelection()">
+                                    <i data-feather="x" class="me-2"></i>
+                                    Clear Selection
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Organizations Table -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">All Organizations</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAll">
+                        <label class="form-check-label" for="selectAll">
+                            Select All
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if organizations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="organizationsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40">
+                                        <input type="checkbox" class="form-check-input" id="masterCheck">
+                                    </th>
+                                    <th>Organization</th>
+                                    <th>Slug</th>
+                                    <th>Plan</th>
+                                    <th>Status</th>
+                                    <th>Users</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for org in organizations %}
+                                <tr data-org-status="{{ 'active' if org.is_active else 'inactive' }}" 
+                                    data-org-plan="{{ org.subscription_plan }}" 
+                                    data-org-users="{{ org.users|length }}">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input org-checkbox" name="org_ids" value="{{ org.id }}">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                                {{ org.name[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ org.name }}</h6>
+                                                <small class="text-muted">ID: {{ org.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code>{{ org.slug }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if org.subscription_plan == 'enterprise' %}success{% elif org.subscription_plan == 'professional' %}primary{% else %}secondary{% endif %}">
+                                            {{ org.subscription_plan.title() if org.subscription_plan else 'Free' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if org.is_active %}success{% else %}danger{% endif %}">
+                                            {% if org.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('admin_organization_users', org_id=org.id) }}" class="text-decoration-none">
+                                            {{ org.users|length }} users
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ org.created_at.strftime('%Y-%m-%d') if org.created_at else 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('admin_organization_users', org_id=org.id) }}" 
+                                               class="btn btn-outline-secondary btn-sm" title="View Users">
+                                                <i data-feather="users"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin_organization_settings', org_id=org.id) }}" 
+                                               class="btn btn-outline-info btn-sm" title="Settings">
+                                                <i data-feather="settings"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin_edit_organization', org_id=org.id) }}" 
+                                               class="btn btn-outline-primary btn-sm" title="Edit">
+                                                <i data-feather="edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="confirmDelete({{ org.id }}, '{{ org.name }}')" title="Delete">
+                                                <i data-feather="trash-2"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center p-5">
+                        <i data-feather="briefcase" size="48" class="text-muted mb-3"></i>
+                        <h5 class="text-muted">No Organizations Found</h5>
+                        <p class="text-muted">Create your first organization to get started.</p>
+                        <a href="{{ url_for('admin_create_organization') }}" class="btn btn-primary">
+                            <i data-feather="plus" class="me-2"></i>
+                            Add Organization
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Stats Update -->
+            <div class="row mt-4" id="quickStats">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h4 class="text-primary" id="filteredCount">{{ organizations|length }}</h4>
+                            <small class="text-muted">Showing Organizations</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h4 class="text-success" id="activeCount">{{ organizations|selectattr('is_active')|list|length }}</h4>
+                            <small class="text-muted">Active</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h4 class="text-info" id="enterpriseCount">{{ organizations|selectattr('subscription_plan', 'equalto', 'enterprise')|list|length }}</h4>
+                            <small class="text-muted">Enterprise</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h4 class="text-warning" id="totalUsersCount">0</h4>
+                            <small class="text-muted">Total Users</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-primary">{{ organizations|length }}</h3>
+                            <p class="text-muted mb-0">Total Organizations</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-success">{{ organizations|selectattr('is_active')|list|length }}</h3>
+                            <p class="text-muted mb-0">Active Organizations</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-info">{{ organizations|selectattr('subscription_plan', 'equalto', 'enterprise')|list|length }}</h3>
+                            <p class="text-muted mb-0">Enterprise Plans</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-warning">
+                                {% set total_users = 0 %}
+                                {% for org in organizations %}
+                                    {% set total_users = total_users + org.users|length %}
+                                {% endfor %}
+                                {{ total_users }}
+                            </h3>
+                            <p class="text-muted mb-0">Total Users</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the organization <strong id="orgName"></strong>?</p>
+                <p class="text-warning">
+                    <i data-feather="alert-triangle" class="me-2"></i>
+                    This action cannot be undone. The organization must have no users before deletion.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Organization</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(orgId, orgName) {
+    document.getElementById('orgName').textContent = orgName;
+    document.getElementById('deleteForm').action = `/admin/organizations/${orgId}/delete`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Bulk operations functionality
+let selectedOrgs = new Set();
+
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+    calculateTotalUsers();
+    
+    // Master checkbox functionality
+    document.getElementById('masterCheck').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.org-checkbox:not(:hidden)');
+        checkboxes.forEach(cb => {
+            cb.checked = this.checked;
+            if (this.checked) {
+                selectedOrgs.add(cb.value);
+            } else {
+                selectedOrgs.delete(cb.value);
+            }
+        });
+        updateBulkOperations();
+    });
+    
+    // Individual checkbox functionality
+    document.querySelectorAll('.org-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (this.checked) {
+                selectedOrgs.add(this.value);
+            } else {
+                selectedOrgs.delete(this.value);
+            }
+            updateBulkOperations();
+        });
+    });
+    
+    // Bulk action change handler
+    document.getElementById('bulkAction').addEventListener('change', function() {
+        if (this.value === 'change_plan') {
+            document.getElementById('planChangeDiv').style.display = 'block';
+        } else {
+            document.getElementById('planChangeDiv').style.display = 'none';
+        }
+    });
+    
+    // Filtering functionality
+    document.getElementById('searchFilter').addEventListener('input', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('planFilter').addEventListener('change', applyFilters);
+    document.getElementById('usersFilter').addEventListener('change', applyFilters);
+});
+
+function updateBulkOperations() {
+    const count = selectedOrgs.size;
+    document.getElementById('selectedCount').textContent = count;
+    document.getElementById('bulkOperationsCard').style.display = count > 0 ? 'block' : 'none';
+}
+
+function clearSelection() {
+    selectedOrgs.clear();
+    document.querySelectorAll('.org-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('masterCheck').checked = false;
+    updateBulkOperations();
+}
+
+function applyFilters() {
+    const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const planFilter = document.getElementById('planFilter').value;
+    const usersFilter = document.getElementById('usersFilter').value;
+    
+    const rows = document.querySelectorAll('#organizationsTable tbody tr');
+    let visibleCount = 0;
+    let activeCount = 0;
+    let enterpriseCount = 0;
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const status = row.dataset.orgStatus;
+        const plan = row.dataset.orgPlan;
+        const userCount = parseInt(row.dataset.orgUsers);
+        
+        let show = true;
+        
+        // Search filter
+        if (searchTerm && !text.includes(searchTerm)) {
+            show = false;
+        }
+        
+        // Status filter
+        if (statusFilter && status !== statusFilter) {
+            show = false;
+        }
+        
+        // Plan filter
+        if (planFilter && plan !== planFilter) {
+            show = false;
+        }
+        
+        // Users filter
+        if (usersFilter) {
+            if (usersFilter === '0' && userCount > 0) show = false;
+            if (usersFilter === '1-10' && (userCount < 1 || userCount > 10)) show = false;
+            if (usersFilter === '11-50' && (userCount < 11 || userCount > 50)) show = false;
+            if (usersFilter === '50+' && userCount < 50) show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
+        
+        if (show) {
+            visibleCount++;
+            if (status === 'active') activeCount++;
+            if (plan === 'enterprise') enterpriseCount++;
+        }
+    });
+    
+    // Update stats
+    document.getElementById('filteredCount').textContent = visibleCount;
+    document.getElementById('activeCount').textContent = activeCount;
+    document.getElementById('enterpriseCount').textContent = enterpriseCount;
+}
+
+function clearFilters() {
+    document.getElementById('searchFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('planFilter').value = '';
+    document.getElementById('usersFilter').value = '';
+    applyFilters();
+}
+
+function calculateTotalUsers() {
+    const rows = document.querySelectorAll('#organizationsTable tbody tr');
+    let totalUsers = 0;
+    rows.forEach(row => {
+        totalUsers += parseInt(row.dataset.orgUsers) || 0;
+    });
+    document.getElementById('totalUsersCount').textContent = totalUsers;
+}
+</script>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+</style>
+
+{% endblock %}

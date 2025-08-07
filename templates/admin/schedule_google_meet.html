@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Google Meet - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Schedule Google Meet Interview</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Schedule Google Meet</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-video mr-2"></i>Google Meet Interview Scheduler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="scheduleMeetingForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="interview_id" class="form-label">Position/Interview <span class="text-danger">*</span></label>
+                                <select class="form-control" id="interview_id" name="interview_id" required>
+                                    <option value="">Select Interview Position</option>
+                                    {% for interview in interviews %}
+                                    <option value="{{ interview.id }}">{{ interview.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="candidate_id" class="form-label">Candidate <span class="text-danger">*</span></label>
+                                <select class="form-control" id="candidate_id" name="candidate_id" required>
+                                    <option value="">Select Candidate</option>
+                                    {% for candidate in candidates %}
+                                    <option value="{{ candidate.id }}" {% if selected_candidate_id == candidate.id %}selected{% endif %}>
+                                        {{ candidate.first_name }} {{ candidate.last_name }} ({{ candidate.email }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if selected_candidate %}
+                                <small class="text-muted">Pre-selected from candidate profile: {{ selected_candidate.first_name }} {{ selected_candidate.last_name }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="technical_person_id" class="form-label">Technical Interviewer <span class="text-danger">*</span></label>
+                                <select class="form-control" id="technical_person_id" name="technical_person_id" required>
+                                    <option value="">Select Technical Interviewer</option>
+                                    {% for tech_person in technical_persons %}
+                                    <option value="{{ tech_person.id }}">
+                                        {{ tech_person.first_name }} {{ tech_person.last_name }} 
+                                        {% if tech_person.job_title %}({{ tech_person.job_title }}){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="duration_minutes" class="form-label">Duration (minutes)</label>
+                                <select class="form-control" id="duration_minutes" name="duration_minutes">
+                                    <option value="30">30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                    <option value="60" selected>60 minutes</option>
+                                    <option value="90">90 minutes</option>
+                                    <option value="120">120 minutes</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="meeting_date" class="form-label">Meeting Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="meeting_date" name="meeting_date" required min="{{ (datetime.utcnow() + timedelta(days=1)).strftime('%Y-%m-%d') }}">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="meeting_time" class="form-label">Meeting Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="meeting_time" name="meeting_time" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="meeting_notes" class="form-label">Meeting Notes (Optional)</label>
+                            <textarea class="form-control" id="meeting_notes" name="meeting_notes" rows="3" placeholder="Add any special instructions or agenda items for the interview..."></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-calendar-plus mr-2"></i>Schedule Google Meet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Quick Tips -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb mr-2"></i>Scheduling Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Choose a time that works for both the candidate and technical interviewer</li>
+                        <li>Google Meet link will be automatically generated and shared</li>
+                        <li>Calendar invites will be sent to both participants</li>
+                        <li>Email notifications include meeting preparation tips</li>
+                        <li>Consider time zones for remote interviews</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Recent Meetings -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock mr-2"></i>Recent Meetings
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-2">Recently scheduled technical interviews:</p>
+                    <div id="recentMeetings">
+                        <p class="small text-muted">Loading recent meetings...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle mr-2"></i>Meeting Scheduled Successfully!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>The Google Meet interview has been scheduled successfully!</p>
+                <div class="alert alert-info">
+                    <strong>Meeting Link:</strong> <br>
+                    <a href="#" id="meetingLink" target="_blank" class="text-break"></a>
+                </div>
+                <p class="small">
+                    📧 Email notifications have been sent to both the candidate and technical interviewer.<br>
+                    📅 Calendar invites have been created automatically.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('meeting_date').min = tomorrow.toISOString().split('T')[0];
+    
+    // Form submission handler
+    document.getElementById('scheduleMeetingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Scheduling...';
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Submit form
+        fetch('{{ url_for("schedule_google_meet") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success modal
+                document.getElementById('meetingLink').href = data.meeting_link;
+                document.getElementById('meetingLink').textContent = data.meeting_link;
+                
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+                
+                // Reset form
+                document.getElementById('scheduleMeetingForm').reset();
+                
+            } else {
+                alert('Error: ' + (data.message || 'Failed to schedule meeting'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error scheduling meeting. Please try again.');
+        })
+        .finally(() => {
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+    
+    // Load recent meetings
+    loadRecentMeetings();
+});
+
+function loadRecentMeetings() {
+    // This would typically fetch from an API endpoint
+    // For now, show a placeholder
+    document.getElementById('recentMeetings').innerHTML = `
+        <p class="small text-muted">No recent meetings found.</p>
+        <p class="small">Start scheduling your first Google Meet interview!</p>
+    `;
+}
+</script>
+{% endblock %}
