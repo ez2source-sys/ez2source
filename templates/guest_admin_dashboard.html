@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Guest Admin Dashboard - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Header Section -->
+        <div class="col-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">Guest Organization Dashboard</h1>
+                    <p class="lead text-muted">Manage HR professionals from unregistered organizations</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-info fs-6">{{ guest_hr_users|length }} Guest HR Users</span>
+                    <span class="badge bg-secondary fs-6">{{ pending_approvals }} Pending Review</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <i data-feather="users" class="text-white" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ guest_hr_users|length }}</h5>
+                            <p class="text-muted mb-0">Total Guest HR</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <i data-feather="clock" class="text-white" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ pending_approvals }}</h5>
+                            <p class="text-muted mb-0">Pending Review</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <i data-feather="check-circle" class="text-white" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ approved_count }}</h5>
+                            <p class="text-muted mb-0">Approved</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-info d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <i data-feather="building" class="text-white" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ unique_organizations }}</h5>
+                            <p class="text-muted mb-0">Unique Organizations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guest HR Users Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Guest HR Users</h5>
+                    <p class="text-muted mb-0">Manage HR professionals from unregistered organizations</p>
+                </div>
+                <div class="card-body">
+                    {% if guest_hr_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>HR Professional</th>
+                                    <th>Original Organization</th>
+                                    <th>Contact</th>
+                                    <th>Registration Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hr_user in guest_hr_users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <span class="text-white fw-bold">{{ hr_user.first_name[0] }}{{ hr_user.last_name[0] }}</span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ hr_user.first_name }} {{ hr_user.last_name }}</h6>
+                                                <small class="text-muted">{{ hr_user.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ hr_user.bio.split('.')[0].split('Guest HR from ')[1] if 'Guest HR from ' in hr_user.bio else 'Unknown' }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ hr_user.bio.split('Job Title: ')[1].split('.')[0] if 'Job Title: ' in hr_user.bio else 'N/A' }}
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <small class="text-muted">
+                                                <i data-feather="mail" style="width: 12px; height: 12px;"></i>
+                                                {{ hr_user.email }}
+                                            </small>
+                                            <br>
+                                            {% if hr_user.phone %}
+                                            <small class="text-muted">
+                                                <i data-feather="phone" style="width: 12px; height: 12px;"></i>
+                                                {{ hr_user.phone }}
+                                            </small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ hr_user.created_at.strftime('%Y-%m-%d') }}</small>
+                                    </td>
+                                    <td>
+                                        {% if hr_user.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending Review</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('guest_admin_review_hr', user_id=hr_user.id) }}" class="btn btn-outline-primary">
+                                                <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                                Review
+                                            </a>
+                                            {% if not hr_user.is_active %}
+                                            <a href="{{ url_for('guest_admin_approve_hr', user_id=hr_user.id) }}" class="btn btn-outline-success">
+                                                <i data-feather="check" style="width: 14px; height: 14px;"></i>
+                                                Approve
+                                            </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('guest_admin_transfer_hr', user_id=hr_user.id) }}" class="btn btn-outline-info">
+                                                <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+                                                Transfer
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="users" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                        <h5 class="text-muted">No Guest HR Users</h5>
+                        <p class="text-muted">Guest HR users will appear here as they register</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for activity in recent_activities %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ activity.action }}</h6>
+                                <p class="text-muted mb-1">{{ activity.details }}</p>
+                                <small class="text-muted">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -24px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+</style>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+
+// Auto-refresh dashboard every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Checker - Ez2source</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ez2source-logo.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/interview-fix.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .main-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-profile-dropdown .btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .page-breadcrumb {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .breadcrumb {
+            margin: 0;
+            background: transparent;
+            padding: 0;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        .cv-upload-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #007bff;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background: #0056b3;
+        }
+        
+        .file-selected {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .file-selected.show {
+            display: block;
+        }
+        
+        .analyze-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .progress-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .progress-section.show {
+            display: block;
+        }
+        
+        .tips-section {
+            margin-top: 30px;
+        }
+        
+        .tip-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tip-icon {
+            color: #28a745;
+            margin-right: 10px;
+        }
+        
+        .analysis-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" width="24" height="24">
+                <span>Ez2source</span>
+            </div>
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <i data-feather="menu"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="/dashboard" class="menu-item">
+                <i data-feather="home"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <a href="/candidate-profile/{{ current_user.id }}" class="menu-item">
+                <i data-feather="user"></i>
+                <span>My Profile</span>
+            </a>
+            
+            <a href="/find-jobs" class="menu-item">
+                <i data-feather="search"></i>
+                <span>Find Jobs</span>
+            </a>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">INTERVIEWS</div>
+                <a href="/candidate-scheduled-interviews" class="menu-item">
+                    <i data-feather="calendar"></i>
+                    <span>Scheduled</span>
+                </a>
+                <a href="/candidate-completed-interviews" class="menu-item">
+                    <i data-feather="check-circle"></i>
+                    <span>Completed</span>
+                </a>
+                <a href="/candidate-public-interviews" class="menu-item">
+                    <i data-feather="globe"></i>
+                    <span>Opportunities</span>
+                </a>
+                <a href="/candidate-invitations" class="menu-item">
+                    <i data-feather="mail"></i>
+                    <span>Invitations</span>
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">CAREER</div>
+                <a href="/saved-jobs" class="menu-item">
+                    <i data-feather="bookmark"></i>
+                    <span>Saved Jobs</span>
+                </a>
+                <a href="/cv-checker" class="menu-item active">
+                    <i data-feather="file-text"></i>
+                    <span>CV Checker</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i data-feather="user"></i>
+                </div>
+                <div class="user-details">
+                    <span class="user-name">{{ current_user.first_name or current_user.username }}</span>
+                    <span class="user-role">Candidate</span>
+                </div>
+            </div>
+            <a href="/logout" class="menu-item">
+                <i data-feather="log-out"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="toggle-btn d-md-none" onclick="toggleSidebar()">
+                    <i data-feather="menu"></i>
+                </button>
+                <h1>CV Checker - Ez2source</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-outline-secondary me-2" onclick="toggleDarkMode()">
+                    <i data-feather="moon"></i>
+                </button>
+                <div class="user-profile-dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            <i data-feather="user"></i>
+                        </div>
+                        <span>{{ current_user.first_name or current_user.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/candidate-profile/{{ current_user.id }}">My Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-breadcrumb mb-4">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">CV Checker</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="cv-upload-card">
+                        <div class="upload-icon">
+                            <i data-feather="upload-cloud"></i>
+                        </div>
+                        <h2 class="h4 mb-3">Upload Your CV for Analysis</h2>
+                        <p class="text-muted mb-4">Get detailed feedback on your resume with AI-powered analysis</p>
+                        
+                        <form method="POST" action="/cv-checker/analyze" enctype="multipart/form-data" id="cvForm">
+                            <div class="file-input-wrapper">
+                                <input type="file" id="cvFile" name="cv_file" class="file-input" accept=".pdf,.doc,.docx,.txt" required>
+                                <label for="cvFile" class="file-input-label">
+                                    <i data-feather="folder"></i> Choose CV File
+                                </label>
+                            </div>
+                            
+                            <div class="file-selected" id="fileSelected">
+                                <i data-feather="file-text"></i>
+                                <strong>Selected:</strong> <span id="fileName"></span>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="clearFile()">
+                                    <i data-feather="x"></i> Remove
+                                </button>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    Supports PDF, DOC, DOCX, and TXT files • Maximum size: 10MB
+                                </small>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary analyze-btn" disabled id="analyzeBtn">
+                                <i data-feather="search"></i> Analyze CV
+                            </button>
+                        </form>
+                        
+                        <div class="progress-section" id="progressSection">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Analyzing your CV... This may take a few moments.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="analysis-section">
+                        <div class="section-title">
+                            <i data-feather="clipboard" class="tip-icon"></i>
+                            What We Analyze
+                        </div>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i data-feather="check" class="tip-icon"></i> Format & visual appeal</li>
+                            <li class="mb-2"><i data-feather="check" class="tip-icon"></i> Content quality & relevance</li>
+                            <li class="mb-2"><i data-feather="check" class="tip-icon"></i> Section organization</li>
+                            <li class="mb-2"><i data-feather="check" class="tip-icon"></i> Professional style</li>
+                            <li class="mb-2"><i data-feather="check" class="tip-icon"></i> ATS compatibility</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-8">
+                    <div class="tips-section">
+                        <div class="section-title">CV Tips</div>
+                        <div class="tip-card">
+                            <i data-feather="award" class="tip-icon"></i>
+                            <strong>Use clear, professional formatting</strong><br>
+                            <small class="text-muted">Include quantified achievements and consistent formatting</small>
+                        </div>
+                        <div class="tip-card">
+                            <i data-feather="target" class="tip-icon"></i>
+                            <strong>Tailor content to the job</strong><br>
+                            <small class="text-muted">Keep it concise (1-2 pages) and proofread for errors</small>
+                        </div>
+                        <div class="tip-card">
+                            <i data-feather="trending-up" class="tip-icon"></i>
+                            <strong>Highlight your achievements</strong><br>
+                            <small class="text-muted">Use action verbs and specific metrics to demonstrate impact</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <script>
+        // Initialize feather icons
+        feather.replace();
+        
+        // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        
+        // Initialize dark mode from localStorage
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+        
+        // Simple file handling
+        document.getElementById('cvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const fileSelected = document.getElementById('fileSelected');
+            const fileName = document.getElementById('fileName');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            if (file) {
+                // Validate file type
+                const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please select a PDF, DOC, DOCX, or TXT file.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file size (10MB)
+                if (file.size > 10485760) {
+                    alert('File size must be less than 10MB.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Show selected file
+                fileName.textContent = file.name;
+                fileSelected.classList.add('show');
+                analyzeBtn.disabled = false;
+            } else {
+                fileSelected.classList.remove('show');
+                analyzeBtn.disabled = true;
+            }
+        });
+        
+        // Form submission
+        document.getElementById('cvForm').addEventListener('submit', function(e) {
+            const progressSection = document.getElementById('progressSection');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            // Show progress
+            progressSection.classList.add('show');
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<i data-feather="loader"></i> Analyzing...';
+            feather.replace();
+        });
+        
+        // Clear file function
+        function clearFile() {
+            document.getElementById('cvFile').value = '';
+            document.getElementById('fileSelected').classList.remove('show');
+            document.getElementById('analyzeBtn').disabled = true;
+        }
+    </script>
+    
+    <!-- Bootstrap and Feather Icons JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.js"></script>
+    
+    <script>
+        // Initialize Feather icons on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+        });
+        
+        // Additional page initialization
+        window.addEventListener('load', function() {
+            // Ensure all icons are properly loaded
+            setTimeout(function() {
+                feather.replace();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

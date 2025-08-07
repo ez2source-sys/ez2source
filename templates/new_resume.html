@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Resume - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                Create New Resume
+                <span class="badge bg-success ms-2">Template Selection</span>
+            </h1>
+            <p class="lead text-muted">Choose a professional template to start building your ATS-optimized resume</p>
+        </div>
+    </div>
+
+    <!-- Resume Templates Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-success">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h5 class="mb-0 text-success">
+                        <i data-feather="layout" class="me-2"></i>
+                        Professional Resume Templates
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Select from our collection of ATS-friendly templates designed to help you stand out</p>
+                    
+                    <form method="POST" id="templateForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <div class="card template-card h-100" data-template="classic">
+                                    <div class="card-body text-center">
+                                        <div class="template-preview mb-3">
+                                            <i data-feather="file-text" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                                        </div>
+                                        <h6 class="card-title">Classic Professional</h6>
+                                        <p class="card-text small text-muted">Clean, traditional layout perfect for corporate roles</p>
+                                        <span class="badge bg-primary">Most Popular</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="card template-card h-100" data-template="modern">
+                                    <div class="card-body text-center">
+                                        <div class="template-preview mb-3">
+                                            <i data-feather="monitor" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                                        </div>
+                                        <h6 class="card-title">Modern Tech</h6>
+                                        <p class="card-text small text-muted">Contemporary design ideal for tech and creative industries</p>
+                                        <span class="badge bg-info">Tech Focus</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="card template-card h-100" data-template="executive">
+                                    <div class="card-body text-center">
+                                        <div class="template-preview mb-3">
+                                            <i data-feather="briefcase" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                                        </div>
+                                        <h6 class="card-title">Executive Elite</h6>
+                                        <p class="card-text small text-muted">Premium design for senior management positions</p>
+                                        <span class="badge bg-warning">Premium</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="card template-card h-100" data-template="creative">
+                                    <div class="card-body text-center">
+                                        <div class="template-preview mb-3">
+                                            <i data-feather="edit-3" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                                        </div>
+                                        <h6 class="card-title">Creative Portfolio</h6>
+                                        <p class="card-text small text-muted">Artistic layout for design and creative professionals</p>
+                                        <span class="badge bg-secondary">Creative</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="card template-card h-100" data-template="minimal">
+                                    <div class="card-body text-center">
+                                        <div class="template-preview mb-3">
+                                            <i data-feather="minimize-2" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                                        </div>
+                                        <h6 class="card-title">Minimal Clean</h6>
+                                        <p class="card-text small text-muted">Simple, elegant design that focuses on content</p>
+                                        <span class="badge bg-success">ATS Friendly</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="card template-card h-100" data-template="academic">
+                                    <div class="card-body text-center">
+                                        <div class="template-preview mb-3">
+                                            <i data-feather="book-open" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                                        </div>
+                                        <h6 class="card-title">Academic Scholar</h6>
+                                        <p class="card-text small text-muted">Structured format for academic and research positions</p>
+                                        <span class="badge bg-info">Academic</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="template" id="selectedTemplate" value="classic">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Upload Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-info">
+                <div class="card-header bg-info bg-opacity-10">
+                    <h5 class="mb-0 text-info">
+                        <i data-feather="upload" class="me-2"></i>
+                        Quick Start: Upload Existing Resume (Optional)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Upload your old resume (PDF/DOCX) below to help us auto-generate your new resume. This ensures faster and more accurate resume creation.</p>
+                    
+                    <div class="upload-area border-2 border-dashed border-info rounded p-4 text-center" id="uploadArea">
+                        <i data-feather="upload" style="width: 48px; height: 48px; color: #0dcaf0;" class="mb-3"></i>
+                        <h6>Drag & Drop or Click to Upload</h6>
+                        <p class="text-muted small mb-3">Supports PDF, DOC, DOCX files (Max 10MB)</p>
+                        <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" class="d-none">
+                        <button type="button" class="btn btn-outline-info" onclick="document.getElementById('resumeUpload').click()">
+                            <i data-feather="upload" class="me-1"></i>Choose File
+                        </button>
+                    </div>
+                    
+                    <div id="uploadProgress" class="mt-3 d-none">
+                        <div class="progress">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Parsing resume data...</small>
+                    </div>
+                    
+                    <div id="uploadSuccess" class="mt-3 d-none">
+                        <div class="alert alert-success">
+                            <i data-feather="check-circle" class="me-2"></i>
+                            Resume uploaded and parsed successfully! Your profile data will be auto-populated.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Details Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="info" class="me-2"></i>
+                        Resume Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/resume-builder/create" id="resumeForm">
+                        <input type="hidden" name="template_id" id="formTemplate" value="1">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label">Resume Title</label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="Auto-filled based on template selection" required>
+                                <div class="form-text">Auto-populated from template selection - feel free to customize</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="target_position" class="form-label">Target Position</label>
+                                <input type="text" class="form-control" id="target_position" name="target_position" 
+                                       placeholder="e.g., Senior Software Engineer">
+                                <div class="form-text">The specific role you're applying for</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" 
+                                      placeholder="Brief description of this resume version..."></textarea>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="is_default" name="is_default">
+                            <label class="form-check-label" for="is_default">
+                                Set as default resume
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i data-feather="plus" class="me-1"></i>Create Resume
+                            </button>
+                            <a href="{{ url_for('resume_builder') }}" class="btn btn-outline-secondary">
+                                <i data-feather="arrow-left" class="me-1"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.template-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+}
+
+.template-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #10b981;
+}
+
+.template-card.selected {
+    border-color: #10b981;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    transform: translateY(-3px);
+    background-color: #f0fdf4;
+}
+
+.template-preview {
+    height: 120px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.upload-area {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    background-color: #e3f2fd;
+    border-color: #0dcaf0 !important;
+}
+
+.upload-area.dragover {
+    background-color: #e3f2fd;
+    border-color: #0dcaf0 !important;
+    transform: scale(1.02);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Template selection logic
+    const templateCards = document.querySelectorAll('.template-card');
+    const selectedTemplateInput = document.getElementById('selectedTemplate');
+    const formTemplateInput = document.getElementById('formTemplate');
+    
+    // Set default selection
+    templateCards[0].classList.add('selected');
+    
+    // Template name mapping for auto-population
+    const templateNames = {
+        'classic': 'Classic Professional',
+        'modern': 'Modern Tech',
+        'executive': 'Executive Elite',
+        'creative': 'Creative Portfolio',
+        'minimal': 'Minimal Clean',
+        'academic': 'Academic Scholar'
+    };
+    
+    // Template ID mapping (assuming template IDs 1-6 for these templates)
+    const templateIds = {
+        'classic': '1',
+        'modern': '2',
+        'executive': '3',
+        'creative': '4',
+        'minimal': '5',
+        'academic': '6'
+    };
+    
+    const titleInput = document.getElementById('title');
+    let userHasTyped = false;
+    
+    // Track if user has manually typed in the title field
+    titleInput.addEventListener('input', function() {
+        userHasTyped = true;
+    });
+    
+    // Auto-populate title for default selection
+    const defaultTemplate = templateCards[0].dataset.template;
+    titleInput.value = templateNames[defaultTemplate] + ' Resume';
+    formTemplateInput.value = templateIds[defaultTemplate] || '1';
+    
+    templateCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            templateCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Update hidden input values
+            const template = this.dataset.template;
+            selectedTemplateInput.value = template;
+            formTemplateInput.value = templateIds[template] || '1';
+            
+            // Auto-populate resume title if user hasn't manually typed
+            // or if current value matches a template pattern
+            const currentTitle = titleInput.value.trim();
+            const isTemplateGenerated = Object.values(templateNames).some(name => 
+                currentTitle === name + ' Resume' || currentTitle === ''
+            );
+            
+            if (!userHasTyped || isTemplateGenerated || currentTitle === '') {
+                titleInput.value = templateNames[template] + ' Resume';
+                userHasTyped = false; // Reset flag for new template
+            }
+        });
+    });
+    
+    // Form submission with AJAX
+    document.getElementById('resumeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById('title').value.trim();
+        if (!title) {
+            alert('Please enter a resume title');
+            return;
+        }
+        
+        const formData = new FormData(this);
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        
+        // Show loading state
+        submitButton.innerHTML = '<i data-feather="loader" class="me-1"></i>Creating...';
+        submitButton.disabled = true;
+        
+        fetch('/resume-builder/create', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to edit page
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error: ' + (data.error || 'Failed to create resume'));
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error creating resume. Please try again.');
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+        });
+    });
+    
+    // Resume upload functionality
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('resumeUpload');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const uploadSuccess = document.getElementById('uploadSuccess');
+    
+    // Drag and drop functionality
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileUpload(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileUpload(e.target.files[0]);
+        }
+    });
+    
+    function handleFileUpload(file) {
+        // Validate file type and size
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please upload a PDF, DOC, or DOCX file.');
+            return;
+        }
+        
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            alert('File size must be less than 10MB.');
+            return;
+        }
+        
+        // Show progress
+        uploadProgress.classList.remove('d-none');
+        uploadSuccess.classList.add('d-none');
+        
+        // Simulate progress animation
+        let progress = 0;
+        const progressBar = uploadProgress.querySelector('.progress-bar');
+        const interval = setInterval(() => {
+            progress += Math.random() * 30;
+            if (progress > 90) progress = 90;
+            progressBar.style.width = progress + '%';
+        }, 200);
+        
+        // Upload file
+        const formData = new FormData();
+        formData.append('resume', file);
+        
+        fetch('/candidate/upload-resume', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+            
+            setTimeout(() => {
+                uploadProgress.classList.add('d-none');
+                if (data.success) {
+                    uploadSuccess.classList.remove('d-none');
+                    // Auto-populate title if successful
+                    if (data.suggested_title && !userHasTyped) {
+                        titleInput.value = data.suggested_title;
+                    }
+                } else {
+                    alert('Upload failed: ' + (data.error || 'Unknown error'));
+                }
+            }, 500);
+        })
+        .catch(error => {
+            clearInterval(interval);
+            uploadProgress.classList.add('d-none');
+            console.error('Upload error:', error);
+            alert('Upload failed. Please try again.');
+        });
+    }
+    
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

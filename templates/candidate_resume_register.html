@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Registration - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Navigation -->
+    <div class="row pt-3">
+        <div class="col">
+            <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-sm">
+                <i data-feather="arrow-left" class="me-2"></i>
+                Back to Registration
+            </a>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 80px; height: 80px;" class="mb-3">
+                        <h2 class="fw-bold text-dark">Resume Registration</h2>
+                        <p class="text-muted">Upload your resume and we'll create your profile automatically</p>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" id="resumeRegistrationForm">
+                        <!-- Display flash messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="mail"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="resume" class="form-label">Upload Resume *</label>
+                            <input type="file" class="form-control" id="resume" name="resume" 
+                                   accept=".pdf,.doc,.docx" required>
+                            <div class="form-text">Supported formats: PDF, DOC, DOCX (Max 5MB)</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i data-feather="upload" class="me-2"></i>
+                                Register with Resume
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="text-muted">
+                            Already have an account? 
+                            <a href="{{ url_for('login') }}" class="text-decoration-none">Sign in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Feather icons
+    feather.replace();
+    
+    // File validation
+    document.getElementById('resume').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('File size must be less than 5MB');
+                e.target.value = '';
+                return;
+            }
+            
+            const allowedTypes = ['.pdf', '.doc', '.docx'];
+            const fileName = file.name.toLowerCase();
+            const isValidType = allowedTypes.some(type => fileName.endsWith(type));
+            
+            if (!isValidType) {
+                alert('Please upload a PDF, DOC, or DOCX file');
+                e.target.value = '';
+                return;
+            }
+        }
+    });
+</script>
+{% endblock %}

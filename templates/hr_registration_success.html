@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}HR Registration Submitted - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i data-feather="check" class="text-white" style="width: 40px; height: 40px;"></i>
+                        </div>
+                        <h2 class="fw-bold text-dark">Registration Request Submitted</h2>
+                        <p class="text-muted">Thank you for your HR registration request, {{ first_name }}!</p>
+                    </div>
+
+                    <!-- Status Message -->
+                    <div class="alert alert-success mb-4">
+                        <h6 class="alert-heading">{{ result.action.replace('_', ' ').title() }}</h6>
+                        <p class="mb-0">{{ result.message }}</p>
+                        {% if result.details %}
+                        <hr>
+                        <p class="mb-0">{{ result.details }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Next Steps -->
+                    {% if result.next_steps %}
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">Next Steps:</h6>
+                            <ol class="text-start">
+                                {% for step in result.next_steps %}
+                                <li class="mb-2">{{ step }}</li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Organization Info -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">Registration Details:</h6>
+                            <div class="row text-start">
+                                <div class="col-sm-6 mb-2">
+                                    <strong>Organization:</strong><br>
+                                    {{ organization_name }}
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <strong>Status:</strong><br>
+                                    {% if result.action == 'guest_assignment' %}
+                                    <span class="badge bg-info">Guest Organization</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Pending Approval</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Important Information -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading">Important Information</h6>
+                        <ul class="mb-0 text-start">
+                            {% if result.action == 'guest_assignment' %}
+                            <li>You have been assigned to Guest Organization for review</li>
+                            <li>Login credentials have been sent to your email</li>
+                            <li>Limited access is available immediately</li>
+                            <li>Guest Admin will review your profile for full access</li>
+                            {% else %}
+                            <li>Your registration is being reviewed by our team</li>
+                            <li>Email verification may be required</li>
+                            <li>Approval process typically takes 1-2 business days</li>
+                            <li>You'll receive an email with login credentials once approved</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i data-feather="home" class="me-2"></i>
+                            Back to Home
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                            <i data-feather="log-in" class="me-2"></i>
+                            Login Page
+                        </a>
+                    </div>
+
+                    <!-- Support Information -->
+                    <div class="mt-4 pt-3 border-top">
+                        <h6 class="fw-bold mb-3">Need Help?</h6>
+                        <p class="text-muted mb-2">
+                            If you have questions about your registration or need assistance, please contact our support team.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="mailto:support@job2hire.com" class="btn btn-outline-secondary btn-sm">
+                                <i data-feather="mail" class="me-1"></i>
+                                Email Support
+                            </a>
+                            <a href="#" class="btn btn-outline-secondary btn-sm">
+                                <i data-feather="help-circle" class="me-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+</script>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Mobile Registration - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3">
+    <!-- Mobile Header -->
+    <div class="text-center py-4">
+        <h2 class="fw-bold text-primary">Ez2source</h2>
+        <p class="text-muted">Join as a Candidate</p>
+    </div>
+
+    <!-- Quick Registration Form -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('candidate_quick_register') }}">
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Full Name *</label>
+                    <input type="text" class="form-control form-control-lg" id="full_name" name="full_name" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address *</label>
+                    <input type="email" class="form-control form-control-lg" id="email" name="email" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control form-control-lg" id="phone" name="phone"
+                           pattern="[0-9+\-\s\(\)]+"
+                           title="Please enter a valid phone number (numbers, +, -, spaces, and parentheses only)"
+                           oninput="this.value = this.value.replace(/[^0-9+\-\s\(\)]/g, '')"
+                           placeholder="e.g., +1-555-123-4567">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="job_title" class="form-label">Job Title/Role</label>
+                    <input type="text" class="form-control form-control-lg" id="job_title" name="job_title" placeholder="e.g., Software Engineer">
+                </div>
+
+                <div class="mb-3">
+                    <label for="experience_level" class="form-label">Experience Level</label>
+                    <select class="form-control form-control-lg" id="experience_level" name="experience_level">
+                        <option value="">Select experience</option>
+                        <option value="entry">Entry Level (0-2 years)</option>
+                        <option value="mid">Mid Level (3-5 years)</option>
+                        <option value="senior">Senior Level (6-10 years)</option>
+                        <option value="expert">Expert Level (10+ years)</option>
+                    </select>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Create My Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Resume Option -->
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body p-4 text-center">
+            <h5 class="mb-3">
+                <i data-feather="upload" class="me-2"></i>
+                Have a Resume?
+            </h5>
+            <p class="text-muted mb-3">Upload your resume and we'll create your profile automatically</p>
+            <form method="POST" action="{{ url_for('candidate_resume_register') }}" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input type="email" class="form-control" name="email" placeholder="Your email address" required>
+                </div>
+                <div class="mb-3">
+                    <input type="file" class="form-control" name="resume" accept=".pdf,.doc,.docx" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100">
+                    Upload Resume & Register
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Social Registration -->
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body p-4">
+            <h5 class="text-center mb-3">Quick Sign Up</h5>
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-primary" onclick="signUpWithGoogle()">
+                    <i data-feather="chrome" class="me-2"></i>
+                    Continue with Google
+                </button>
+                <button type="button" class="btn btn-outline-info" onclick="signUpWithLinkedIn()">
+                    <i data-feather="linkedin" class="me-2"></i>
+                    Continue with LinkedIn
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="mt-4 mb-5">
+        <h5 class="text-center mb-4">Why Join Ez2source?</h5>
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                        <i data-feather="search" class="text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Discover Jobs</h6>
+                        <small class="text-muted">Access exclusive opportunities</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                        <i data-feather="zap" class="text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">AI Matching</h6>
+                        <small class="text-muted">Smart job recommendations</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="d-flex align-items-center">
+                    <div class="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                        <i data-feather="trending-up" class="text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Career Growth</h6>
+                        <small class="text-muted">Interview feedback & insights</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center py-4 border-top">
+        <small class="text-muted">
+            Already have an account? 
+            <a href="{{ url_for('login') }}" class="text-primary">Sign In</a>
+        </small>
+    </div>
+</div>
+
+<script>
+function signUpWithGoogle() {
+    window.location.href = '/auth/google';
+}
+
+function signUpWithLinkedIn() {
+    window.location.href = '/auth/linkedin';
+}
+</script>
+
+<style>
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .card {
+        border-radius: 1rem;
+    }
+    
+    .form-control-lg {
+        font-size: 1.1rem;
+        padding: 0.75rem 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+    }
+}
+</style>
+{% endblock %}

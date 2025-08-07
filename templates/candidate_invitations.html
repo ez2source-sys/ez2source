@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Invitations - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        <i data-feather="mail" class="me-3" style="width: 32px; height: 32px;"></i>
+                        Interview Invitations
+                    </h1>
+                    <p class="lead text-muted">Manage your interview invitations and track status.</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-warning fs-6">{{ pending_invitations|length }} Pending</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Invitations -->
+    {% if pending_invitations %}
+    <div class="row mb-5">
+        <div class="col">
+            <h3 class="mb-3">
+                <i data-feather="clock" class="me-2" style="width: 20px; height: 20px;"></i>
+                Pending Invitations
+            </h3>
+            
+            <div class="row">
+                {% for invitation, interview, recruiter_name, organization_name in pending_invitations %}
+                <div class="col-lg-6 mb-3">
+                    <div class="card border-warning border-2 h-100">
+                        <div class="card-body">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">{{ interview.title }}</h5>
+                                    <p class="text-muted mb-2 small">
+                                        <i data-feather="briefcase" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        {{ organization_name }}
+                                    </p>
+                                    <p class="text-muted mb-0 small">
+                                        <i data-feather="user" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        Recruiter: {{ recruiter_name }}
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    {% if invitation.is_cross_organization %}
+                                    <span class="badge bg-success">Cross-Org</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">Direct</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Message -->
+                            {% if invitation.message %}
+                            <div class="bg-light rounded p-3 mb-3">
+                                <small class="text-muted d-block mb-1">Personal Message:</small>
+                                <p class="mb-0 small">{{ invitation.message }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Details -->
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Invited</small>
+                                    <small class="fw-medium">{{ invitation.invited_at.strftime('%b %d') if invitation.invited_at else 'N/A' }}</small>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Duration</small>
+                                    <small class="fw-medium">{{ interview.duration_minutes }}min</small>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Expires</small>
+                                    <small class="fw-medium">{{ invitation.expires_at.strftime('%b %d') if invitation.expires_at else 'No expiry' }}</small>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success flex-grow-1" 
+                                        onclick="acceptInvitation({{ invitation.id }}, '{{ interview.title }}')">
+                                    <i data-feather="check" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Accept
+                                </button>
+                                <button class="btn btn-outline-secondary" 
+                                        onclick="viewInvitationDetails({{ invitation.id }})">
+                                    <i data-feather="eye" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Details
+                                </button>
+                                <button class="btn btn-outline-danger" 
+                                        onclick="declineInvitation({{ invitation.id }}, '{{ interview.title }}')">
+                                    <i data-feather="x" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Decline
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Invitation History -->
+    {% if invitation_history %}
+    <div class="row">
+        <div class="col">
+            <h3 class="mb-3">
+                <i data-feather="archive" class="me-2" style="width: 20px; height: 20px;"></i>
+                Invitation History
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Interview</th>
+                            <th>Organization</th>
+                            <th>Recruiter</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invitation, interview, recruiter_name, organization_name in invitation_history %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ interview.title }}</strong>
+                                    {% if invitation.is_cross_organization %}
+                                    <span class="badge bg-success ms-1">Cross-Org</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ organization_name }}</td>
+                            <td>{{ recruiter_name }}</td>
+                            <td>
+                                {% if invitation.status == 'accepted' %}
+                                <span class="badge bg-success">Accepted</span>
+                                {% elif invitation.status == 'completed' %}
+                                <span class="badge bg-primary">Completed</span>
+                                {% elif invitation.status == 'declined' %}
+                                <span class="badge bg-danger">Declined</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ invitation.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ invitation.responded_at.strftime('%b %d, %Y') if invitation.responded_at else (invitation.invited_at.strftime('%b %d, %Y') if invitation.invited_at else 'N/A') }}</td>
+                            <td>
+                                {% if invitation.status == 'accepted' %}
+                                <a href="{{ url_for('interview_interface', interview_id=interview.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i data-feather="play" class="me-1" style="width: 12px; height: 12px;"></i>
+                                    Start
+                                </a>
+                                {% elif invitation.status == 'completed' %}
+                                <a href="{{ url_for('candidate_completed_interviews') }}" 
+                                   class="btn btn-sm btn-outline-success">
+                                    <i data-feather="eye" class="me-1" style="width: 12px; height: 12px;"></i>
+                                    View Results
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not pending_invitations and not invitation_history %}
+    <div class="row">
+        <div class="col text-center py-5">
+            <i data-feather="mail" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+            <h4 class="text-muted">No Invitations Yet</h4>
+            <p class="text-muted">Interview invitations from recruiters will appear here.</p>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                <i data-feather="home" class="me-2"></i>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Accept Confirmation Modal -->
+<div class="modal fade" id="acceptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Accept Interview Invitation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to accept the invitation for:</p>
+                <p class="fw-bold" id="acceptInterviewTitle"></p>
+                <p class="text-muted small">You'll be able to start the interview after accepting.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmAccept">Accept Invitation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Decline Confirmation Modal -->
+<div class="modal fade" id="declineModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Decline Interview Invitation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to decline the invitation for:</p>
+                <p class="fw-bold" id="declineInterviewTitle"></p>
+                <p class="text-muted small">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDecline">Decline Invitation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentInvitationId = null;
+
+function acceptInvitation(invitationId, interviewTitle) {
+    currentInvitationId = invitationId;
+    document.getElementById('acceptInterviewTitle').textContent = interviewTitle;
+    const modal = new bootstrap.Modal(document.getElementById('acceptModal'));
+    modal.show();
+}
+
+function declineInvitation(invitationId, interviewTitle) {
+    currentInvitationId = invitationId;
+    document.getElementById('declineInterviewTitle').textContent = interviewTitle;
+    const modal = new bootstrap.Modal(document.getElementById('declineModal'));
+    modal.show();
+}
+
+function viewInvitationDetails(invitationId) {
+    // Placeholder for viewing detailed invitation information
+    alert('Invitation details feature coming soon!');
+}
+
+document.getElementById('confirmAccept').addEventListener('click', function() {
+    if (currentInvitationId) {
+        fetch('/api/accept-invitation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                invitation_id: currentInvitationId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to accept invitation');
+        });
+    }
+});
+
+document.getElementById('confirmDecline').addEventListener('click', function() {
+    if (currentInvitationId) {
+        fetch('/api/decline-invitation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                invitation_id: currentInvitationId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to decline invitation');
+        });
+    }
+});
+</script>
+{% endblock %}

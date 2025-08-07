@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}My Schedule - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                <i data-feather="calendar" class="me-3"></i>
+                My Schedule
+                <span class="badge bg-{{ 'danger' if current_user.role == 'admin' else 'primary' if current_user.role == 'recruiter' else 'success' }} ms-2">
+                    {{ current_user.role.title() }}
+                </span>
+            </h1>
+            <p class="lead text-muted">
+                {% if current_user.role == 'admin' %}
+                    View organization-wide interview schedules and manage calendar events.
+                {% elif current_user.role == 'recruiter' %}
+                    Manage your interview schedules and coordinate with candidates.
+                {% else %}
+                    View your upcoming interviews and manage availability.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Schedule Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center">
+                    <i data-feather="clock" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ upcoming_schedules|length }}</h3>
+                    <p class="mb-0">Upcoming Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <i data-feather="check-circle" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ completed_schedules|length }}</h3>
+                    <p class="mb-0">Completed This Week</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <i data-feather="calendar" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ availability_slots|length }}</h3>
+                    <p class="mb-0">Available Slots</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    {% if current_user.role in ['admin', 'recruiter'] %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i data-feather="plus" class="me-2"></i>
+                        Quick Actions
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleInterviewModal">
+                            <i data-feather="calendar-plus" class="me-2"></i>
+                            Schedule Interview
+                        </button>
+                        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#availabilityModal">
+                            <i data-feather="clock" class="me-2"></i>
+                            Set Availability
+                        </button>
+                        <a href="/calendar/integration" class="btn btn-outline-info">
+                            <i data-feather="link" class="me-2"></i>
+                            Calendar Integration
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Upcoming Interviews -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Upcoming Interviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_schedules %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Interview</th>
+                                        <th>{% if current_user.role == 'candidate' %}Recruiter{% else %}Candidate{% endif %}</th>
+                                        <th>Date & Time</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for schedule in upcoming_schedules %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <div class="fw-semibold">{{ schedule.interview.title }}</div>
+                                                <small class="text-muted">{{ schedule.interview.job_description[:50] }}...</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle bg-primary text-white me-2">
+                                                    {% if current_user.role == 'candidate' %}
+                                                        {{ schedule.recruiter.first_name[0] if schedule.recruiter.first_name else schedule.recruiter.username[0].upper() }}
+                                                    {% else %}
+                                                        {{ schedule.candidate.first_name[0] if schedule.candidate.first_name else schedule.candidate.username[0].upper() }}
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    {% if current_user.role == 'candidate' %}
+                                                        <div class="fw-semibold">{{ schedule.recruiter.first_name }} {{ schedule.recruiter.last_name }}</div>
+                                                        <small class="text-muted">{{ schedule.recruiter.email }}</small>
+                                                    {% else %}
+                                                        <div class="fw-semibold">{{ schedule.candidate.first_name }} {{ schedule.candidate.last_name }}</div>
+                                                        <small class="text-muted">{{ schedule.candidate.email }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div class="fw-semibold">{{ schedule.scheduled_datetime.strftime('%Y-%m-%d') }}</div>
+                                                <small class="text-muted">{{ schedule.scheduled_datetime.strftime('%H:%M') }} {{ schedule.time_zone }}</small>
+                                            </div>
+                                        </td>
+                                        <td>{{ schedule.duration_minutes }} min</td>
+                                        <td>
+                                            <span class="badge bg-{{ 
+                                                'success' if schedule.status == 'confirmed' else
+                                                'warning' if schedule.status == 'scheduled' else
+                                                'danger' if schedule.status == 'cancelled' else
+                                                'primary'
+                                            }}">
+                                                {{ schedule.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                {% if schedule.meeting_link %}
+                                                <a href="{{ schedule.meeting_link }}" class="btn btn-outline-primary" target="_blank">
+                                                    <i data-feather="video" style="width: 14px; height: 14px;"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% if current_user.role in ['admin', 'recruiter'] %}
+                                                <button class="btn btn-outline-secondary" onclick="editSchedule({{ schedule.id }})">
+                                                    <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button class="btn btn-outline-info" onclick="viewDetails({{ schedule.id }})">
+                                                    <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i data-feather="calendar" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+                            <h4 class="text-muted">No upcoming interviews</h4>
+                            <p class="text-muted">
+                                {% if current_user.role == 'candidate' %}
+                                    Your scheduled interviews will appear here.
+                                {% else %}
+                                    Schedule interviews with candidates to see them here.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Availability Slots (for recruiters and admins) -->
+    {% if current_user.role in ['admin', 'recruiter'] %}
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="clock" class="me-2"></i>
+                        My Availability
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if availability_slots %}
+                        <div class="row">
+                            {% for slot in availability_slots %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-start border-primary border-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            {{ ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][slot.day_of_week] }}
+                                        </h6>
+                                        <p class="card-text">
+                                            {{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}
+                                            <br><small class="text-muted">{{ slot.time_zone }}</small>
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-{{ 'success' if slot.is_active else 'secondary' }}">
+                                                {{ 'Active' if slot.is_active else 'Inactive' }}
+                                            </span>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editAvailability({{ slot.id }})">
+                                                <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="clock" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                            <h5 class="text-muted">No availability set</h5>
+                            <p class="text-muted">Set your availability to help candidates find suitable interview times.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#availabilityModal">
+                                <i data-feather="plus" class="me-2"></i>
+                                Add Availability
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Schedule Interview Modal -->
+<div class="modal fade" id="scheduleInterviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Schedule Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/schedule/create">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="interview_id" class="form-label">Interview</label>
+                        <select class="form-select" id="interview_id" name="interview_id" required>
+                            <option value="">Select Interview</option>
+                            {% for interview in available_interviews %}
+                            <option value="{{ interview.id }}">{{ interview.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="candidate_id" class="form-label">Candidate</label>
+                        <select class="form-select" id="candidate_id" name="candidate_id" required>
+                            <option value="">Select Candidate</option>
+                            {% for candidate in candidates %}
+                            <option value="{{ candidate.id }}">{{ candidate.first_name }} {{ candidate.last_name }} ({{ candidate.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="schedule_date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="schedule_date" name="schedule_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="schedule_time" class="form-label">Time</label>
+                                <input type="time" class="form-control" id="schedule_time" name="schedule_time" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="duration" class="form-label">Duration (minutes)</label>
+                        <select class="form-select" id="duration" name="duration">
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60" selected>60 minutes</option>
+                            <option value="90">90 minutes</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="meeting_link" class="form-label">Meeting Link (optional)</label>
+                        <input type="url" class="form-control" id="meeting_link" name="meeting_link" placeholder="https://zoom.us/j/...">
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes (optional)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule Interview</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Availability Modal -->
+<div class="modal fade" id="availabilityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Availability</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/schedule/availability">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="day_of_week" class="form-label">Day of Week</label>
+                        <select class="form-select" id="day_of_week" name="day_of_week" required>
+                            <option value="0">Monday</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday</option>
+                            <option value="6">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="start_time" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="end_time" class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="end_time" name="end_time" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="time_zone" class="form-label">Time Zone</label>
+                        <select class="form-select" id="time_zone" name="time_zone">
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">Eastern Time</option>
+                            <option value="America/Chicago">Central Time</option>
+                            <option value="America/Denver">Mountain Time</option>
+                            <option value="America/Los_Angeles">Pacific Time</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Availability</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+</style>
+
+<script>
+function editSchedule(scheduleId) {
+    alert('Edit schedule functionality - would edit schedule ID: ' + scheduleId);
+}
+
+function viewDetails(scheduleId) {
+    alert('View details functionality - would show details for schedule ID: ' + scheduleId);
+}
+
+function editAvailability(slotId) {
+    alert('Edit availability functionality - would edit slot ID: ' + slotId);
+}
+</script>
+{% endblock %}

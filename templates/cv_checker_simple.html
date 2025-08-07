@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}CV Checker - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">CV Checker</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">CV Checker</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <span class="badge ai-powered-badge">AI-Powered Analysis</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CV Checker Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="cpu" class="me-2"></i>
+                        Upload Your CV for Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="cvUploadForm" method="POST" enctype="multipart/form-data" action="{{ url_for('cv_checker') }}">
+                        <div class="mb-3">
+                            <label for="cvFile" class="form-label">Select CV File</label>
+                            <input type="file" class="form-control" id="cvFile" name="cv_file" accept=".pdf,.doc,.docx,.txt" required>
+                            <div class="form-text">Supported formats: PDF, DOC, DOCX, TXT (Max 10MB)</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="upload" class="me-2"></i>
+                            Analyze CV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    {% if analysis %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="bar-chart-2" class="me-2"></i>
+                        Analysis Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Overall Score -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="progress-circle mb-3" style="--progress: {{ analysis.overall_score }}">
+                                    <span class="progress-text">{{ analysis.overall_score }}%</span>
+                                </div>
+                                <h6 class="text-muted">Overall Score</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="score-item">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Format & Structure</span>
+                                            <span class="badge bg-{{ 'success' if analysis.format_score >= 80 else 'warning' if analysis.format_score >= 60 else 'danger' }}">
+                                                {{ analysis.format_score }}%
+                                            </span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ 'success' if analysis.format_score >= 80 else 'warning' if analysis.format_score >= 60 else 'danger' }}" 
+                                                 style="width: {{ analysis.format_score }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="score-item">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Content Quality</span>
+                                            <span class="badge bg-{{ 'success' if analysis.content_score >= 80 else 'warning' if analysis.content_score >= 60 else 'danger' }}">
+                                                {{ analysis.content_score }}%
+                                            </span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ 'success' if analysis.content_score >= 80 else 'warning' if analysis.content_score >= 60 else 'danger' }}" 
+                                                 style="width: {{ analysis.content_score }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Analysis -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success bg-opacity-10">
+                                    <h6 class="mb-0 text-success">
+                                        <i data-feather="check-circle" class="me-2"></i>
+                                        Strengths
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        {% for strength in analysis.strengths %}
+                                        <li class="mb-2">
+                                            <i data-feather="check" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                                            {{ strength }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning bg-opacity-10">
+                                    <h6 class="mb-0 text-warning">
+                                        <i data-feather="alert-triangle" class="me-2"></i>
+                                        Areas for Improvement
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        {% for weakness in analysis.weaknesses %}
+                                        <li class="mb-2">
+                                            <i data-feather="x" class="text-warning me-2" style="width: 16px; height: 16px;"></i>
+                                            {{ weakness }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-header bg-info bg-opacity-10">
+                                    <h6 class="mb-0 text-info">
+                                        <i data-feather="star" class="me-2"></i>
+                                        Recommendations
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        {% for recommendation in analysis.recommendations %}
+                                        <li class="mb-2">
+                                            <i data-feather="arrow-right" class="text-info me-2" style="width: 16px; height: 16px;"></i>
+                                            {{ recommendation }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Help Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h6 class="mb-0 text-primary">
+                        <i data-feather="info" class="me-2"></i>
+                        How CV Checker Works
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i data-feather="upload" class="text-primary" style="width: 48px; height: 48px;"></i>
+                                </div>
+                                <h6>Upload Your CV</h6>
+                                <p class="text-muted small">Upload your resume in PDF, DOC, DOCX, or TXT format</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i data-feather="cpu" class="text-primary" style="width: 48px; height: 48px;"></i>
+                                </div>
+                                <h6>AI Analysis</h6>
+                                <p class="text-muted small">Our AI analyzes format, content, and structure</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i data-feather="bar-chart-2" class="text-primary" style="width: 48px; height: 48px;"></i>
+                                </div>
+                                <h6>Get Insights</h6>
+                                <p class="text-muted small">Receive detailed feedback and improvement suggestions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Progress Circle Styles */
+.progress-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(#007bff calc(var(--progress) * 1%), #e9ecef 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 0 auto;
+}
+
+.progress-circle::before {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: white;
+}
+
+.progress-text {
+    position: relative;
+    z-index: 1;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.score-item {
+    margin-bottom: 1rem;
+}
+
+.score-item .progress {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+.score-item .progress-bar {
+    border-radius: 4px;
+}
+</style>
+{% endblock %}

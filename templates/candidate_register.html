@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}Join as Candidate - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Navigation -->
+    <div class="row pt-3">
+        <div class="col">
+            <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-sm">
+                <i data-feather="arrow-left" class="me-2"></i>
+                Back to Registration
+            </a>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 80px; height: 80px;" class="mb-3">
+                        <h2 class="fw-bold text-dark">Join as Candidate</h2>
+                        <p class="text-muted">Create your profile to start your job search journey</p>
+                    </div>
+
+                    <form method="POST" id="candidateRegistrationForm">
+                        <!-- Display validation errors -->
+                        {% if validation_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i data-feather="alert-circle" class="me-2"></i>
+                                <strong>Registration Error</strong>
+                            </div>
+                            <hr class="my-2">
+                            <ul class="mb-0">
+                                {% for field, error in validation_errors.items() %}
+                                    {% if error is string %}
+                                        <li>
+                                            {% if field == 'phone' %}
+                                                <strong>Phone Number:</strong> {{ error }}
+                                            {% elif field == 'email' %}
+                                                <strong>Email:</strong> {{ error }}
+                                            {% elif field == 'first_name' %}
+                                                <strong>First Name:</strong> {{ error }}
+                                            {% elif field == 'last_name' %}
+                                                <strong>Last Name:</strong> {{ error }}
+                                            {% elif field == 'password' %}
+                                                <strong>Password:</strong> {{ error }}
+                                            {% else %}
+                                                {{ error }}
+                                            {% endif %}
+                                        </li>
+                                    {% else %}
+                                        {% for err in error %}
+                                            <li>{{ err }}</li>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- Personal Information -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i data-feather="user"></i>
+                                    </span>
+                                    <input type="text" class="form-control {% if validation_errors and validation_errors.first_name %}is-invalid{% endif %}" 
+                                           id="first_name" name="first_name" 
+                                           value="{{ form_data.first_name if form_data else '' }}" 
+                                           pattern="[A-Za-z\s]+" 
+                                           title="Please enter a valid first name (letters only)."
+                                           required>
+                                </div>
+                                {% if validation_errors and validation_errors.first_name %}
+                                <div class="alert alert-danger mt-2 py-2" role="alert">
+                                    <i data-feather="alert-circle" class="me-2"></i>
+                                    {{ validation_errors.first_name }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i data-feather="user"></i>
+                                    </span>
+                                    <input type="text" class="form-control {% if validation_errors and validation_errors.last_name %}is-invalid{% endif %}" 
+                                           id="last_name" name="last_name" 
+                                           value="{{ form_data.last_name if form_data else '' }}" 
+                                           pattern="[A-Za-z\s]+" 
+                                           title="Please enter a valid last name (letters only)."
+                                           required>
+                                </div>
+                                {% if validation_errors and validation_errors.last_name %}
+                                <div class="alert alert-danger mt-2 py-2" role="alert">
+                                    <i data-feather="alert-circle" class="me-2"></i>
+                                    {{ validation_errors.last_name }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="mail"></i>
+                                </span>
+                                <input type="email" class="form-control {% if validation_errors and validation_errors.email %}is-invalid{% endif %}" 
+                                       id="email" name="email" 
+                                       value="{{ form_data.email if form_data else '' }}" 
+                                       pattern="[^\s@]+@[^\s@]+\.[^\s@]+" 
+                                       title="Please enter a valid email address."
+                                       required>
+                            </div>
+                            {% if validation_errors and validation_errors.email %}
+                            <div class="alert alert-danger mt-2 py-2" role="alert">
+                                <i data-feather="alert-circle" class="me-2"></i>
+                                {{ validation_errors.email }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-select {% if validation_errors and (validation_errors.country_code or validation_errors.phone) %}is-invalid{% endif %}" 
+                                            id="countryCode" name="country_code">
+                                        <option value="">Select Country</option>
+                                        <option value="+1" {% if form_data and form_data.country_code == '+1' %}selected{% endif %}>🇺🇸 +1 (US/Canada)</option>
+                                        <option value="+91" {% if form_data and form_data.country_code == '+91' %}selected{% endif %}>🇮🇳 +91 (India)</option>
+                                        <option value="+44" {% if form_data and form_data.country_code == '+44' %}selected{% endif %}>🇬🇧 +44 (UK)</option>
+                                        <option value="+86" {% if form_data and form_data.country_code == '+86' %}selected{% endif %}>🇨🇳 +86 (China)</option>
+                                        <option value="+49" {% if form_data and form_data.country_code == '+49' %}selected{% endif %}>🇩🇪 +49 (Germany)</option>
+                                        <option value="+33" {% if form_data and form_data.country_code == '+33' %}selected{% endif %}>🇫🇷 +33 (France)</option>
+                                        <option value="+81" {% if form_data and form_data.country_code == '+81' %}selected{% endif %}>🇯🇵 +81 (Japan)</option>
+                                        <option value="+82" {% if form_data and form_data.country_code == '+82' %}selected{% endif %}>🇰🇷 +82 (South Korea)</option>
+                                        <option value="+61" {% if form_data and form_data.country_code == '+61' %}selected{% endif %}>🇦🇺 +61 (Australia)</option>
+                                        <option value="+55" {% if form_data and form_data.country_code == '+55' %}selected{% endif %}>🇧🇷 +55 (Brazil)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i data-feather="phone"></i>
+                                        </span>
+                                        <input type="tel" class="form-control {% if validation_errors and validation_errors.phone %}is-invalid{% endif %}" 
+                                               id="local_phone" name="local_phone" 
+                                               value="{{ form_data.local_phone if form_data else '' }}" 
+                                               placeholder="9876543210" 
+                                               pattern="[0-9]{10,15}" 
+                                               title="Enter a valid phone number with digits only (no spaces or symbols).">
+                                    </div>
+                                </div>
+                            </div>
+                            {% if validation_errors and validation_errors.phone %}
+                            <div class="alert alert-danger mt-2 py-2" role="alert">
+                                <i data-feather="alert-circle" class="me-2"></i>
+                                {{ validation_errors.phone }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">Enter a valid phone number with digits only (optional)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job_title" class="form-label">Current/Desired Job Title</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="briefcase"></i>
+                                </span>
+                                <input type="text" class="form-control" 
+                                       id="job_title" name="job_title" 
+                                       value="{{ form_data.job_title if form_data else '' }}" 
+                                       pattern="[A-Za-z\s\-]+" 
+                                       title="Please enter your job title (e.g., Software Engineer, Product Manager)."
+                                       placeholder="e.g., Software Engineer, Product Manager">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="lock"></i>
+                                </span>
+                                <input type="password" class="form-control {% if validation_errors and validation_errors.password %}is-invalid{% endif %}" 
+                                       id="password" name="password" 
+                                       minlength="8" 
+                                       title="Password must be at least 8 characters long."
+                                       required>
+                                <button type="button" class="btn btn-outline-secondary" id="togglePasswordBtn">
+                                    <i data-feather="eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                            {% if validation_errors and validation_errors.password %}
+                            <div class="alert alert-danger mt-2 py-2" role="alert">
+                                <i data-feather="alert-circle" class="me-2"></i>
+                                {{ validation_errors.password }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Minimum 8 characters</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gradient w-100 py-2 mb-3">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Create Candidate Account
+                        </button>
+                    </form>
+
+                    <!-- Platform Features -->
+                    <div class="mt-4 pt-4 border-top">
+                        <div class="text-center mb-3">
+                            <h6 class="text-muted">
+                                <i data-feather="star" class="me-2"></i>
+                                What You'll Get
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="zap" class="text-primary mb-1"></i>
+                                    <small class="d-block text-muted">AI Job Matching</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="mouse-pointer" class="text-success mb-1"></i>
+                                    <small class="d-block text-muted">One-Click Apply</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="file-text" class="text-info mb-1"></i>
+                                    <small class="d-block text-muted">Resume Builder</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="video" class="text-warning mb-1"></i>
+                                    <small class="d-block text-muted">Interview Prep</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-muted mb-0">
+                            Already have an account? 
+                            <a href="{{ url_for('login') }}" class="text-decoration-none">Sign in here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Registration Options -->
+            <div class="card mt-4 border-0 bg-info bg-opacity-10">
+                <div class="card-body text-center">
+                    <h6 class="fw-bold text-info mb-2">
+                        <i data-feather="upload" class="me-2"></i>
+                        Quick Profile Setup
+                    </h6>
+                    <small class="text-muted d-block mb-3">
+                        Already have a resume? Upload it to auto-fill your profile
+                    </small>
+                    <a href="{{ url_for('candidate_resume_register') }}" class="btn btn-info btn-sm">
+                        <i data-feather="upload" class="me-2"></i>
+                        Upload Resume Instead
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Feather icons
+    feather.replace();
+    
+    // Password toggle functionality
+    const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+    
+    if (togglePasswordBtn) {
+        togglePasswordBtn.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Update the icon
+            if (type === 'text') {
+                togglePasswordIcon.setAttribute('data-feather', 'eye-off');
+            } else {
+                togglePasswordIcon.setAttribute('data-feather', 'eye');
+            }
+            
+            // Re-render feather icons
+            feather.replace();
+        });
+    }
+    
+    // Enhanced field validation functions
+    function validateField(fieldId, pattern, message) {
+        const field = document.getElementById(fieldId);
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        
+        if (field.hasAttribute('required') && !value) {
+            showFieldError(fieldId, message || 'This field is required.');
+            return false;
+        }
+        
+        if (value && pattern && !pattern.test(value)) {
+            showFieldError(fieldId, message || 'Please enter a valid value.');
+            return false;
+        }
+        
+        hideFieldError(fieldId);
+        showFieldSuccess(fieldId);
+        return true;
+    }
+    
+    function showFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(fieldId + '_error') || createErrorDiv(fieldId);
+        
+        field.classList.add('is-invalid');
+        field.classList.remove('is-valid');
+        field.style.borderColor = '#dc3545';
+        field.style.backgroundColor = '#fff5f5';
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.fontSize = '0.875rem';
+        errorDiv.style.marginTop = '0.25rem';
+    }
+    
+    function hideFieldError(fieldId) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(fieldId + '_error');
+        
+        field.classList.remove('is-invalid');
+        field.style.borderColor = '';
+        field.style.backgroundColor = '';
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+    }
+    
+    function showFieldSuccess(fieldId) {
+        const field = document.getElementById(fieldId);
+        field.classList.add('is-valid');
+        field.style.borderColor = '#28a745';
+        field.style.backgroundColor = '#f8fff9';
+    }
+    
+    function hideFieldSuccess(fieldId) {
+        const field = document.getElementById(fieldId);
+        field.classList.remove('is-valid');
+        field.style.borderColor = '';
+        field.style.backgroundColor = '';
+    }
+    
+    function clearAllFieldStates(fieldId) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(fieldId + '_error');
+        
+        field.classList.remove('is-invalid', 'is-valid');
+        field.style.borderColor = '';
+        field.style.backgroundColor = '';
+        
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+    }
+    
+    function createErrorDiv(fieldId) {
+        const errorDiv = document.createElement('div');
+        errorDiv.id = fieldId + '_error';
+        errorDiv.className = 'invalid-feedback';
+        errorDiv.style.display = 'none';
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.fontSize = '0.875rem';
+        errorDiv.style.marginTop = '0.25rem';
+        
+        const field = document.getElementById(fieldId);
+        const inputGroup = field.closest('.input-group') || field.parentNode;
+        inputGroup.appendChild(errorDiv);
+        
+        return errorDiv;
+    }
+    
+    // Real-time validation with input event listeners
+    const fields = [
+        { id: 'first_name', pattern: /^[A-Za-z\s]+$/, message: 'Please enter a valid first name (letters only).' },
+        { id: 'last_name', pattern: /^[A-Za-z\s]+$/, message: 'Please enter a valid last name (letters only).' },
+        { id: 'email', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email address.' },
+        { id: 'local_phone', pattern: /^[0-9]{10,15}$/, message: 'Enter a valid phone number with digits only (no spaces or symbols).' },
+        { id: 'job_title', pattern: /^[A-Za-z\s\-]+$/, message: 'Please enter your job title (e.g., Software Engineer, Product Manager).' },
+        { id: 'password', pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
+    ];
+    
+    fields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (element) {
+            // Clear all states immediately when user starts typing
+            element.addEventListener('input', function() {
+                clearAllFieldStates(field.id);
+            });
+            
+            // Clear all states when user focuses on field
+            element.addEventListener('focus', function() {
+                clearAllFieldStates(field.id);
+            });
+            
+            // Validate on blur (when user leaves the field) - only if field has content
+            element.addEventListener('blur', function() {
+                if (this.value.trim() !== '') {
+                    validateField(field.id, field.pattern, field.message);
+                }
+            });
+        }
+    });
+    
+    // Clear server-side validation errors on page load
+    setTimeout(() => {
+        const serverAlert = document.querySelector('.alert-danger');
+        if (serverAlert) {
+            serverAlert.style.display = 'none';
+        }
+        
+        // Clear any existing validation states
+        fields.forEach(field => {
+            clearAllFieldStates(field.id);
+        });
+    }, 100);
+
+    // Form submission validation
+    document.getElementById('candidateRegistrationForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        fields.forEach(field => {
+            const fieldValid = validateField(field.id, field.pattern, field.message);
+            if (!fieldValid) {
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error field
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

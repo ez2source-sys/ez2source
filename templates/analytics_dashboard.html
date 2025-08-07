@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold">
+                <i data-feather="bar-chart" class="me-2"></i>
+                Advanced Analytics Dashboard
+                {% if analytics.overview.scope == 'cross_organizational' %}
+                    <span class="badge bg-primary ms-2">Cross-Organizational</span>
+                {% else %}
+                    <span class="badge bg-info ms-2">{{ analytics.overview.organization_name }}</span>
+                {% endif %}
+            </h1>
+            <p class="lead text-muted">
+                Real-time recruitment metrics and insights
+            </p>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Candidates</h6>
+                            <h3 class="mb-0">{{ analytics.overview.total_candidates }}</h3>
+                        </div>
+                        <div class="text-primary">
+                            <i data-feather="users" size="32"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Jobs</h6>
+                            <h3 class="mb-0">{{ analytics.overview.total_jobs }}</h3>
+                        </div>
+                        <div class="text-success">
+                            <i data-feather="briefcase" size="32"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Applications</h6>
+                            <h3 class="mb-0">{{ analytics.overview.total_applications }}</h3>
+                        </div>
+                        <div class="text-warning">
+                            <i data-feather="file-text" size="32"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Interviews</h6>
+                            <h3 class="mb-0">{{ analytics.overview.total_interviews }}</h3>
+                        </div>
+                        <div class="text-info">
+                            <i data-feather="video" size="32"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Analytics -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i data-feather="trending-up" class="me-2"></i>
+                        Candidate Pipeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for status, count in analytics.pipeline_metrics.status_distribution.items() %}
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-primary mb-1">{{ count }}</h4>
+                                <p class="text-muted mb-0">{{ status.title() }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h5 class="text-success mb-1">{{ analytics.pipeline_metrics.conversion_rates.interview_rate }}%</h5>
+                                <p class="text-muted mb-0">Interview Rate</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h5 class="text-warning mb-1">{{ analytics.pipeline_metrics.conversion_rates.offer_rate }}%</h5>
+                                <p class="text-muted mb-0">Offer Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i data-feather="activity" class="me-2"></i>
+                        Trends
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h4 class="mb-1">{{ analytics.trend_analysis.applications_last_7_days }}</h4>
+                        <p class="text-muted mb-0">Applications This Week</p>
+                    </div>
+                    <div class="text-center mb-3">
+                        <h4 class="mb-1">{{ analytics.trend_analysis.applications_last_30_days }}</h4>
+                        <p class="text-muted mb-0">Applications This Month</p>
+                    </div>
+                    <div class="text-center">
+                        <h5 class="mb-1 {% if analytics.trend_analysis.trend_direction == 'up' %}text-success{% elif analytics.trend_analysis.trend_direction == 'down' %}text-danger{% else %}text-muted{% endif %}">
+                            {{ analytics.trend_analysis.weekly_trend_percentage }}%
+                            <i data-feather="{% if analytics.trend_analysis.trend_direction == 'up' %}trending-up{% elif analytics.trend_analysis.trend_direction == 'down' %}trending-down{% else %}minus{% endif %}" size="16"></i>
+                        </h5>
+                        <p class="text-muted mb-0">Weekly Trend</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i data-feather="clock" class="me-2"></i>
+                        Performance Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-primary mb-1">{{ analytics.performance_metrics.avg_time_to_hire }}</h4>
+                                <p class="text-muted mb-0">Avg. Days to Hire</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-success mb-1">{{ analytics.performance_metrics.interview_success_rate }}%</h4>
+                                <p class="text-muted mb-0">Interview Success</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i data-feather="target" class="me-2"></i>
+                        Interview Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-info mb-1">{{ analytics.interview_analytics.completion_rate }}%</h4>
+                                <p class="text-muted mb-0">Completion Rate</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-warning mb-1">{{ analytics.interview_analytics.average_score }}</h4>
+                                <p class="text-muted mb-0">Average Score</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Distribution -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i data-feather="bar-chart" class="me-2"></i>
+                        Interview Score Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-success mb-1">{{ analytics.interview_analytics.score_distribution.excellent }}</h4>
+                                <p class="text-muted mb-0">Excellent (90-100)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info mb-1">{{ analytics.interview_analytics.score_distribution.good }}</h4>
+                                <p class="text-muted mb-0">Good (70-89)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-warning mb-1">{{ analytics.interview_analytics.score_distribution.fair }}</h4>
+                                <p class="text-muted mb-0">Fair (50-69)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-danger mb-1">{{ analytics.interview_analytics.score_distribution.poor }}</h4>
+                                <p class="text-muted mb-0">Poor (<50)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cross-Organizational Insights (Super Admin Only) -->
+    {% if analytics.cross_org_insights %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i data-feather="globe" class="me-2"></i>
+                        Cross-Organizational Insights
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h4 class="text-primary mb-1">{{ analytics.cross_org_insights.total_organizations }}</h4>
+                                <p class="text-muted mb-0">Total Organizations</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h4 class="text-success mb-1">{{ analytics.cross_org_insights.cross_org_metrics.total_platform_candidates }}</h4>
+                                <p class="text-muted mb-0">Platform Candidates</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h4 class="text-info mb-1">{{ analytics.cross_org_insights.cross_org_metrics.total_platform_jobs }}</h4>
+                                <p class="text-muted mb-0">Platform Jobs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6 class="mb-3">Top Performing Organizations</h6>
+                    <div class="row">
+                        {% for org in analytics.cross_org_insights.top_performing_orgs %}
+                        <div class="col-md-4 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">{{ org.name }}</span>
+                                <span class="badge bg-primary">{{ org.candidates }} candidates</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i data-feather="zap" class="me-2"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="{{ url_for('analytics_pipeline') }}" class="btn btn-outline-primary w-100 mb-2">
+                                <i data-feather="trending-up" class="me-2"></i>
+                                Pipeline Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('analytics_interviews') }}" class="btn btn-outline-success w-100 mb-2">
+                                <i data-feather="video" class="me-2"></i>
+                                Interview Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('messages') }}" class="btn btn-outline-info w-100 mb-2">
+                                <i data-feather="message-square" class="me-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+
+// Auto-refresh dashboard every 5 minutes
+setInterval(function() {
+    window.location.reload();
+}, 300000);
+</script>
+{% endblock %}

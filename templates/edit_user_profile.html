@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - {{ user_profile.first_name }} {{ user_profile.last_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-user-edit mr-2"></i>Edit User Profile</h2>
+                    <p class="text-muted">Update {{ user_profile.first_name }} {{ user_profile.last_name }}'s profile information</p>
+                </div>
+                <a href="{{ url_for('user_profile', user_id=user_profile.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i>Back to Profile
+                </a>
+            </div>
+
+            <!-- Edit Form -->
+            <form method="POST" action="{{ url_for('edit_user_profile', user_id=user_profile.id) }}">
+                <div class="row">
+                    <!-- Left Column - Basic Information -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-user mr-2"></i>Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="first_name">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ user_profile.first_name or '' }}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="last_name">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ user_profile.last_name or '' }}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ user_profile.email }}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Phone</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" 
+                                           value="{{ user_profile.phone or '' }}"
+                                           pattern="[0-9+\-\s\(\)]+"
+                                           title="Please enter a valid phone number (numbers, +, -, spaces, and parentheses only)"
+                                           oninput="this.value = this.value.replace(/[^0-9+\-\s\(\)]/g, '')"
+                                           placeholder="e.g., +1-555-123-4567">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="role">Role</label>
+                                    <select class="form-control" id="role" name="role" required>
+                                        <option value="candidate" {{ 'selected' if user_profile.role == 'candidate' else '' }}>Candidate</option>
+                                        <option value="recruiter" {{ 'selected' if user_profile.role == 'recruiter' else '' }}>Recruiter</option>
+                                        <option value="admin" {{ 'selected' if user_profile.role == 'admin' else '' }}>Admin</option>
+                                        <option value="technical_person" {{ 'selected' if user_profile.role == 'technical_person' else '' }}>Technical Interviewer</option>
+                                        <option value="viewer" {{ 'selected' if user_profile.role == 'viewer' else '' }}>Viewer</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="user_active">Account Status</label>
+                                    <select class="form-control" id="user_active" name="user_active">
+                                        <option value="1" {{ 'selected' if user_profile.user_active else '' }}>Active</option>
+                                        <option value="0" {{ 'selected' if not user_profile.user_active else '' }}>Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Professional Information -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-briefcase mr-2"></i>Professional Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="job_title">Job Title</label>
+                                    <input type="text" class="form-control" id="job_title" name="job_title" 
+                                           value="{{ user_profile.job_title or '' }}">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="department">Department</label>
+                                    <input type="text" class="form-control" id="department" name="department" 
+                                           value="{{ user_profile.department or '' }}">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="experience_years">Years of Experience</label>
+                                    <input type="number" class="form-control" id="experience_years" name="experience_years" 
+                                           value="{{ user_profile.experience_years or '' }}" min="0" max="50">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="location">Location</label>
+                                    <input type="text" class="form-control" id="location" name="location" 
+                                           value="{{ user_profile.location or '' }}">
+                                </div>
+                                
+                                {% if user_profile.role == 'candidate' %}
+                                <div class="form-group">
+                                    <label for="availability">Availability</label>
+                                    <select class="form-control" id="availability" name="availability">
+                                        <option value="">Select Availability</option>
+                                        <option value="immediate" {{ 'selected' if user_profile.availability == 'immediate' else '' }}>Immediate</option>
+                                        <option value="2_weeks" {{ 'selected' if user_profile.availability == '2_weeks' else '' }}>2 Weeks</option>
+                                        <option value="1_month" {{ 'selected' if user_profile.availability == '1_month' else '' }}>1 Month</option>
+                                        <option value="3_months" {{ 'selected' if user_profile.availability == '3_months' else '' }}>3 Months</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="salary_expectation">Salary Expectation</label>
+                                    <input type="text" class="form-control" id="salary_expectation" name="salary_expectation" 
+                                           value="{{ user_profile.salary_expectation or '' }}" placeholder="e.g., $80,000 - $100,000">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Additional Information -->
+                    <div class="col-md-6">
+                        <!-- About & Bio -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-info-circle mr-2"></i>About</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="bio">Bio</label>
+                                    <textarea class="form-control" id="bio" name="bio" rows="4" 
+                                              placeholder="Brief description about the user">{{ user_profile.bio or '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools mr-2"></i>Skills</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="skills">Skills (comma-separated)</label>
+                                    <textarea class="form-control" id="skills" name="skills" rows="3" 
+                                              placeholder="Python, JavaScript, Project Management, etc.">{{ skills_text }}</textarea>
+                                    <small class="form-text text-muted">Enter skills separated by commas</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Education -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-graduation-cap mr-2"></i>Education</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="education">Education (JSON format)</label>
+                                    <textarea class="form-control" id="education" name="education" rows="4" 
+                                              placeholder='[{"degree": "Bachelor", "field": "Computer Science", "school": "University Name", "year": "2020"}]'>{{ user_profile.education or '' }}</textarea>
+                                    <small class="form-text text-muted">Enter education as JSON array</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Certifications -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-certificate mr-2"></i>Certifications</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="certifications">Certifications (comma-separated)</label>
+                                    <textarea class="form-control" id="certifications" name="certifications" rows="3" 
+                                              placeholder="AWS Certified, PMP, Google Analytics, etc.">{{ certifications_text }}</textarea>
+                                    <small class="form-text text-muted">Enter certifications separated by commas</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- External Links -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-link mr-2"></i>External Links</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="linkedin_url">LinkedIn URL</label>
+                                    <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" 
+                                           value="{{ user_profile.linkedin_url or '' }}" placeholder="https://linkedin.com/in/username">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="portfolio_url">Portfolio URL</label>
+                                    <input type="url" class="form-control" id="portfolio_url" name="portfolio_url" 
+                                           value="{{ user_profile.portfolio_url or '' }}" placeholder="https://portfolio.com">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="resume_url">Resume URL</label>
+                                    <input type="url" class="form-control" id="resume_url" name="resume_url" 
+                                           value="{{ user_profile.resume_url or '' }}" placeholder="https://resume-link.com">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profile_image_url">Profile Image URL</label>
+                                    <input type="url" class="form-control" id="profile_image_url" name="profile_image_url" 
+                                           value="{{ user_profile.profile_image_url or '' }}" placeholder="https://image-url.com">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center">
+                                <button type="submit" class="btn btn-primary btn-lg mr-3">
+                                    <i class="fas fa-save mr-2"></i>Save Changes
+                                </button>
+                                <a href="{{ url_for('user_profile', user_id=user_profile.id) }}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times mr-2"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

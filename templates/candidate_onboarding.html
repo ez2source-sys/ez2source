@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Ez2source - Complete Your Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Progress Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Welcome to Ez2source!</h2>
+                <p class="text-muted">Let's complete your profile to get you matched with the best opportunities</p>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ progress }}%" id="progress-bar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Step {{ current_step }} of 5</small>
+                        <small class="text-muted">{{ progress }}% Complete</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding Steps -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% if current_step == 1 %}
+                <!-- Step 1: Basic Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="user" class="me-2"></i>
+                            Basic Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('onboarding_step', step=1) }}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="first_name" class="form-label required">First Name</label>
+                                        <input type="text" class="form-control" id="first_name" name="first_name" 
+                                               required data-validate="text" data-field-name="First Name"
+                                               placeholder="Enter your first name">
+                                        <div class="form-error-message" id="first_name-error"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="last_name" class="form-label required">Last Name</label>
+                                        <input type="text" class="form-control" id="last_name" name="last_name" 
+                                               required data-validate="text" data-field-name="Last Name"
+                                               placeholder="Enter your last name">
+                                        <div class="form-error-message" id="last_name-error"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="job_title" class="form-label required">Current/Desired Job Title</label>
+                                <input type="text" class="form-control" id="job_title" name="job_title" 
+                                       required data-validate="text" data-field-name="Job Title"
+                                       placeholder="e.g., Software Engineer, Product Manager">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="location" class="form-label">Location</label>
+                                        <input type="text" class="form-control" id="location" name="location" placeholder="City, State/Country">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone"
+                                               data-validate="phone" data-field-name="Phone Number"
+                                               pattern="[0-9+\-\s\(\)]+"
+                                               title="Please enter a valid phone number (numbers, +, -, spaces, and parentheses only)"
+                                               oninput="this.value = this.value.replace(/[^0-9+\-\s\(\)]/g, '')"
+                                               placeholder="e.g., +1-555-123-4567">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" disabled>Previous</button>
+                                <button type="submit" class="btn btn-primary">Next Step</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            {% elif current_step == 2 %}
+                <!-- Step 2: Professional Background -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="briefcase" class="me-2"></i>
+                            Professional Background
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('onboarding_step', step=2) }}">
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Professional Summary *</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Tell us about your professional background, key achievements, and career goals..." required></textarea>
+                                <div class="form-text">This will be visible to recruiters. Make it compelling!</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="experience_years" class="form-label">Years of Experience *</label>
+                                        <select class="form-control" id="experience_years" name="experience_years" required>
+                                            <option value="">Select experience level</option>
+                                            {% for i in range(0, 21) %}
+                                                <option value="{{ i }}">{{ i }} year{{ 's' if i != 1 else '' }}</option>
+                                            {% endfor %}
+                                            <option value="20">20+ years</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="availability" class="form-label">Availability *</label>
+                                        <select class="form-control" id="availability" name="availability" required>
+                                            <option value="">Select availability</option>
+                                            <option value="immediate">Available immediately</option>
+                                            <option value="2_weeks">2 weeks notice</option>
+                                            <option value="1_month">1 month notice</option>
+                                            <option value="2_months">2+ months notice</option>
+                                            <option value="not_looking">Not actively looking</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="salary_expectation" class="form-label required">Salary Expectation</label>
+                                <select class="form-control" id="salary_expectation" name="salary_expectation" 
+                                        required data-validate="text" data-field-name="Salary Expectation">
+                                    <option value="">Select salary range</option>
+                                    <option value="$30,000 - $40,000">$30,000 - $40,000</option>
+                                    <option value="$40,000 - $50,000">$40,000 - $50,000</option>
+                                    <option value="$50,000 - $60,000">$50,000 - $60,000</option>
+                                    <option value="$60,000 - $70,000">$60,000 - $70,000</option>
+                                    <option value="$70,000 - $80,000">$70,000 - $80,000</option>
+                                    <option value="$80,000 - $90,000">$80,000 - $90,000</option>
+                                    <option value="$90,000 - $100,000">$90,000 - $100,000</option>
+                                    <option value="$100,000 - $120,000">$100,000 - $120,000</option>
+                                    <option value="$120,000 - $140,000">$120,000 - $140,000</option>
+                                    <option value="$140,000 - $160,000">$140,000 - $160,000</option>
+                                    <option value="$160,000 - $180,000">$160,000 - $180,000</option>
+                                    <option value="$180,000 - $200,000">$180,000 - $200,000</option>
+                                    <option value="$200,000 - $250,000">$200,000 - $250,000</option>
+                                    <option value="$250,000+">$250,000+</option>
+                                </select>
+                                <div class="form-text">Optional but helps with better job matching</div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('onboarding_step', step=1) }}" class="btn btn-outline-secondary">Previous</a>
+                                <button type="submit" class="btn btn-primary">Next Step</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            {% elif current_step == 3 %}
+                <!-- Step 3: Skills -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="award" class="me-2"></i>
+                            Skills & Expertise
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('onboarding_step', step=3) }}">
+                            <div class="mb-3">
+                                <label for="skills_input" class="form-label">Add Your Skills *</label>
+                                <input type="text" class="form-control" id="skills_input" placeholder="Type a skill and press Enter">
+                                <div class="form-text">Add technical skills, programming languages, tools, and soft skills</div>
+                            </div>
+                            <div id="skills_container" class="mb-3">
+                                <div class="d-flex flex-wrap gap-2" id="skills_list">
+                                    <!-- Skills will be added here dynamically -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="skills_hidden" name="skills">
+                            
+                            <!-- Suggested Skills -->
+                            <div class="mb-3">
+                                <label class="form-label">Suggested Skills (click to add):</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">JavaScript</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">Python</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">React</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">Project Management</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">Communication</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">Leadership</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">SQL</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm skill-suggestion">AWS</button>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('onboarding_step', step=2) }}" class="btn btn-outline-secondary">Previous</a>
+                                <button type="submit" class="btn btn-primary">Next Step</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            {% elif current_step == 4 %}
+                <!-- Step 4: Links & Portfolio -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="link" class="me-2"></i>
+                            Professional Links
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('onboarding_step', step=4) }}">
+                            <div class="mb-3">
+                                <label for="linkedin_url" class="form-label">LinkedIn Profile</label>
+                                <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" placeholder="https://linkedin.com/in/yourprofile">
+                            </div>
+                            <div class="mb-3">
+                                <label for="portfolio_url" class="form-label">Portfolio/Website</label>
+                                <input type="url" class="form-control" id="portfolio_url" name="portfolio_url" placeholder="https://yourportfolio.com">
+                            </div>
+                            <div class="mb-3">
+                                <label for="github_url" class="form-label">GitHub Profile</label>
+                                <input type="url" class="form-control" id="github_url" name="github_url" placeholder="https://github.com/yourusername">
+                            </div>
+                            <div class="mb-3">
+                                <label for="resume_upload" class="form-label">Upload Resume</label>
+                                <input type="file" class="form-control" id="resume_upload" name="resume" accept=".pdf,.doc,.docx">
+                                <div class="form-text">Supported formats: PDF, DOC, DOCX (Max 5MB)</div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('onboarding_step', step=3) }}" class="btn btn-outline-secondary">Previous</a>
+                                <button type="submit" class="btn btn-primary">Next Step</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            {% elif current_step == 5 %}
+                <!-- Step 5: Profile Photo & Completion -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i data-feather="camera" class="me-2"></i>
+                            Complete Your Profile
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <form method="POST" action="{{ url_for('onboarding_step', step=5) }}" enctype="multipart/form-data">
+                            <div class="mb-4">
+                                <div class="position-relative d-inline-block">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px;" id="photo_preview">
+                                        <i data-feather="user" style="width: 60px; height: 60px;" class="text-muted"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept="image/*" style="display: none;">
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('profile_photo').click()">
+                                        <i data-feather="upload" class="me-2"></i>
+                                        Upload Profile Photo
+                                    </button>
+                                    <div class="form-text">Optional: Add a professional photo to complete your profile</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Summary -->
+                            <div class="bg-light rounded p-4 mb-4">
+                                <h6>Your Profile Summary</h6>
+                                <div class="text-start">
+                                    <p><strong>Name:</strong> {{ session.get('onboarding_data', {}).get('first_name', '') }} {{ session.get('onboarding_data', {}).get('last_name', '') }}</p>
+                                    <p><strong>Title:</strong> {{ session.get('onboarding_data', {}).get('job_title', '') }}</p>
+                                    <p><strong>Experience:</strong> {{ session.get('onboarding_data', {}).get('experience_years', '') }} years</p>
+                                    <p><strong>Skills:</strong> {{ session.get('onboarding_data', {}).get('skills', [])|length }} skills added</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('onboarding_step', step=4) }}" class="btn btn-outline-secondary">Previous</a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    Complete Profile & Start Job Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Skills management
+let skills = [];
+
+function addSkill(skillName) {
+    if (!skills.includes(skillName) && skillName.trim()) {
+        skills.push(skillName.trim());
+        updateSkillsDisplay();
+    }
+}
+
+function removeSkill(skillName) {
+    skills = skills.filter(skill => skill !== skillName);
+    updateSkillsDisplay();
+}
+
+function updateSkillsDisplay() {
+    const skillsList = document.getElementById('skills_list');
+    const skillsHidden = document.getElementById('skills_hidden');
+    
+    if (skillsList) {
+        skillsList.innerHTML = skills.map(skill => 
+            `<span class="badge bg-primary fs-6 position-relative">
+                ${skill}
+                <button type="button" class="btn-close btn-close-white ms-2" onclick="removeSkill('${skill}')" style="font-size: 0.6em;"></button>
+            </span>`
+        ).join('');
+    }
+    
+    if (skillsHidden) {
+        skillsHidden.value = JSON.stringify(skills);
+    }
+}
+
+// Skills input handler
+document.addEventListener('DOMContentLoaded', function() {
+    const skillsInput = document.getElementById('skills_input');
+    if (skillsInput) {
+        skillsInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addSkill(this.value);
+                this.value = '';
+            }
+        });
+    }
+    
+    // Skill suggestions
+    document.querySelectorAll('.skill-suggestion').forEach(button => {
+        button.addEventListener('click', function() {
+            addSkill(this.textContent);
+            this.style.display = 'none';
+        });
+    });
+    
+    // Photo preview
+    const photoInput = document.getElementById('profile_photo');
+    if (photoInput) {
+        photoInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photo_preview');
+                    preview.innerHTML = `<img src="${e.target.result}" style="width: 150px; height: 150px; object-fit: cover;" class="rounded-circle">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

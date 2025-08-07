@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ example.title }} - Cover Letter Template - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        {{ example.title }}
+                        <span class="badge bg-primary ms-2">Template</span>
+                    </h1>
+                    <p class="lead text-muted">Professional cover letter template for {{ example.company }}.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('cover_letter_examples') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-2"></i>Back to Templates
+                    </a>
+                    <a href="{{ url_for('use_example_template', example_key=example_key) }}" class="btn btn-success">
+                        <i data-feather="copy" class="me-2"></i>Use This Template
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Information -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold mb-3">Template Details</h5>
+                            <div class="mb-3">
+                                <strong>Company:</strong>
+                                <span class="badge bg-primary ms-2">{{ example.company }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Position:</strong>
+                                <span class="badge bg-secondary ms-2">{{ example.position }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Best For:</strong>
+                                <p class="text-muted mb-0">This template is optimized for {{ example.position }} roles at {{ example.company }} or similar companies with comparable culture and values.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="fw-bold mb-3">Key Features</h5>
+                            <ul class="list-unstyled">
+                                {% for feature in example.key_features %}
+                                <li class="mb-2">
+                                    <i data-feather="star" class="text-warning me-2" style="width: 16px; height: 16px;"></i>
+                                    {{ feature }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Preview -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="file-text" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Template Preview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="cover-letter-preview" style="background-color: #f8f9fa; padding: 30px; border-radius: 8px; min-height: 500px;">
+                        <div style="white-space: pre-line; font-family: 'Times New Roman', serif; line-height: 1.6; color: #333;">
+                            {{ example.content }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customization Tips -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="lightbulb" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Customization Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center mb-3">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                    <i data-feather="edit-3" class="text-primary" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <h6 class="fw-bold">Personalize</h6>
+                                <p class="text-muted small mb-0">Replace placeholder text with your specific details</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center mb-3">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                    <i data-feather="search" class="text-success" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <h6 class="fw-bold">Research</h6>
+                                <p class="text-muted small mb-0">Add specific company information and recent achievements</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center mb-3">
+                                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                    <i data-feather="target" class="text-info" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <h6 class="fw-bold">Match</h6>
+                                <p class="text-muted small mb-0">Align content with job requirements and company culture</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center mb-3">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                    <i data-feather="check-circle" class="text-warning" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <h6 class="fw-bold">Review</h6>
+                                <p class="text-muted small mb-0">Proofread for grammar and formatting consistency</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Feather icons
+    feather.replace();
+</script>
+{% endblock %}

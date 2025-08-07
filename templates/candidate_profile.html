@@ -1,0 +1,951 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Profile - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Profile Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <div class="position-relative">
+                                {% if candidate.profile_image_url %}
+                                    <img src="{{ candidate.profile_image_url }}" alt="Profile" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                        <i data-feather="user" style="width: 48px; height: 48px;" class="text-primary"></i>
+                                    </div>
+                                {% endif %}
+                                <button class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" data-bs-toggle="modal" data-bs-target="#uploadPhotoModal">
+                                    <i data-feather="camera" style="width: 16px; height: 16px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h2 class="mb-1">{{ candidate.first_name }} {{ candidate.last_name }}</h2>
+                            <p class="text-muted mb-2">{{ candidate.job_title or 'Professional' }}</p>
+                            <p class="mb-2">
+                                <i data-feather="map-pin" class="me-2" style="width: 16px; height: 16px;"></i>
+                                {{ candidate.location or 'Location not specified' }}
+                            </p>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-success">{{ candidate.availability or 'Available' }}</span>
+                                <span class="badge bg-info">{{ candidate.experience_years or 0 }} years experience</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            {% if current_user.role in ['admin', 'recruiter'] %}
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('schedule_google_meet') }}?candidate_id={{ candidate.id }}" class="btn btn-success">
+                                    <i data-feather="video" class="me-1"></i>
+                                    Schedule Google Meet
+                                </a>
+                                <a href="{{ url_for('edit_candidate_profile') }}" class="btn btn-outline-primary">
+                                    <i data-feather="edit-2" class="me-1"></i>
+                                    Edit Profile
+                                </a>
+                            </div>
+                            {% else %}
+                            <a href="{{ url_for('edit_candidate_profile') }}" class="btn btn-outline-primary">
+                                <i data-feather="edit-2" class="me-1"></i>
+                                Edit Profile
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Sections -->
+    <div class="row g-4">
+        <!-- About Section -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">About</h5>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editAboutModal">
+                        <i data-feather="edit-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <p>{{ candidate.bio or 'No bio provided yet. Click edit to add your professional summary and highlight your key achievements.' }}</p>
+                </div>
+            </div>
+
+            <!-- Skills Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Skills</h5>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editSkillsModal">
+                        <i data-feather="plus" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if candidate.skills %}
+                        {% set skills_list = candidate.skills | from_json if candidate.skills else [] %}
+                        <div class="skills-container">
+                            {% for skill in skills_list %}
+                                <span class="badge bg-primary">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No skills added yet. Add your technical and soft skills to improve your profile visibility.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Experience Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Work Experience</h5>
+                    <div>
+                        {% if candidate.experience %}
+                            {% set experience_list = candidate.experience | from_json if candidate.experience else [] %}
+                            <a href="{{ url_for('work_experience_details', user_id=candidate.id) }}" class="btn btn-sm btn-outline-info me-2">
+                                <i data-feather="eye" style="width: 16px; height: 16px;"></i>
+                                View All ({{ experience_list|length }})
+                            </a>
+                        {% endif %}
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editExperienceModal">
+                            <i data-feather="plus" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if candidate.experience %}
+                        {% set experience_list = candidate.experience | from_json if candidate.experience else [] %}
+                        {% for exp in experience_list %}
+                            {% if loop.index <= 3 %}
+                                <div class="mb-3 pb-3 {% if not loop.last and loop.index < 3 %}border-bottom{% endif %}">
+                                    <h6 class="mb-1">{{ exp.title }}</h6>
+                                    <p class="text-muted mb-1">{{ exp.company }} • {{ exp.duration }}</p>
+                                    <p class="mb-0">{{ exp.description[:150] }}{% if exp.description|length > 150 %}...{% endif %}</p>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if experience_list|length > 3 %}
+                            <div class="text-center">
+                                <a href="{{ url_for('work_experience_details', user_id=candidate.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i data-feather="more-horizontal" style="width: 16px; height: 16px;"></i>
+                                    View All {{ experience_list|length }} Work Experiences
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">No work experience added yet. Add your professional experience to showcase your career journey.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Education Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Education</h5>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editEducationModal">
+                        <i data-feather="plus" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if candidate.education %}
+                        {% set education_list = candidate.education | from_json if candidate.education else [] %}
+                        {% for edu in education_list %}
+                            <div class="mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                                <h6 class="mb-1">{{ edu.degree }}</h6>
+                                <p class="text-muted mb-1">{{ edu.institution }} • {{ edu.year }}</p>
+                                {% if edu.description %}
+                                    <p class="mb-0">{{ edu.description }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No education added yet. Add your educational background and qualifications.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Contact Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i data-feather="mail" class="me-2" style="width: 16px; height: 16px;"></i>
+                        <span>{{ candidate.email }}</span>
+                    </div>
+                    {% if candidate.phone %}
+                        <div class="mb-3">
+                            <i data-feather="phone" class="me-2" style="width: 16px; height: 16px;"></i>
+                            <span>{{ candidate.phone }}</span>
+                        </div>
+                    {% endif %}
+                    {% if candidate.linkedin_url %}
+                        <div class="mb-3">
+                            <i data-feather="linkedin" class="me-2" style="width: 16px; height: 16px;"></i>
+                            <a href="{{ candidate.linkedin_url }}" target="_blank">LinkedIn Profile</a>
+                        </div>
+                    {% endif %}
+                    {% if candidate.portfolio_url %}
+                        <div class="mb-3">
+                            <i data-feather="globe" class="me-2" style="width: 16px; height: 16px;"></i>
+                            <a href="{{ candidate.portfolio_url }}" target="_blank">Portfolio</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Security Settings removed - Ez2source focuses on core talent intelligence features -->
+
+            <!-- Profile Completion -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Profile Completion</h5>
+                </div>
+                <div class="card-body">
+                    {% set completion_percentage = calculate_profile_completion(candidate) %}
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ completion_percentage }}%"></div>
+                    </div>
+                    <p class="mb-2">{{ completion_percentage }}% Complete</p>
+                    <small class="text-muted">Complete your profile to get better job matches</small>
+                    
+                    {% if completion_percentage < 100 %}
+                        <hr>
+                        <h6>Missing Sections:</h6>
+                        <ul class="list-unstyled small">
+                            {% if not candidate.bio %}<li>• Professional bio</li>{% endif %}
+                            {% if not candidate.skills %}<li>• Skills and expertise</li>{% endif %}
+                            {% if not candidate.experience %}<li>• Work experience</li>{% endif %}
+                            {% if not candidate.education %}<li>• Education background</li>{% endif %}
+                            {% if not candidate.profile_image_url %}<li>• Profile photo</li>{% endif %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Smart Resume Import -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="upload" class="me-2"></i>
+                        Smart Resume Import
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">Upload your resume and we'll automatically extract your complete profile information using AI. Our comprehensive system captures both basic profile data and detailed work experience in one process.</p>
+                    
+                    <!-- Upload Status Alert -->
+                    <div id="uploadStatus" class="alert alert-info d-none" role="alert">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                            <span id="statusText">Processing your resume with comprehensive AI extraction...</span>
+                        </div>
+                    </div>
+                    
+                    <form action="{{ url_for('comprehensive_resume_import') }}" method="POST" enctype="multipart/form-data" id="comprehensiveResumeForm">
+                        <div class="mb-3">
+                            <label for="resumeFile" class="form-label small">Choose Resume File</label>
+                            <input type="file" class="form-control form-control-sm" id="resumeFile" name="resume" accept=".pdf,.docx,.doc,.txt" required>
+                            <div class="form-text">Supported: PDF, DOC, DOCX, TXT (Max 5MB)</div>
+                        </div>
+                        
+                        <!-- Features included in comprehensive import -->
+                        <div class="mb-3">
+                            <small class="text-muted">This comprehensive import includes:</small>
+                            <ul class="list-unstyled small text-muted mt-1">
+                                <li>✅ Basic profile information (name, email, phone, location)</li>
+                                <li>✅ Professional skills and expertise</li>
+                                <li>✅ Education background and certifications</li>
+                                <li>✅ Detailed work experience with achievements</li>
+                                <li>✅ Career progression and responsibilities</li>
+                                <li>✅ Professional summary and bio</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success" id="uploadBtn">
+                                <i data-feather="upload" class="me-2"></i>
+                                <span id="uploadText">Upload & Auto-Fill Complete Profile</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <i data-feather="shield" class="me-1" style="width: 12px; height: 12px;"></i>
+                            Your resume is processed securely and deleted after extraction
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                            <i data-feather="home" class="me-2"></i>
+                            Go to Dashboard
+                        </a>
+                        <a href="{{ url_for('cv_checker') }}" class="btn btn-warning">
+                            <i data-feather="search" class="me-2"></i>
+                            CV Checker
+                        </a>
+                        <button class="btn btn-outline-success" onclick="downloadResume()">
+                            <i data-feather="download" class="me-2"></i>
+                            Download Resume
+                        </button>
+                        <button class="btn btn-outline-info" onclick="shareProfile()">
+                            <i data-feather="share-2" class="me-2"></i>
+                            Share Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview History -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Interview History</h5>
+                </div>
+                <div class="card-body">
+                    {% if candidate.interview_responses %}
+                        {% for response in candidate.interview_responses[-3:] %}
+                            <div class="mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                                <h6 class="mb-1">{{ response.interview.title }}</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ response.completed_at.strftime('%Y-%m-%d') }}</small>
+                                    <span class="badge bg-{{ 'success' if response.ai_score >= 70 else ('warning' if response.ai_score >= 50 else 'danger') }}">
+                                        {{ "%.1f"|format(response.ai_score) }}%
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        {% if candidate.interview_responses|length > 3 %}
+                            <a href="{{ url_for('candidate_interview_history') }}" class="btn btn-sm btn-outline-primary w-100">
+                                View All Interviews
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small">No interviews completed yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg" style="max-width: min(95vw, 900px); margin: 0.5rem auto;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_candidate_profile') }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label required">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ candidate.first_name or '' }}" 
+                                       required data-validate="text" data-field-name="First Name"
+                                       placeholder="Enter your first name">
+                                <div class="form-error-message" id="first_name-error"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label required">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ candidate.last_name or '' }}" 
+                                       required data-validate="text" data-field-name="Last Name"
+                                       placeholder="Enter your last name">
+                                <div class="form-error-message" id="last_name-error"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label required">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ candidate.email or '' }}" 
+                               required data-validate="email" data-field-name="Email"
+                               placeholder="Enter your email address">
+                        <div class="form-error-message" id="email-error"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">Job Title</label>
+                        <input type="text" class="form-control" id="job_title" name="job_title" value="{{ candidate.job_title or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" name="location" value="{{ candidate.location or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label required">Phone</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               value="{{ candidate.phone or '' }}" 
+                               required data-validate="phone" data-field-name="Phone Number"
+                               pattern="[0-9+\-\s\(\)]+" 
+                               title="Please enter a valid phone number (numbers, +, -, spaces, and parentheses only)"
+                               oninput="this.value = this.value.replace(/[^0-9+\-\s\(\)]/g, '')"
+                               placeholder="e.g., +1-555-123-4567">
+                        <div class="form-error-message" id="phone-error"></div>
+                        <div class="form-text">Numbers, +, -, spaces, and parentheses only</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="linkedin_url" class="form-label">LinkedIn URL</label>
+                                <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" 
+                                       value="{{ candidate.linkedin_url or '' }}" 
+                                       data-validate="url" data-field-name="LinkedIn URL"
+                                       placeholder="https://linkedin.com/in/yourprofile">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="portfolio_url" class="form-label">Portfolio URL</label>
+                                <input type="url" class="form-control" id="portfolio_url" name="portfolio_url" 
+                                       value="{{ candidate.portfolio_url or '' }}" 
+                                       data-validate="url" data-field-name="Portfolio URL"
+                                       placeholder="https://yourportfolio.com">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Professional Bio</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Tell employers about your professional background, achievements, and career goals...">{{ candidate.bio or '' }}</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="experience_years" class="form-label">Years of Experience</label>
+                                <select class="form-control" id="experience_years" name="experience_years">
+                                    <option value="">Select experience</option>
+                                    {% for i in range(0, 21) %}
+                                        <option value="{{ i }}" {% if candidate.experience_years == i %}selected{% endif %}>
+                                            {{ i }} year{{ 's' if i != 1 else '' }}
+                                        </option>
+                                    {% endfor %}
+                                    <option value="20+" {% if candidate.experience_years and candidate.experience_years > 20 %}selected{% endif %}>20+ years</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="availability" class="form-label">Availability</label>
+                                <select class="form-control" id="availability" name="availability">
+                                    <option value="immediate" {% if candidate.availability == 'immediate' %}selected{% endif %}>Available immediately</option>
+                                    <option value="2_weeks" {% if candidate.availability == '2_weeks' %}selected{% endif %}>2 weeks notice</option>
+                                    <option value="1_month" {% if candidate.availability == '1_month' %}selected{% endif %}>1 month notice</option>
+                                    <option value="2_months" {% if candidate.availability == '2_months' %}selected{% endif %}>2+ months notice</option>
+                                    <option value="not_looking" {% if candidate.availability == 'not_looking' %}selected{% endif %}>Not actively looking</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="salary_expectation" class="form-label required">Salary Expectation</label>
+                        <select class="form-control" id="salary_expectation" name="salary_expectation" 
+                                required data-validate="text" data-field-name="Salary Expectation">
+                            <option value="">Select salary range</option>
+                            <option value="$30,000 - $40,000" {% if candidate.salary_expectation == '$30,000 - $40,000' %}selected{% endif %}>$30,000 - $40,000</option>
+                            <option value="$40,000 - $50,000" {% if candidate.salary_expectation == '$40,000 - $50,000' %}selected{% endif %}>$40,000 - $50,000</option>
+                            <option value="$50,000 - $60,000" {% if candidate.salary_expectation == '$50,000 - $60,000' %}selected{% endif %}>$50,000 - $60,000</option>
+                            <option value="$60,000 - $70,000" {% if candidate.salary_expectation == '$60,000 - $70,000' %}selected{% endif %}>$60,000 - $70,000</option>
+                            <option value="$70,000 - $80,000" {% if candidate.salary_expectation == '$70,000 - $80,000' %}selected{% endif %}>$70,000 - $80,000</option>
+                            <option value="$80,000 - $90,000" {% if candidate.salary_expectation == '$80,000 - $90,000' %}selected{% endif %}>$80,000 - $90,000</option>
+                            <option value="$90,000 - $100,000" {% if candidate.salary_expectation == '$90,000 - $100,000' %}selected{% endif %}>$90,000 - $100,000</option>
+                            <option value="$100,000 - $120,000" {% if candidate.salary_expectation == '$100,000 - $120,000' %}selected{% endif %}>$100,000 - $120,000</option>
+                            <option value="$120,000 - $140,000" {% if candidate.salary_expectation == '$120,000 - $140,000' %}selected{% endif %}>$120,000 - $140,000</option>
+                            <option value="$140,000 - $160,000" {% if candidate.salary_expectation == '$140,000 - $160,000' %}selected{% endif %}>$140,000 - $160,000</option>
+                            <option value="$160,000 - $180,000" {% if candidate.salary_expectation == '$160,000 - $180,000' %}selected{% endif %}>$160,000 - $180,000</option>
+                            <option value="$180,000 - $200,000" {% if candidate.salary_expectation == '$180,000 - $200,000' %}selected{% endif %}>$180,000 - $200,000</option>
+                            <option value="$200,000 - $250,000" {% if candidate.salary_expectation == '$200,000 - $250,000' %}selected{% endif %}>$200,000 - $250,000</option>
+                            <option value="$250,000+" {% if candidate.salary_expectation == '$250,000+' %}selected{% endif %}>$250,000+</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Photo Modal -->
+<div class="modal fade" id="uploadPhotoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Profile Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('upload_profile_photo') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name="profile_photo" accept="image/*" required>
+                    </div>
+                    <small class="text-muted">Supported formats: JPG, PNG, GIF. Max size: 2MB</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload Photo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editSection(section) {
+    // Open specific section editor
+    window.location.href = `/candidate/edit/${section}`;
+}
+
+function downloadResume() {
+    window.location.href = '/candidate/download-resume';
+}
+
+function shareProfile() {
+    const profileUrl = window.location.href;
+    if (navigator.share) {
+        navigator.share({
+            title: 'My Ez2source Profile',
+            url: profileUrl
+        });
+    } else {
+        navigator.clipboard.writeText(profileUrl);
+        alert('Profile URL copied to clipboard!');
+    }
+}
+
+function calculate_profile_completion(candidate) {
+    let completed = 0;
+    const total = 5;
+    
+    if (candidate.bio) completed++;
+    if (candidate.skills) completed++;
+    if (candidate.experience) completed++;
+    if (candidate.education) completed++;
+    if (candidate.profile_image_url) completed++;
+    
+    return Math.round((completed / total) * 100);
+}
+
+// Handle current job checkbox
+document.addEventListener('DOMContentLoaded', function() {
+    const currentJobCheckbox = document.getElementById('current_job');
+    const endDateInput = document.getElementById('exp_end_date');
+    
+    if (currentJobCheckbox && endDateInput) {
+        currentJobCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                endDateInput.disabled = true;
+                endDateInput.value = '';
+            } else {
+                endDateInput.disabled = false;
+            }
+        });
+    }
+    
+    // Handle comprehensive resume import form
+    const comprehensiveResumeForm = document.getElementById('comprehensiveResumeForm');
+    if (comprehensiveResumeForm) {
+        comprehensiveResumeForm.addEventListener('submit', function(e) {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadText = document.getElementById('uploadText');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (uploadBtn && uploadText && uploadStatus && statusText) {
+                uploadBtn.disabled = true;
+                uploadText.innerHTML = 'Processing Resume...';
+                uploadStatus.classList.remove('d-none');
+                statusText.textContent = 'Extracting complete profile information and work experience...';
+            }
+        });
+    }
+    
+    // Fix modal hanging issue - force modal to be interactive
+    setTimeout(() => {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            // Remove any existing backdrops
+            const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+            existingBackdrops.forEach(backdrop => backdrop.remove());
+            
+            // Force modal to be interactive
+            modal.style.pointerEvents = 'auto';
+            modal.style.zIndex = '10000';
+            
+            // Force all modal content to be interactive
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.pointerEvents = 'auto';
+                modalContent.style.zIndex = '10001';
+            }
+            
+            // Fix modal dialog
+            const modalDialog = modal.querySelector('.modal-dialog');
+            if (modalDialog) {
+                modalDialog.style.pointerEvents = 'auto';
+                modalDialog.style.zIndex = '10002';
+            }
+        });
+    }, 500);
+});
+</script>
+
+<!-- Edit About Modal -->
+<div class="modal fade" id="editAboutModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit About Section</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_profile_section') }}">
+                <input type="hidden" name="section" value="about">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="bio_edit" class="form-label">Professional Bio</label>
+                        <textarea class="form-control" id="bio_edit" name="bio" rows="6" 
+                                  placeholder="Tell employers about your professional background, achievements, and career goals...">{{ candidate.bio or '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Skills Modal -->
+<div class="modal fade" id="editSkillsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Skills</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_profile_section') }}">
+                <input type="hidden" name="section" value="skills">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="skills_edit" class="form-label">Skills</label>
+                        <input type="text" class="form-control" id="skills_edit" name="skills" 
+                               value="{% if candidate.skills %}{% set skills_list = candidate.skills | from_json if candidate.skills else [] %}{{ skills_list | join(', ') }}{% endif %}"
+                               placeholder="Enter skills separated by commas (e.g., JavaScript, Python, React)">
+                        <small class="text-muted">Separate skills with commas</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Experience Modal -->
+<div class="modal fade" id="editExperienceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Work Experience</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_profile_section') }}">
+                <input type="hidden" name="section" value="experience">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="exp_title" class="form-label">Job Title</label>
+                                <input type="text" class="form-control" id="exp_title" name="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="exp_company" class="form-label">Company</label>
+                                <input type="text" class="form-control" id="exp_company" name="company" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="exp_start_date" class="form-label">Start Date</label>
+                                <input type="month" class="form-control" id="exp_start_date" name="start_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="exp_end_date" class="form-label">End Date</label>
+                                <input type="month" class="form-control" id="exp_end_date" name="end_date">
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="current_job" name="current_job">
+                                    <label class="form-check-label" for="current_job">
+                                        Currently working here
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exp_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="exp_description" name="description" rows="4" 
+                                  placeholder="Describe your role, responsibilities, and achievements..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Experience</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Education Modal -->
+<div class="modal fade" id="editEducationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Education</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_profile_section') }}">
+                <input type="hidden" name="section" value="education">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edu_degree" class="form-label">Degree</label>
+                                <input type="text" class="form-control" id="edu_degree" name="degree" 
+                                       placeholder="e.g., Bachelor of Science" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edu_field" class="form-label">Field of Study</label>
+                                <input type="text" class="form-control" id="edu_field" name="field" 
+                                       placeholder="e.g., Computer Science" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edu_institution" class="form-label">Institution</label>
+                                <input type="text" class="form-control" id="edu_institution" name="institution" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edu_year" class="form-label">Graduation Year</label>
+                                <input type="number" class="form-control" id="edu_year" name="year" 
+                                       min="1950" max="2030" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edu_description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="edu_description" name="description" rows="3" 
+                                  placeholder="Additional details about your education..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Education</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Resume Upload Handler with Enhanced Progress
+document.addEventListener('DOMContentLoaded', function() {
+    const resumeForm = document.getElementById('resumeUploadForm');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadText = document.getElementById('uploadText');
+    const resumeFile = document.getElementById('resumeFile');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const statusText = document.getElementById('statusText');
+    
+    if (resumeForm) {
+        resumeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!resumeFile.files[0]) {
+                showStatus('Please select a resume file first.', 'warning');
+                return;
+            }
+            
+            // Check file size (5MB limit)
+            if (resumeFile.files[0].size > 5 * 1024 * 1024) {
+                showStatus('File size must be less than 5MB. Please choose a smaller file.', 'danger');
+                return;
+            }
+            
+            // Show processing status
+            showStatus('Uploading and analyzing your resume with AI...', 'info', true);
+            
+            // Update button state
+            uploadBtn.disabled = true;
+            uploadText.textContent = 'Processing...';
+            uploadBtn.classList.remove('btn-success');
+            uploadBtn.classList.add('btn-warning');
+            
+            // Create form data and submit
+            const formData = new FormData(resumeForm);
+            
+            fetch(resumeForm.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showStatus('Resume processed successfully! Updating your profile...', 'success', false);
+                    uploadText.textContent = 'Success! Reloading...';
+                    uploadBtn.classList.remove('btn-warning');
+                    uploadBtn.classList.add('btn-success');
+                    
+                    // Reload page after a delay to show updated profile
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    throw new Error('Upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                showStatus('Resume processing failed. Please try again or contact support.', 'danger', false);
+                uploadText.textContent = 'Try Again';
+                uploadBtn.classList.remove('btn-warning');
+                uploadBtn.classList.add('btn-danger');
+                uploadBtn.disabled = false;
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    uploadText.textContent = 'Upload & Auto-Fill Profile';
+                    uploadBtn.classList.remove('btn-danger');
+                    uploadBtn.classList.add('btn-success');
+                    hideStatus();
+                }, 5000);
+            });
+        });
+    }
+    
+    function showStatus(message, type = 'info', showSpinner = false) {
+        statusText.textContent = message;
+        uploadStatus.className = `alert alert-${type}`;
+        uploadStatus.classList.remove('d-none');
+        
+        const spinner = uploadStatus.querySelector('.spinner-border');
+        if (showSpinner) {
+            spinner.classList.remove('d-none');
+        } else {
+            spinner.classList.add('d-none');
+        }
+    }
+    
+    function hideStatus() {
+        uploadStatus.classList.add('d-none');
+    }
+});
+
+// File validation on selection
+document.getElementById('resumeFile')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const fileSize = file.size / 1024 / 1024; // Convert to MB
+        const fileName = file.name.toLowerCase();
+        const allowedTypes = ['.pdf', '.docx', '.doc', '.txt'];
+        
+        // Check file type
+        const isValidType = allowedTypes.some(type => fileName.endsWith(type));
+        if (!isValidType) {
+            alert('Please upload a PDF, DOC, DOCX, or TXT file.');
+            e.target.value = '';
+            return;
+        }
+        
+        // Check file size
+        if (fileSize > 5) {
+            alert('File size must be less than 5MB.');
+            e.target.value = '';
+            return;
+        }
+        
+        // Update upload button text to show selected file
+        const uploadText = document.getElementById('uploadText');
+        if (uploadText) {
+            uploadText.textContent = `Process ${file.name}`;
+        }
+    }
+});
+</script>
+
+<!-- Disable 2FA Modal -->
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('change_password') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" name="current_password" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" name="new_password" required>
+                        <div class="form-text">Password must be at least 8 characters long</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

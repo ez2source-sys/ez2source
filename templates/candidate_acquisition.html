@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Acquisition Tools - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold">Candidate Acquisition Tools</h2>
+            <p class="text-muted">Multiple innovative ways to connect with and register candidates</p>
+        </div>
+    </div>
+
+    <!-- QR Code Generator -->
+    <div class="row mb-5">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="smartphone" class="me-2"></i>
+                        QR Code Registration
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <canvas id="qrcode" width="200" height="200" class="border rounded mb-3"></canvas>
+                    <p class="mb-3">Candidates can scan this QR code to register instantly</p>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="qr_link" readonly value="{{ request.url_root }}candidate/mobile-register">
+                        <button class="btn btn-outline-primary" onclick="copyQRLink()">
+                            <i data-feather="copy"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary" onclick="downloadQR()">Download QR Code</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Social Media Integration -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="share-2" class="me-2"></i>
+                        Social Media Links
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">LinkedIn Post Template</label>
+                        <textarea class="form-control" rows="3" readonly>🚀 Exciting opportunity at TechCorp! Join our talent pool and get matched with your dream job. 
+
+Register now: {{ request.url_root }}candidate/register
+
+#jobs #careers #hiring #talentiq</textarea>
+                        <button class="btn btn-outline-info btn-sm mt-2" onclick="shareOnLinkedIn()">
+                            <i data-feather="linkedin" class="me-1"></i>
+                            Share on LinkedIn
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Twitter/X Template</label>
+                        <textarea class="form-control" rows="2" readonly>Looking for your next career move? 🎯 Join Ez2source and get matched with top companies! {{ request.url_root }}candidate/register #careers #jobs</textarea>
+                        <button class="btn btn-outline-dark btn-sm mt-2" onclick="shareOnTwitter()">
+                            <i data-feather="twitter" class="me-1"></i>
+                            Share on X
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Templates -->
+    <div class="row mb-5">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="mail" class="me-2"></i>
+                        Email Invitation Templates
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Direct Invitation</h6>
+                            <div class="bg-light p-3 rounded mb-3">
+                                <strong>Subject:</strong> Exclusive Career Opportunity at TechCorp<br><br>
+                                <strong>Body:</strong><br>
+                                Hi [Name],<br><br>
+                                I came across your profile and think you'd be a great fit for opportunities at TechCorp. We're using Ez2source to streamline our hiring process and would love to have you in our talent pool.<br><br>
+                                Register here: <a href="{{ request.url_root }}candidate/register">{{ request.url_root }}candidate/register</a><br><br>
+                                Best regards,<br>
+                                [Your Name]
+                            </div>
+                            <button class="btn btn-outline-primary" onclick="copyEmailTemplate('direct')">Copy Template</button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Referral Request</h6>
+                            <div class="bg-light p-3 rounded mb-3">
+                                <strong>Subject:</strong> Know any great candidates? Help us find talent!<br><br>
+                                <strong>Body:</strong><br>
+                                Hi [Name],<br><br>
+                                We're expanding our team and looking for talented professionals. If you know anyone who might be interested, please share this registration link with them:<br><br>
+                                <a href="{{ request.url_root }}candidate/register">{{ request.url_root }}candidate/register</a><br><br>
+                                We appreciate any referrals!<br>
+                                [Your Name]
+                            </div>
+                            <button class="btn btn-outline-primary" onclick="copyEmailTemplate('referral')">Copy Template</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Website Embeds -->
+    <div class="row mb-5">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="code" class="me-2"></i>
+                        Website Integration Code
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Registration Button</h6>
+                            <pre class="bg-light p-3 rounded"><code>&lt;a href="{{ request.url_root }}candidate/register" 
+   class="btn btn-primary"
+   target="_blank"&gt;
+   Join Our Talent Pool
+&lt;/a&gt;</code></pre>
+                            <button class="btn btn-outline-primary btn-sm" onclick="copyCode('button')">Copy Code</button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Embedded Widget</h6>
+                            <pre class="bg-light p-3 rounded"><code>&lt;iframe src="{{ request.url_root }}candidate/register"
+        width="400" 
+        height="600"
+        frameborder="0"&gt;
+&lt;/iframe&gt;</code></pre>
+                            <button class="btn btn-outline-primary btn-sm" onclick="copyCode('widget')">Copy Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile App Deep Links -->
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="smartphone" class="me-2"></i>
+                        Mobile App Integration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Mobile Registration URL</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" readonly value="{{ request.url_root }}candidate/mobile-register">
+                            <button class="btn btn-outline-primary" onclick="copyMobileLink()">
+                                <i data-feather="copy"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Optimized for mobile devices with simplified registration flow</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">SMS Template</label>
+                        <textarea class="form-control" rows="2" readonly>Hi! TechCorp is hiring and we think you'd be a great fit. Register here: {{ request.url_root }}candidate/mobile-register</textarea>
+                        <button class="btn btn-outline-success btn-sm mt-2" onclick="copySMSTemplate()">Copy SMS Template</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="trending-up" class="me-2"></i>
+                        Registration Stats
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>This Week</h6>
+                        <div class="d-flex justify-content-between">
+                            <span>Direct registrations:</span>
+                            <strong>12</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>QR code scans:</span>
+                            <strong>8</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Mobile registrations:</span>
+                            <strong>15</strong>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <h4 class="text-primary">35</h4>
+                        <small class="text-muted">Total new candidates</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Invitation Tools -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="users" class="me-2"></i>
+                        Bulk Invitation Tools
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>CSV Email List Upload</h6>
+                            <form method="POST" action="/candidate/bulk-invite" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" name="email_list" accept=".csv" required>
+                                    <small class="text-muted">Upload CSV with columns: email, first_name, last_name</small>
+                                </div>
+                                <div class="mb-3">
+                                    <select class="form-control" name="template">
+                                        <option value="direct">Direct Invitation</option>
+                                        <option value="referral">Referral Request</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Send Bulk Invitations</button>
+                            </form>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Sample CSV Format</h6>
+                            <pre class="bg-light p-3 rounded small">email,first_name,last_name
+john.doe@email.com,John,Doe
+jane.smith@email.com,Jane,Smith
+alex.johnson@email.com,Alex,Johnson</pre>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="downloadSampleCSV()">Download Sample CSV</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// QR Code generation using a simple pattern
+function generateQRCode() {
+    const canvas = document.getElementById('qrcode');
+    const ctx = canvas.getContext('2d');
+    const size = 8;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, 200, 200);
+    ctx.fillStyle = '#000';
+    
+    // Generate a simple QR-like pattern
+    for(let i = 0; i < 25; i++) {
+        for(let j = 0; j < 25; j++) {
+            // Create a deterministic pattern based on position
+            if((i + j) % 3 === 0 || (i * j) % 7 === 0) {
+                ctx.fillRect(i * size, j * size, size, size);
+            }
+        }
+    }
+    
+    // Add corner markers
+    ctx.fillRect(0, 0, 56, 56);
+    ctx.fillRect(144, 0, 56, 56);
+    ctx.fillRect(0, 144, 56, 56);
+    
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(8, 8, 40, 40);
+    ctx.fillRect(152, 8, 40, 40);
+    ctx.fillRect(8, 152, 40, 40);
+    
+    ctx.fillStyle = '#000';
+    ctx.fillRect(16, 16, 24, 24);
+    ctx.fillRect(160, 16, 24, 24);
+    ctx.fillRect(16, 160, 24, 24);
+}
+
+function copyQRLink() {
+    const linkInput = document.getElementById('qr_link');
+    linkInput.select();
+    document.execCommand('copy');
+    showCopySuccess('QR link copied!');
+}
+
+function downloadQR() {
+    const canvas = document.getElementById('qrcode');
+    const link = document.createElement('a');
+    link.download = 'talentiq-registration-qr.png';
+    link.href = canvas.toDataURL();
+    link.click();
+}
+
+function shareOnLinkedIn() {
+    const text = encodeURIComponent('🚀 Exciting opportunity at TechCorp! Join our talent pool and get matched with your dream job.\n\nRegister now: ' + window.location.origin + '/candidate/register\n\n#jobs #careers #hiring #talentiq');
+    window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(window.location.origin + '/candidate/register') + '&summary=' + text, '_blank');
+}
+
+function shareOnTwitter() {
+    const text = encodeURIComponent('Looking for your next career move? 🎯 Join Ez2source and get matched with top companies! ' + window.location.origin + '/candidate/register #careers #jobs');
+    window.open('https://twitter.com/intent/tweet?text=' + text, '_blank');
+}
+
+function copyEmailTemplate(type) {
+    let template = '';
+    if (type === 'direct') {
+        template = `Subject: Exclusive Career Opportunity at TechCorp
+
+Hi [Name],
+
+I came across your profile and think you'd be a great fit for opportunities at TechCorp. We're using Ez2source to streamline our hiring process and would love to have you in our talent pool.
+
+Register here: ${window.location.origin}/candidate/register
+
+Best regards,
+[Your Name]`;
+    } else if (type === 'referral') {
+        template = `Subject: Know any great candidates? Help us find talent!
+
+Hi [Name],
+
+We're expanding our team and looking for talented professionals. If you know anyone who might be interested, please share this registration link with them:
+
+${window.location.origin}/candidate/register
+
+We appreciate any referrals!
+[Your Name]`;
+    }
+    
+    navigator.clipboard.writeText(template);
+    showCopySuccess('Email template copied!');
+}
+
+function copyCode(type) {
+    let code = '';
+    if (type === 'button') {
+        code = `<a href="${window.location.origin}/candidate/register" 
+   class="btn btn-primary"
+   target="_blank">
+   Join Our Talent Pool
+</a>`;
+    } else if (type === 'widget') {
+        code = `<iframe src="${window.location.origin}/candidate/register"
+        width="400" 
+        height="600"
+        frameborder="0">
+</iframe>`;
+    }
+    
+    navigator.clipboard.writeText(code);
+    showCopySuccess('Code copied!');
+}
+
+function copyMobileLink() {
+    const link = window.location.origin + '/candidate/mobile-register';
+    navigator.clipboard.writeText(link);
+    showCopySuccess('Mobile link copied!');
+}
+
+function copySMSTemplate() {
+    const template = `Hi! TechCorp is hiring and we think you'd be a great fit. Register here: ${window.location.origin}/candidate/mobile-register`;
+    navigator.clipboard.writeText(template);
+    showCopySuccess('SMS template copied!');
+}
+
+function downloadSampleCSV() {
+    const csvContent = "email,first_name,last_name\njohn.doe@email.com,John,Doe\njane.smith@email.com,Jane,Smith\nalex.johnson@email.com,Alex,Johnson";
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'sample_candidate_list.csv';
+    link.click();
+}
+
+function showCopySuccess(message) {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+    toast.style.zIndex = '9999';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Initialize QR code on page load
+document.addEventListener('DOMContentLoaded', function() {
+    generateQRCode();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,601 @@
+{% extends "base.html" %}
+
+{% block title %}HR Registration - Ez2source{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control, .form-select {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.is-valid:not(:placeholder-shown) {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.btn-primary {
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    transform: none;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.phone-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.phone-input-group .form-select {
+    flex: 0 0 auto;
+    min-width: 150px;
+}
+
+.phone-input-group .form-control {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .phone-input-group {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .phone-input-group .form-select {
+        min-width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Navigation -->
+    <div class="row pt-3">
+        <div class="col">
+            <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-sm">
+                <i data-feather="arrow-left" class="me-2"></i>
+                Back to Registration
+            </a>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 80px; height: 80px;" class="mb-3">
+                        <h2 class="fw-bold text-dark">HR Registration</h2>
+                        <p class="text-muted">Register as an HR Professional - Verification Required</p>
+                    </div>
+
+                    <!-- Registration Process Steps -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">HR Registration Process</h6>
+                                <ol class="mb-0">
+                                    <li>Fill out the form with your professional details</li>
+                                    <li>Email verification (organization email required)</li>
+                                    <li>Admin approval from your organization or super admin</li>
+                                    <li>Receive login credentials via email</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" id="hrRegistrationForm">
+                        <!-- Display validation errors -->
+                        {% if validation_errors %}
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading">Please correct the following errors:</h6>
+                            <ul class="mb-0">
+                                {% for field, error in validation_errors.items() %}
+                                    {% if error is string %}
+                                        <li>{{ error }}</li>
+                                    {% else %}
+                                        {% for err in error %}
+                                            <li>{{ err }}</li>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- Personal Information -->
+                        <h5 class="mb-3">Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i data-feather="user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ form_data.first_name if form_data else '' }}" 
+                                           pattern="[A-Za-z\s]+" 
+                                           title="Please enter a valid first name (letters only)."
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i data-feather="user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ form_data.last_name if form_data else '' }}" 
+                                           pattern="[A-Za-z\s]+" 
+                                           title="Please enter a valid last name (letters only)."
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Professional Email Address *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="mail"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ form_data.email if form_data else '' }}" 
+                                       title="Use your company email address (e.g., yourname@company.com). Gmail/Yahoo not accepted."
+                                       required>
+                            </div>
+                            <div class="form-text">
+                                <strong>Important:</strong> Please use your official company email address (not Gmail, Yahoo, etc.)
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number *</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-select {% if validation_errors and validation_errors.country_code %}is-invalid{% endif %}" 
+                                            id="countryCode" name="country_code" required>
+                                        <option value="">Select Country</option>
+                                        <option value="+91" {% if form_data and form_data.country_code == '+91' %}selected{% endif %}>🇮🇳 +91 (India)</option>
+                                        <option value="+1" {% if form_data and form_data.country_code == '+1' %}selected{% endif %}>🇺🇸 +1 (US/Canada)</option>
+                                        <option value="+44" {% if form_data and form_data.country_code == '+44' %}selected{% endif %}>🇬🇧 +44 (UK)</option>
+                                        <option value="+86" {% if form_data and form_data.country_code == '+86' %}selected{% endif %}>🇨🇳 +86 (China)</option>
+                                        <option value="+49" {% if form_data and form_data.country_code == '+49' %}selected{% endif %}>🇩🇪 +49 (Germany)</option>
+                                        <option value="+33" {% if form_data and form_data.country_code == '+33' %}selected{% endif %}>🇫🇷 +33 (France)</option>
+                                        <option value="+81" {% if form_data and form_data.country_code == '+81' %}selected{% endif %}>🇯🇵 +81 (Japan)</option>
+                                        <option value="+82" {% if form_data and form_data.country_code == '+82' %}selected{% endif %}>🇰🇷 +82 (South Korea)</option>
+                                        <option value="+61" {% if form_data and form_data.country_code == '+61' %}selected{% endif %}>🇦🇺 +61 (Australia)</option>
+                                        <option value="+55" {% if form_data and form_data.country_code == '+55' %}selected{% endif %}>🇧🇷 +55 (Brazil)</option>
+                                        <option value="+7" {% if form_data and form_data.country_code == '+7' %}selected{% endif %}>🇷🇺 +7 (Russia)</option>
+                                        <option value="+65" {% if form_data and form_data.country_code == '+65' %}selected{% endif %}>🇸🇬 +65 (Singapore)</option>
+                                        <option value="+60" {% if form_data and form_data.country_code == '+60' %}selected{% endif %}>🇲🇾 +60 (Malaysia)</option>
+                                        <option value="+971" {% if form_data and form_data.country_code == '+971' %}selected{% endif %}>🇦🇪 +971 (UAE)</option>
+                                        <option value="+27" {% if form_data and form_data.country_code == '+27' %}selected{% endif %}>🇿🇦 +27 (South Africa)</option>
+                                    </select>
+                                    {% if validation_errors and validation_errors.country_code %}
+                                    <div class="invalid-feedback">{{ validation_errors.country_code }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i data-feather="phone"></i>
+                                        </span>
+                                        <input type="tel" class="form-control {% if validation_errors and validation_errors.local_phone %}is-invalid{% endif %}" 
+                                               id="localPhone" name="local_phone" 
+                                               value="{{ form_data.local_phone if form_data else '' }}" 
+                                               placeholder="9876543210" 
+                                               pattern="[0-9]{10,15}" 
+                                               title="Enter a valid phone number with digits only (no spaces or symbols)."
+                                               required>
+                                    </div>
+                                    {% if validation_errors and validation_errors.local_phone %}
+                                    <div class="invalid-feedback">{{ validation_errors.local_phone }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <small class="text-muted">Enter a valid phone number with digits only (no spaces or symbols).</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job_title" class="form-label">Job Title *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="briefcase"></i>
+                                </span>
+                                <input type="text" class="form-control" id="job_title" name="job_title" 
+                                       value="{{ form_data.job_title if form_data else '' }}" 
+                                       pattern="[A-Za-z\s\-]+" 
+                                       title="Please enter your job title (e.g., HR Manager, Recruiter)."
+                                       placeholder="e.g., HR Manager, Talent Acquisition Specialist" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="linkedin_url" class="form-label">LinkedIn Profile URL</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="linkedin"></i>
+                                </span>
+                                <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" 
+                                       value="{{ form_data.linkedin_url if form_data else '' }}" 
+                                       pattern="https://linkedin\.com/in/.*" 
+                                       title="Please provide a valid LinkedIn profile URL (starting with https://linkedin.com/in/...)."
+                                       placeholder="https://linkedin.com/in/your-profile">
+                            </div>
+                            <div class="form-text">Optional but recommended for verification</div>
+                        </div>
+
+                        <!-- Organization Information -->
+                        <h5 class="mb-3">Organization Information</h5>
+                        
+                        <div class="mb-3">
+                            <label for="organization_name" class="form-label">Organization Name *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="building"></i>
+                                </span>
+                                <input type="text" class="form-control" id="organization_name" name="organization_name" 
+                                       value="{{ form_data.organization_name if form_data else '' }}" 
+                                       pattern="[A-Za-z\s&\.]+" 
+                                       title="Enter your organization's name (e.g., Capgemini, Infosys, etc.)."
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="organization_email" class="form-label">Organization Official Email *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="mail"></i>
+                                </span>
+                                <input type="email" class="form-control" id="organization_email" name="organization_email" 
+                                       value="{{ form_data.organization_email if form_data else '' }}" 
+                                       title="Use your official work email (e.g., name@organization.com)."
+                                       required>
+                            </div>
+                            <div class="form-text">
+                                Official email address for organization verification (e.g., info@company.com, hr@company.com)
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="company_website" class="form-label">Company Website</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i data-feather="globe"></i>
+                                </span>
+                                <input type="url" class="form-control" id="company_website" name="company_website" 
+                                       value="{{ form_data.company_website if form_data else '' }}" 
+                                       pattern="https://.*" 
+                                       title="Provide a valid company website (e.g., https://www.company.com)."
+                                       placeholder="https://company.com">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Additional Information</label>
+                            <textarea class="form-control" id="message" name="message" rows="3" 
+                                      maxlength="1000" 
+                                      title="You can describe your role or any verification details (optional, max 1000 characters)."
+                                      placeholder="Please provide any additional information about your role or organization (optional)">{{ form_data.message if form_data else '' }}</textarea>
+                            <small class="text-muted">Max 1000 characters</small>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-3">
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" id="agree_terms" name="agree_terms" required>
+                                <label class="form-check-label" for="agree_terms">
+                                    <strong>I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and 
+                                    <a href="#" class="text-decoration-none">Privacy Policy</a></strong>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" id="verify_employment" name="verify_employment" required>
+                                <label class="form-check-label" for="verify_employment">
+                                    <strong>I confirm that I am currently employed by the organization mentioned above and 
+                                    have authorization to register on behalf of my organization</strong>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox validation notice -->
+                        <div class="alert alert-warning" id="checkboxNotice" style="display: none;">
+                            <small>
+                                <i data-feather="info" class="me-1"></i>
+                                Please check both boxes above to enable the Submit button.
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mb-3" id="submitBtn">
+                            <i data-feather="send" class="me-2"></i>
+                            Submit HR Registration Request
+                        </button>
+                    </form>
+
+                    <div class="text-center">
+                        <p class="text-muted mb-0">
+                            Already have an account? 
+                            <a href="{{ url_for('login') }}" class="text-decoration-none">Sign in here</a>
+                        </p>
+                        <p class="text-muted mt-2">
+                            Looking for candidate registration? 
+                            <a href="{{ url_for('register') }}" class="text-decoration-none">Register as candidate</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+
+// Enable/disable submit button based on checkbox state
+function checkFormValidation() {
+    const agreeTerms = document.getElementById('agree_terms').checked;
+    const verifyEmployment = document.getElementById('verify_employment').checked;
+    const submitBtn = document.getElementById('submitBtn');
+    const checkboxNotice = document.getElementById('checkboxNotice');
+    
+    if (agreeTerms && verifyEmployment) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-secondary');
+        submitBtn.classList.add('btn-primary');
+        checkboxNotice.style.display = 'none';
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.remove('btn-primary');
+        submitBtn.classList.add('btn-secondary');
+        checkboxNotice.style.display = 'block';
+    }
+}
+
+// Initialize form validation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkFormValidation();
+    
+    // Add event listeners to checkboxes
+    document.getElementById('agree_terms').addEventListener('change', checkFormValidation);
+    document.getElementById('verify_employment').addEventListener('change', checkFormValidation);
+});
+
+// Field validation functions
+function validateField(fieldId, pattern, message) {
+    const field = document.getElementById(fieldId);
+    const value = field.value.trim();
+    
+    if (field.hasAttribute('required') && !value) {
+        showFieldError(fieldId, message || 'This field is required.');
+        return false;
+    }
+    
+    if (value && pattern && !pattern.test(value)) {
+        showFieldError(fieldId, message || 'Please enter a valid value.');
+        return false;
+    }
+    
+    hideFieldError(fieldId);
+    return true;
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const errorDiv = document.getElementById(fieldId + '_error') || createErrorDiv(fieldId);
+    
+    field.classList.add('is-invalid');
+    field.style.borderColor = '#dc3545';
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    errorDiv.style.color = '#dc3545';
+    errorDiv.style.fontSize = '0.875rem';
+    errorDiv.style.marginTop = '0.25rem';
+}
+
+function hideFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    const errorDiv = document.getElementById(fieldId + '_error');
+    
+    field.classList.remove('is-invalid');
+    field.style.borderColor = '';
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+function showFieldSuccess(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.classList.add('is-valid');
+    field.style.borderColor = '#28a745';
+}
+
+function hideFieldSuccess(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.classList.remove('is-valid');
+    field.style.borderColor = '';
+}
+
+function createErrorDiv(fieldId) {
+    const errorDiv = document.createElement('div');
+    errorDiv.id = fieldId + '_error';
+    errorDiv.className = 'invalid-feedback';
+    errorDiv.style.display = 'none';
+    errorDiv.style.color = '#dc3545';
+    errorDiv.style.fontSize = '0.875rem';
+    errorDiv.style.marginTop = '0.25rem';
+    
+    const field = document.getElementById(fieldId);
+    const inputGroup = field.closest('.input-group') || field.parentNode;
+    inputGroup.appendChild(errorDiv);
+    
+    return errorDiv;
+}
+
+// Real-time validation with input event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Add real-time validation listeners
+    const fields = [
+        { id: 'first_name', pattern: /^[A-Za-z\s]+$/, message: 'Please enter a valid first name (letters only).' },
+        { id: 'last_name', pattern: /^[A-Za-z\s]+$/, message: 'Please enter a valid last name (letters only).' },
+        { id: 'email', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Use your company email address (e.g., yourname@company.com). Gmail/Yahoo not accepted.' },
+        { id: 'local_phone', pattern: /^[0-9]{10,15}$/, message: 'Enter a valid phone number with digits only (no spaces or symbols).' },
+        { id: 'job_title', pattern: /^[A-Za-z\s\-]+$/, message: 'Please enter your job title (e.g., HR Manager, Recruiter).' },
+        { id: 'linkedin_url', pattern: /^https:\/\/linkedin\.com\/in\/.*/, message: 'Please provide a valid LinkedIn profile URL (starting with https://linkedin.com/in/...).' },
+        { id: 'organization_name', pattern: /^[A-Za-z\s&\.]+$/, message: 'Enter your organization\'s name (e.g., Capgemini, Infosys, etc.).' },
+        { id: 'organization_email', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Use your official work email (e.g., name@organization.com).' },
+        { id: 'company_website', pattern: /^https:\/\/.*/, message: 'Provide a valid company website (e.g., https://www.company.com).' }
+    ];
+    
+    fields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (element) {
+            // Clear errors on input (typing)
+            element.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    hideFieldError(field.id);
+                    // Show success state for valid fields
+                    if (field.pattern && field.pattern.test(this.value.trim())) {
+                        showFieldSuccess(field.id);
+                    } else {
+                        hideFieldSuccess(field.id);
+                    }
+                }
+                checkFormValidation();
+            });
+            
+            // Validate on blur (when leaving field)
+            element.addEventListener('blur', function() {
+                if (this.value.trim() !== '') {
+                    if (validateField(field.id, field.pattern, field.message)) {
+                        showFieldSuccess(field.id);
+                    } else {
+                        hideFieldSuccess(field.id);
+                    }
+                }
+                checkFormValidation();
+            });
+            
+            // Clear errors on focus (when clicking into field)
+            element.addEventListener('focus', function() {
+                hideFieldError(field.id);
+            });
+        }
+    });
+    
+    // Special handling for country code dropdown
+    const countrySelect = document.getElementById('country_code');
+    if (countrySelect) {
+        countrySelect.addEventListener('change', function() {
+            hideFieldError('country_code');
+            checkFormValidation();
+        });
+    }
+});
+
+// Form validation
+document.getElementById('hrRegistrationForm').addEventListener('submit', function(e) {
+    const email = document.getElementById('email').value;
+    const orgEmail = document.getElementById('organization_email').value;
+    const countryCode = document.getElementById('country_code').value;
+    const localPhone = document.getElementById('local_phone').value;
+    
+    let isValid = true;
+    
+    // Validate all fields
+    const validationRules = [
+        { id: 'first_name', pattern: /^[A-Za-z\s]+$/, message: 'Please enter a valid first name (letters only).' },
+        { id: 'last_name', pattern: /^[A-Za-z\s]+$/, message: 'Please enter a valid last name (letters only).' },
+        { id: 'email', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Use your company email address (e.g., yourname@company.com). Gmail/Yahoo not accepted.' },
+        { id: 'local_phone', pattern: /^[0-9]{10,15}$/, message: 'Enter a valid phone number with digits only (no spaces or symbols).' },
+        { id: 'job_title', pattern: /^[A-Za-z\s\-]+$/, message: 'Please enter your job title (e.g., HR Manager, Recruiter).' },
+        { id: 'organization_name', pattern: /^[A-Za-z\s&\.]+$/, message: 'Enter your organization\'s name (e.g., Capgemini, Infosys, etc.).' },
+        { id: 'organization_email', pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Use your official work email (e.g., name@organization.com).' }
+    ];
+    
+    validationRules.forEach(rule => {
+        if (!validateField(rule.id, rule.pattern, rule.message)) {
+            isValid = false;
+        }
+    });
+    
+    // Check country code selection
+    if (!countryCode) {
+        showFieldError('country_code', 'Please select a country code.');
+        isValid = false;
+    } else {
+        hideFieldError('country_code');
+    }
+    
+    // Check if using personal email
+    const personalDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+    const emailDomain = email.split('@')[1];
+    
+    if (personalDomains.includes(emailDomain)) {
+        showFieldError('email', 'Please use your official company email address instead of personal email.');
+        isValid = false;
+    }
+    
+    // Check if organization email is different from personal email
+    if (email === orgEmail) {
+        showFieldError('organization_email', 'Organization email should be different from your personal email (e.g., info@company.com, hr@company.com).');
+        isValid = false;
+    }
+    
+    // Check if checkboxes are checked
+    const agreeTerms = document.getElementById('agree_terms').checked;
+    const verifyEmployment = document.getElementById('verify_employment').checked;
+    
+    if (!agreeTerms || !verifyEmployment) {
+        alert('Please check all required checkboxes before submitting.');
+        isValid = false;
+    }
+    
+    // Combine phone number for submission
+    if (isValid && countryCode && localPhone) {
+        const hiddenPhoneInput = document.createElement('input');
+        hiddenPhoneInput.type = 'hidden';
+        hiddenPhoneInput.name = 'phone';
+        hiddenPhoneInput.value = countryCode + localPhone;
+        this.appendChild(hiddenPhoneInput);
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
+{% endblock %}

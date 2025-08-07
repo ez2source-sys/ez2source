@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Cross-Organization Opportunities - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="h4 fw-bold">
+                <i data-feather="globe" class="me-2"></i>
+                Cross-Organization Opportunities
+            </h2>
+            <p class="text-muted">Discover public interview opportunities from other organizations that you can apply to.</p>
+        </div>
+    </div>
+
+    {% if public_interviews %}
+    <div class="row">
+        {% for interview, recruiter_name, organization_name in public_interviews %}
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between mb-3">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">{{ interview.title }}</h5>
+                            <p class="text-muted mb-2 small">
+                                <i data-feather="briefcase" class="me-1" style="width: 14px; height: 14px;"></i>
+                                {{ organization_name }}
+                            </p>
+                            <p class="text-muted mb-0 small">
+                                <i data-feather="user" class="me-1" style="width: 14px; height: 14px;"></i>
+                                Recruiter: {{ recruiter_name }}
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="badge bg-success">Public</span>
+                        </div>
+                    </div>
+
+                    {% if interview.description %}
+                    <div class="bg-light rounded p-3 mb-3">
+                        <small class="text-muted d-block mb-1">Description:</small>
+                        <p class="mb-0 small">{{ interview.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Type</small>
+                            <span class="badge bg-info">{{ interview.interview_type|title }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Duration</small>
+                            <small class="text-muted">{{ interview.duration_minutes }}min</small>
+                        </div>
+                    </div>
+
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Created</small>
+                            <small class="text-muted">{{ interview.created_at.strftime('%b %d, %Y') if interview.created_at else 'N/A' }}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Questions</small>
+                            <small class="text-muted">{{ interview.questions|length if interview.questions else 'N/A' }}</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        {% set completed_response = completed_interviews|selectattr('interview_id', 'equalto', interview.id)|first %}
+                        {% if completed_response %}
+                            <a href="{{ url_for('interview_results', response_id=completed_response.id) }}" 
+                               class="btn btn-success btn-sm flex-fill">
+                                <i data-feather="eye" class="me-1" style="width: 14px; height: 14px;"></i>
+                                View Results
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('interview_interface', interview_id=interview.id) }}" 
+                               class="btn btn-success btn-sm flex-fill">
+                                <i data-feather="play" class="me-1" style="width: 14px; height: 14px;"></i>
+                                Start Interview
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('interview_interface', interview_id=interview.id) }}" 
+                           class="btn btn-outline-info btn-sm">
+                            <i data-feather="info" class="me-1" style="width: 14px; height: 14px;"></i>
+                            Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i data-feather="globe" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+        <h3 class="h5 text-muted mb-2">No Cross-Organization Opportunities Available</h3>
+        <p class="text-muted">Check back later for new interview opportunities from other organizations.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

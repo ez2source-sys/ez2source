@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Analytics - {{ interview.title }} - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">Candidate Analytics</h2>
+                    <h4 class="mb-1">{{ interview.title }}</h4>
+                    <p class="mb-0 opacity-75">Created {{ interview.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-light text-dark fs-6">
+                        {{ responses|length }} Total Responses
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <i data-feather="users" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ responses|length }}</h3>
+                    <p class="mb-0">Total Candidates</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center">
+                    <i data-feather="trending-up" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ avg_score|round(1) }}</h3>
+                    <p class="mb-0">Average Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center">
+                    <i data-feather="clock" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ avg_time|round(1) }}</h3>
+                    <p class="mb-0">Avg Time (min)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <i data-feather="star" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ responses|selectattr('ai_score', 'ge', 70)|list|length }}</h3>
+                    <p class="mb-0">Top Performers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Description -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i data-feather="file-text" class="me-2"></i>
+                Job Description
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-0">{{ interview.job_description }}</p>
+        </div>
+    </div>
+
+    <!-- Score Distribution Chart -->
+    {% if responses %}
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="bar-chart" class="me-2"></i>
+                        Score Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="scoreChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="pie-chart" class="me-2"></i>
+                        Performance Categories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Candidates Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i data-feather="list" class="me-2"></i>
+                Candidate Results
+            </h5>
+            <div class="d-flex gap-2">
+                <select id="sortSelect" class="form-select form-select-sm" style="width: auto;">
+                    <option value="score-desc">Highest Score First</option>
+                    <option value="score-asc">Lowest Score First</option>
+                    <option value="date-desc">Most Recent First</option>
+                    <option value="date-asc">Oldest First</option>
+                    <option value="time-asc">Fastest First</option>
+                    <option value="time-desc">Slowest First</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" onclick="exportCandidateData()">
+                    <i data-feather="download" class="me-1"></i>
+                    Export
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if responses %}
+                <div class="table-responsive">
+                    <table class="table table-hover" id="candidatesTable">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Score</th>
+                                <th>Performance</th>
+                                <th>Completed</th>
+                                <th>Time Taken</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for response in responses %}
+                            <tr data-score="{{ response.ai_score }}" 
+                                data-date="{{ response.completed_at.timestamp() }}" 
+                                data-time="{{ response.time_taken_minutes or 0 }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i data-feather="user" style="width: 20px; height: 20px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ response.candidate.username }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ response.candidate.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fs-5 fw-bold">{{ response.ai_score|round(1) }}</span>
+                                    <small class="text-muted">/100</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if response.ai_score >= 70 else 'warning' if response.ai_score >= 50 else 'danger' }}">
+                                        {% if response.ai_score >= 70 %}
+                                            Excellent
+                                        {% elif response.ai_score >= 50 %}
+                                            Good
+                                        {% else %}
+                                            Needs Improvement
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ response.completed_at.strftime('%m/%d/%Y') }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ response.completed_at.strftime('%I:%M %p') }}</small>
+                                </td>
+                                <td>
+                                    {% if response.time_taken_minutes %}
+                                        {{ response.time_taken_minutes }} min
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('interview_results', response_id=response.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i data-feather="eye" class="me-1"></i>
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i data-feather="users" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+                    <h4 class="text-muted">No responses yet</h4>
+                    <p class="text-muted">Candidates haven't completed this interview yet.</p>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            Share this interview link with candidates:<br>
+                            <code>{{ request.url_root }}interview/{{ interview.id }}</code>
+                        </small>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Back to Dashboard -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+            <i data-feather="arrow-left" class="me-2"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if responses %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Score Distribution Chart
+const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+const scores = [{% for response in responses %}{{ response.ai_score }},{% endfor %}];
+
+// Create score ranges
+const ranges = ['0-20', '21-40', '41-60', '61-80', '81-100'];
+const rangeCounts = [0, 0, 0, 0, 0];
+
+scores.forEach(score => {
+    if (score <= 20) rangeCounts[0]++;
+    else if (score <= 40) rangeCounts[1]++;
+    else if (score <= 60) rangeCounts[2]++;
+    else if (score <= 80) rangeCounts[3]++;
+    else rangeCounts[4]++;
+});
+
+new Chart(scoreCtx, {
+    type: 'bar',
+    data: {
+        labels: ranges,
+        datasets: [{
+            label: 'Number of Candidates',
+            data: rangeCounts,
+            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#007bff'],
+            borderColor: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#007bff'],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Performance Categories Chart
+const perfCtx = document.getElementById('performanceChart').getContext('2d');
+const excellent = scores.filter(s => s >= 70).length;
+const good = scores.filter(s => s >= 50 && s < 70).length;
+const needsImprovement = scores.filter(s => s < 50).length;
+
+new Chart(perfCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Excellent (70+)', 'Good (50-69)', 'Needs Improvement (<50)'],
+        datasets: [{
+            data: [excellent, good, needsImprovement],
+            backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+            borderColor: ['#28a745', '#ffc107', '#dc3545'],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Table sorting
+document.getElementById('sortSelect').addEventListener('change', function() {
+    const sortBy = this.value;
+    const table = document.getElementById('candidatesTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    rows.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch(sortBy) {
+            case 'score-desc':
+                return parseFloat(b.dataset.score) - parseFloat(a.dataset.score);
+            case 'score-asc':
+                return parseFloat(a.dataset.score) - parseFloat(b.dataset.score);
+            case 'date-desc':
+                return parseFloat(b.dataset.date) - parseFloat(a.dataset.date);
+            case 'date-asc':
+                return parseFloat(a.dataset.date) - parseFloat(b.dataset.date);
+            case 'time-desc':
+                return parseFloat(b.dataset.time) - parseFloat(a.dataset.time);
+            case 'time-asc':
+                return parseFloat(a.dataset.time) - parseFloat(b.dataset.time);
+            default:
+                return 0;
+        }
+    });
+    
+    // Re-append sorted rows
+    rows.forEach(row => tbody.appendChild(row));
+});
+
+function exportCandidateData() {
+    const data = {
+        interview: {
+            title: "{{ interview.title }}",
+            created: "{{ interview.created_at.isoformat() }}",
+            job_description: "{{ interview.job_description }}"
+        },
+        analytics: {
+            total_candidates: {{ responses|length }},
+            average_score: {{ avg_score }},
+            average_time: {{ avg_time }},
+            top_performers: {{ responses|selectattr('ai_score', 'ge', 70)|list|length }}
+        },
+        candidates: [
+            {% for response in responses %}
+            {
+                username: "{{ response.candidate.username }}",
+                email: "{{ response.candidate.email }}",
+                score: {{ response.ai_score }},
+                completed_at: "{{ response.completed_at.isoformat() }}",
+                time_taken: {{ response.time_taken_minutes or 0 }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `candidate_analytics_{{ interview.title|replace(' ', '_') }}_{{ interview.created_at.strftime('%Y%m%d') }}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endif %}
+{% endblock %}

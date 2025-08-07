@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Resume - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        <i data-feather="edit-3" class="me-2"></i>
+                        Edit Resume
+                    </h1>
+                    <p class="lead text-muted">
+                        Customize your resume with AI-powered content generation and professional templates
+                    </p>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ url_for('resume_builder') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-1"></i>Back to Dashboard
+                    </a>
+                    <button type="button" class="btn btn-primary" onclick="generateResume()">
+                        <i data-feather="download" class="me-1"></i>Generate PDF
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="previewResume()">
+                        <i data-feather="eye" class="me-1"></i>Preview
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Content -->
+    <div class="row">
+        <!-- Resume Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h5 class="card-title mb-0 text-success">
+                        <i data-feather="file-text" class="me-2"></i>
+                        Resume Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                            <form id="resumeForm" method="POST" action="{{ url_for('update_resume', resume_id=resume.id) }}">
+                                <!-- Basic Information -->
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i data-feather="user" class="me-2 text-success"></i>
+                                        <h6 class="fw-bold mb-0 text-success">Basic Information</h6>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="title" class="form-label">Resume Title</label>
+                                            <input type="text" class="form-control" id="title" name="title" value="{{ resume.title }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="template_id" class="form-label">Template</label>
+                                            <select class="form-select" id="template_id" name="template_id" required>
+                                                {% for template in templates %}
+                                                <option value="{{ template.id }}" {% if template.id == resume.template_id %}selected{% endif %}>{{ template.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Information -->
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i data-feather="phone" class="me-2 text-success"></i>
+                                        <h6 class="fw-bold mb-0 text-success">Contact Information</h6>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="full_name" class="form-label">Full Name</label>
+                                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ resume.full_name }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email" value="{{ resume.email }}">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="phone" class="form-label">Phone</label>
+                                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ resume.phone }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="location" class="form-label">Location</label>
+                                            <input type="text" class="form-control" id="location" name="location" value="{{ resume.location }}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Professional Summary -->
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i data-feather="file-text" class="me-2 text-success"></i>
+                                        <h6 class="fw-bold mb-0 text-success">Professional Summary</h6>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label for="professional_summary" class="form-label">Professional Summary</label>
+                                            <textarea class="form-control" id="professional_summary" name="professional_summary" rows="4">{{ resume.professional_summary }}</textarea>
+                                            <div class="mt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="generateSummary()">
+                                                    <i data-feather="cpu"></i> AI Generate Summary
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Work Experience -->
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="briefcase" class="me-2 text-success"></i>
+                                            <h6 class="fw-bold mb-0 text-success">Work Experience</h6>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="addExperience()">
+                                            <i data-feather="plus" class="me-1"></i>Add Experience
+                                        </button>
+                                    </div>
+                                    <div id="work-experience-container">
+                                        {% for experience in work_experiences %}
+                                        <div class="experience-item border rounded p-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Company Name</label>
+                                                    <input type="text" class="form-control" name="experience_company[]" value="{{ experience.company_name }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Job Title</label>
+                                                    <input type="text" class="form-control" name="experience_title[]" value="{{ experience.job_title }}">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Start Date</label>
+                                                    <input type="date" class="form-control" name="experience_start[]" value="{{ experience.start_date }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">End Date</label>
+                                                    <input type="date" class="form-control" name="experience_end[]" value="{{ experience.end_date }}">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-12">
+                                                    <label class="form-label">Description</label>
+                                                    <textarea class="form-control" name="experience_description[]" rows="3">{{ experience.description }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExperience(this)">
+                                                    <i data-feather="trash-2"></i> Remove
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="enhanceExperience(this)">
+                                                    <i data-feather="cpu"></i> AI Enhance
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Education -->
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="book" class="me-2 text-success"></i>
+                                            <h6 class="fw-bold mb-0 text-success">Education</h6>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="addEducation()">
+                                            <i data-feather="plus" class="me-1"></i>Add Education
+                                        </button>
+                                    </div>
+                                    <div id="education-container">
+                                        {% for education in educations %}
+                                        <div class="education-item border rounded p-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Institution</label>
+                                                    <input type="text" class="form-control" name="education_institution[]" value="{{ education.institution_name }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Degree</label>
+                                                    <input type="text" class="form-control" name="education_degree[]" value="{{ education.degree_type }}">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Start Date</label>
+                                                    <input type="date" class="form-control" name="education_start[]" value="{{ education.start_date }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">End Date</label>
+                                                    <input type="date" class="form-control" name="education_end[]" value="{{ education.end_date }}">
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEducation(this)">
+                                                    <i data-feather="trash-2"></i> Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
+                                </div>
+
+                                <!-- Skills -->
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i data-feather="cpu" class="me-2 text-success"></i>
+                                        <h6 class="fw-bold mb-0 text-success">Skills</h6>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="technical_skills" class="form-label">Technical Skills</label>
+                                            <textarea class="form-control" id="technical_skills" name="technical_skills" rows="3" placeholder="e.g., Python, JavaScript, SQL">{{ resume.technical_skills }}</textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="soft_skills" class="form-label">Soft Skills</label>
+                                            <textarea class="form-control" id="soft_skills" name="soft_skills" rows="3" placeholder="e.g., Leadership, Communication, Problem-solving">{{ resume.soft_skills }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-success">
+                                        <i data-feather="save" class="me-1"></i>Save Resume
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info" onclick="previewResume()">
+                                        <i data-feather="eye" class="me-1"></i>Preview
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Resume Preview</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="resume-preview" class="border rounded p-3" style="min-height: 400px; background-color: #f8f9fa;">
+                                <div class="text-center text-muted">
+                                    <i data-feather="file-text" size="48"></i>
+                                    <p class="mt-2">Resume preview will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+
+// Add Experience
+function addExperience() {
+    const container = document.getElementById('work-experience-container');
+    const div = document.createElement('div');
+    div.className = 'experience-item border rounded p-3 mb-3';
+    div.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Company Name</label>
+                <input type="text" class="form-control" name="experience_company[]">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Job Title</label>
+                <input type="text" class="form-control" name="experience_title[]">
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" name="experience_start[]">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" name="experience_end[]">
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="experience_description[]" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="mt-2">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExperience(this)">
+                <i data-feather="trash-2"></i> Remove
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="enhanceExperience(this)">
+                <i data-feather="cpu"></i> AI Enhance
+            </button>
+        </div>
+    `;
+    container.appendChild(div);
+    feather.replace();
+}
+
+// Remove Experience
+function removeExperience(button) {
+    button.closest('.experience-item').remove();
+}
+
+// Add Education
+function addEducation() {
+    const container = document.getElementById('education-container');
+    const div = document.createElement('div');
+    div.className = 'education-item border rounded p-3 mb-3';
+    div.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Institution</label>
+                <input type="text" class="form-control" name="education_institution[]">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Degree</label>
+                <input type="text" class="form-control" name="education_degree[]">
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <label class="form-label">Start Year</label>
+                <input type="number" class="form-control" name="education_start[]">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">End Year</label>
+                <input type="number" class="form-control" name="education_end[]">
+            </div>
+        </div>
+        <div class="mt-2">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEducation(this)">
+                <i data-feather="trash-2"></i> Remove
+            </button>
+        </div>
+    `;
+    container.appendChild(div);
+    feather.replace();
+}
+
+// Remove Education
+function removeEducation(button) {
+    button.closest('.education-item').remove();
+}
+
+// AI-powered functions
+function generateSummary() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i data-feather="loader"></i> Generating...';
+    btn.disabled = true;
+    
+    // Collect data from the form
+    const jobTitle = document.querySelector('input[name="title"]')?.value || '';
+    const technicalSkills = document.querySelector('input[name="technical_skills"]')?.value || '';
+    const softSkills = document.querySelector('input[name="soft_skills"]')?.value || '';
+    
+    // Parse skills from comma-separated strings
+    const techSkillsArray = technicalSkills ? technicalSkills.split(',').map(s => s.trim()).filter(s => s) : [];
+    const softSkillsArray = softSkills ? softSkills.split(',').map(s => s.trim()).filter(s => s) : [];
+    const combinedSkills = [...techSkillsArray, ...softSkillsArray];
+    
+    fetch('/resume-builder/ai/generate-summary', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            job_title: jobTitle,
+            experience_years: 5, // Default value, can be improved later
+            key_skills: combinedSkills,
+            industry: 'Technology' // Default value, can be improved later
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // The AI service returns summary in data.data.professional_summary
+            if (data.data && data.data.professional_summary) {
+                document.getElementById('professional_summary').value = data.data.professional_summary;
+            }
+        } else {
+            alert('Error generating summary: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error generating summary');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        feather.replace();
+    });
+}
+
+function enhanceExperience(button) {
+    const experienceItem = button.closest('.experience-item');
+    const description = experienceItem.querySelector('textarea[name="experience_description[]"]');
+    const company = experienceItem.querySelector('input[name="experience_company[]"]').value;
+    const title = experienceItem.querySelector('input[name="experience_title[]"]').value;
+    
+    if (!company || !title) {
+        alert('Please enter company name and job title first');
+        return;
+    }
+    
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i data-feather="loader"></i> Enhancing...';
+    button.disabled = true;
+    
+    fetch('/resume-builder/ai/enhance-experience', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            company: company,
+            job_title: title,
+            description: description.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // The AI service returns enhanced text in data.data.enhanced_description and bullet_points
+            if (data.data && data.data.enhanced_description) {
+                let enhancedText = data.data.enhanced_description;
+                if (data.data.bullet_points && data.data.bullet_points.length > 0) {
+                    enhancedText += '\n\n• ' + data.data.bullet_points.join('\n• ');
+                }
+                description.value = enhancedText;
+            }
+        } else {
+            alert('Error enhancing experience: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error enhancing experience');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        feather.replace();
+    });
+}
+
+function previewResume() {
+    // Navigate to the resume preview page
+    const resumeId = {{ resume.id }};
+    window.location.href = `/resume-builder/preview/${resumeId}`;
+}
+
+function generateResume() {
+    window.open('/resume-builder/generate/{{ resume.id }}', '_blank');
+}
+
+function showAIHelper(type) {
+    // Show AI helper modal based on type
+    if (type === 'summary') {
+        generateSummary();
+    } else if (type === 'experience') {
+        // Find the first experience item or create one
+        const firstExperience = document.querySelector('.experience-item');
+        if (firstExperience) {
+            const enhanceBtn = firstExperience.querySelector('button[onclick*="enhanceExperience"]');
+            if (enhanceBtn) {
+                enhanceExperience(enhanceBtn);
+            }
+        }
+    } else if (type === 'skills') {
+        // AI skills suggestion (placeholder for future implementation)
+        alert('AI skills suggestion coming soon!');
+    }
+}
+</script>
+{% endblock %}

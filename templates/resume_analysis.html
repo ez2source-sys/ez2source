@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Analysis - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="sidebar-header">
+                <h3>Ez2source</h3>
+            </div>
+            <div class="nav flex-column">
+                <a class="nav-link" href="{{ url_for('dashboard') }}">
+                    <i data-feather="home"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{{ url_for('candidate_profile', user_id=current_user.id) }}">
+                    <i data-feather="user"></i> Profile
+                </a>
+                <a class="nav-link active" href="{{ url_for('resume_builder') }}">
+                    <i data-feather="file-text"></i> Resume Builder
+                </a>
+                <a class="nav-link" href="{{ url_for('cover_letters') }}">
+                    <i data-feather="mail"></i> Cover Letters
+                </a>
+                <a class="nav-link" href="{{ url_for('cv_checker') }}">
+                    <i data-feather="check-circle"></i> CV Checker
+                </a>
+                <a class="nav-link" href="{{ url_for('find_jobs') }}">
+                    <i data-feather="search"></i> Find Jobs
+                </a>
+                <a class="nav-link" href="{{ url_for('candidate_invitations') }}">
+                    <i data-feather="inbox"></i> Invitations
+                </a>
+                <a class="nav-link" href="{{ url_for('candidate_public_interviews') }}">
+                    <i data-feather="users"></i> Opportunities
+                </a>
+                <a class="nav-link" href="{{ url_for('schedule') }}">
+                    <i data-feather="calendar"></i> Schedule
+                </a>
+                <a class="nav-link" href="{{ url_for('settings') }}">
+                    <i data-feather="settings"></i> Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 main-content">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Resume Analysis</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('resume_builder') }}" class="btn btn-sm btn-outline-secondary">
+                            <i data-feather="arrow-left"></i> Back to Dashboard
+                        </a>
+                        <a href="{{ url_for('edit_resume', resume_id=resume.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i data-feather="edit"></i> Edit Resume
+                        </a>
+                        <button type="button" class="btn btn-sm btn-success" onclick="generateNewAnalysis()">
+                            <i data-feather="refresh-cw"></i> Regenerate Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Analysis Results -->
+                <div class="col-md-8">
+                    {% if analysis %}
+                    <!-- Overall Score -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Overall Resume Score</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="score-circle mx-auto mb-3" data-score="{{ analysis.overall_score }}">
+                                <div class="score-text">{{ analysis.overall_score }}/100</div>
+                            </div>
+                            <h4 class="mb-0">
+                                {% if analysis.overall_score >= 80 %}
+                                    <span class="text-success">Excellent</span>
+                                {% elif analysis.overall_score >= 60 %}
+                                    <span class="text-warning">Good</span>
+                                {% else %}
+                                    <span class="text-danger">Needs Improvement</span>
+                                {% endif %}
+                            </h4>
+                            <p class="text-muted">Your resume is performing well in most areas</p>
+                        </div>
+                    </div>
+
+                    <!-- Category Scores -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Category Breakdown</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span>Format & Structure</span>
+                                        <span class="badge bg-primary">{{ analysis.format_score }}/100</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ analysis.format_score }}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span>Content Quality</span>
+                                        <span class="badge bg-info">{{ analysis.content_score }}/100</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ analysis.content_score }}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span>Sections & Organization</span>
+                                        <span class="badge bg-success">{{ analysis.sections_score }}/100</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ analysis.sections_score }}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span>ATS Compatibility</span>
+                                        <span class="badge bg-warning">{{ analysis.ats_score }}/100</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ analysis.ats_score }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strengths -->
+                    {% if analysis.strengths %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title text-success">
+                                <i data-feather="check-circle"></i> Strengths
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                {% for strength in analysis.strengths %}
+                                <li class="mb-2">
+                                    <i data-feather="check" class="text-success me-2" size="16"></i>
+                                    {{ strength }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Areas for Improvement -->
+                    {% if analysis.weaknesses %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title text-warning">
+                                <i data-feather="alert-triangle"></i> Areas for Improvement
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                {% for weakness in analysis.weaknesses %}
+                                <li class="mb-2">
+                                    <i data-feather="alert-circle" class="text-warning me-2" size="16"></i>
+                                    {{ weakness }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Recommendations -->
+                    {% if analysis.recommendations %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title text-info">
+                                <i data-feather="lightbulb"></i> AI Recommendations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                {% for recommendation in analysis.recommendations %}
+                                <li class="mb-2">
+                                    <i data-feather="arrow-right" class="text-info me-2" size="16"></i>
+                                    {{ recommendation }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <!-- No Analysis Available -->
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i data-feather="bar-chart" size="64" class="text-muted mb-3"></i>
+                            <h4>No Analysis Available</h4>
+                            <p class="text-muted">Your resume hasn't been analyzed yet. Generate an analysis to get detailed insights and recommendations.</p>
+                            <button type="button" class="btn btn-primary" onclick="generateNewAnalysis()">
+                                <i data-feather="play"></i> Generate Analysis
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Analysis Summary -->
+                <div class="col-md-4">
+                    {% if analysis %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title">Analysis Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="analysis-stat d-flex justify-content-between mb-2">
+                                <span>Analysis Date:</span>
+                                <span>{{ analysis.analyzed_at.strftime('%m/%d/%Y') if analysis.analyzed_at else 'N/A' }}</span>
+                            </div>
+                            <div class="analysis-stat d-flex justify-content-between mb-2">
+                                <span>Overall Score:</span>
+                                <span class="fw-bold">{{ analysis.overall_score }}/100</span>
+                            </div>
+                            <div class="analysis-stat d-flex justify-content-between mb-2">
+                                <span>Resume Version:</span>
+                                <span>{{ analysis.resume_version or 'Latest' }}</span>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <a href="{{ url_for('edit_resume', resume_id=resume.id) }}" class="btn btn-primary btn-sm">
+                                    <i data-feather="edit"></i> Improve Resume
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Quick Actions -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title">Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('edit_resume', resume_id=resume.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i data-feather="edit"></i> Edit Resume
+                                </a>
+                                <a href="{{ url_for('resume_preview', resume_id=resume.id) }}" class="btn btn-outline-info btn-sm">
+                                    <i data-feather="eye"></i> Preview Resume
+                                </a>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="downloadPDF()">
+                                    <i data-feather="download"></i> Download PDF
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="generateNewAnalysis()">
+                                    <i data-feather="refresh-cw"></i> Regenerate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Tips -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Analysis Tips</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled text-sm">
+                                <li class="mb-2">
+                                    <i data-feather="info" size="16" class="text-info me-2"></i>
+                                    Analysis is based on ATS best practices
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="info" size="16" class="text-info me-2"></i>
+                                    Higher scores improve job match rates
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="info" size="16" class="text-info me-2"></i>
+                                    Focus on weaknesses for maximum impact
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="info" size="16" class="text-info me-2"></i>
+                                    Regular analysis helps track improvements
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 8px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: conic-gradient(#007bff 0deg, #007bff calc(var(--score) * 3.6deg), #e9ecef calc(var(--score) * 3.6deg), #e9ecef 360deg);
+}
+
+.score-circle[data-score] {
+    --score: attr(data-score);
+}
+
+.score-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+    background: white;
+    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.analysis-stat {
+    font-size: 0.9rem;
+}
+
+.card-title {
+    margin-bottom: 0;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+</style>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+
+// Set up score circle animation
+document.addEventListener('DOMContentLoaded', function() {
+    const scoreCircle = document.querySelector('.score-circle[data-score]');
+    if (scoreCircle) {
+        const score = scoreCircle.getAttribute('data-score');
+        scoreCircle.style.setProperty('--score', score);
+        
+        // Animate the circle
+        scoreCircle.style.background = `conic-gradient(
+            #007bff 0deg, 
+            #007bff ${score * 3.6}deg, 
+            #e9ecef ${score * 3.6}deg, 
+            #e9ecef 360deg
+        )`;
+    }
+});
+
+function generateNewAnalysis() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i data-feather="loader"></i> Analyzing...';
+    btn.disabled = true;
+    
+    fetch('/resume-builder/analyze/{{ resume.id }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Reload to show new analysis
+        } else {
+            alert('Error generating analysis: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error generating analysis');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        feather.replace();
+    });
+}
+
+function downloadPDF() {
+    window.open('/resume-builder/generate/{{ resume.id }}', '_blank');
+}
+</script>
+{% endblock %}

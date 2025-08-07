@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Dashboard - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                Welcome back, {{ current_user.username }}!
+                <span class="badge bg-success ms-2">Candidate</span>
+            </h1>
+            <p class="lead text-muted">Track your interview opportunities and progress.</p>
+        </div>
+    </div>
+
+    <!-- Career Readiness Journey removed - Ez2source focuses on core talent intelligence features -->
+
+    <!-- Interview Feedback Notification -->
+    {% if current_user.interview_feedback_status %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="alert {% if current_user.interview_feedback_status == 'welcome' %}alert-success{% else %}alert-info{% endif %} border-0 shadow-sm">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        {% if current_user.interview_feedback_status == 'welcome' %}
+                        <i data-feather="check-circle" style="width: 24px; height: 24px;" class="text-success"></i>
+                        {% else %}
+                        <i data-feather="info" style="width: 24px; height: 24px;" class="text-info"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-2">Interview Update</h5>
+                        <p class="mb-2">{{ current_user.feedback_message }}</p>
+                        <small class="text-muted">
+                            Updated {{ current_user.feedback_updated_at.strftime('%B %d, %Y at %I:%M %p') if current_user.feedback_updated_at else 'Recently' }}
+                        </small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Google Meet Notifications -->
+    {% if technical_interview_assignments %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="alert alert-primary border-0 shadow-sm">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <i data-feather="video" style="width: 24px; height: 24px;" class="text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-2">Technical Interview Scheduled</h5>
+                        <p class="mb-3">You have upcoming technical interviews with Google Meet links.</p>
+                        
+                        {% for assignment in technical_interview_assignments %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-lg-8 col-md-12 mb-2 mb-lg-0">
+                                        <h6 class="mb-1">{{ assignment.interview.title }}</h6>
+                                        <p class="mb-1 text-muted">
+                                            <i data-feather="calendar" class="me-1" style="width: 16px; height: 16px;"></i>
+                                            {{ assignment.interview_date.strftime('%B %d, %Y at %I:%M %p') }}
+                                        </p>
+                                        <p class="mb-0 small text-muted">
+                                            <i data-feather="user" class="me-1" style="width: 16px; height: 16px;"></i>
+                                            Interviewer: {{ assignment.technical_person.first_name }} {{ assignment.technical_person.last_name }}
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-4 col-md-12 text-lg-end text-center">
+                                        {% if assignment.meeting_link %}
+                                        <a href="{{ assignment.meeting_link }}" target="_blank" class="btn btn-primary w-100 w-lg-auto">
+                                            <i data-feather="video" class="me-1" style="width: 16px; height: 16px;"></i>
+                                            Join Google Meet
+                                        </a>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Meeting link pending</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                💡 <strong>Tips:</strong> Test your camera and microphone beforehand. Join the meeting 5 minutes early for the best experience.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Organization Assignment Prompt -->
+    {% if show_organization_prompt %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="alert alert-warning border-0 shadow-sm">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <i data-feather="alert-triangle" style="width: 24px; height: 24px;" class="text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-2">Join an Organization to Get Started</h5>
+                        <p class="mb-3">To receive personalized interview invitations and access advanced talent intelligence features, you need to join an organization.</p>
+                        
+                        <div class="row">
+                            {% for org in available_organizations %}
+                            <div class="col-md-4 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i data-feather="users" class="text-muted me-2" style="width: 16px; height: 16px;"></i>
+                                    <small class="text-muted">{{ org.name }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="{{ url_for('assign_candidate_organization') }}" class="btn btn-warning me-2">
+                                <i data-feather="users" class="me-2"></i>
+                                Join Organization
+                            </a>
+                            <!-- Job browsing removed - Ez2source focuses on talent intelligence -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suggested Actions for Unassigned Candidates -->
+    {% if suggested_actions %}
+    <div class="row mb-4">
+        <div class="col">
+            <h4 class="mb-3">Recommended Actions</h4>
+            <div class="row">
+                {% for action in suggested_actions %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                {% if action.priority == 'high' %}
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i data-feather="users" class="text-warning" style="width: 30px; height: 30px;"></i>
+                                </div>
+                                {% elif action.priority == 'medium' %}
+                                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i data-feather="search" class="text-info" style="width: 30px; height: 30px;"></i>
+                                </div>
+                                {% else %}
+                                <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i data-feather="user" class="text-secondary" style="width: 30px; height: 30px;"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <h6 class="card-title">{{ action.title }}</h6>
+                            <p class="card-text text-muted small">{{ action.description }}</p>
+                            <a href="{{ action.action_url }}" class="btn btn-sm {% if action.priority == 'high' %}btn-warning{% elif action.priority == 'medium' %}btn-info{% else %}btn-outline-secondary{% endif %}">
+                                Get Started
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Profile Completion Banner -->
+    {% if profile_completion < 70 %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <i data-feather="user" style="width: 24px; height: 24px;" class="text-info"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="alert-heading mb-1">Complete Your Profile ({{ profile_completion }}%)</h6>
+                        <p class="mb-2 small">Boost your interview success rate by completing your professional profile. Candidates with complete profiles get {{ (100 - profile_completion) // 10 + 2 }}x more interview invitations.</p>
+                        <div class="progress mb-2" style="height: 6px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ profile_completion }}%" aria-valuenow="{{ profile_completion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('candidate_profile', user_id=current_user.id) }}" class="btn btn-info btn-sm">
+                                <i data-feather="edit-3" class="me-1" style="width: 14px; height: 14px;"></i>
+                                Complete Profile
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="alert">
+                                <i data-feather="x" class="me-1" style="width: 14px; height: 14px;"></i>
+                                Maybe Later
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+            <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center">
+                    <i data-feather="clipboard" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ public_interviews|length }}</h3>
+                    <p class="mb-0">Public Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+            <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <i data-feather="mail" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ invited_interviews|length }}</h3>
+                    <p class="mb-0">Invitations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-12 mb-3 mb-lg-0">
+            <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <i data-feather="check-circle" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ completed_interviews|length }}</h3>
+                    <p class="mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- One-Click Job Application feature removed - Ez2source focuses on talent intelligence -->
+
+
+
+    <!-- Feature Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-6 col-md-6 mb-3 mb-lg-0">
+            <div class="card bg-secondary bg-opacity-10 border-secondary h-100">
+                <div class="card-body text-center">
+                    <i data-feather="search" class="mb-2" style="width: 40px; height: 40px;"></i>
+                    <h4 class="fw-bold">CV Checker</h4>
+                    <p class="mb-3">Get AI-powered analysis of your resume with detailed feedback and improvement suggestions.</p>
+                    <a href="{{ url_for('cv_checker') }}" class="btn btn-secondary w-100">
+                        <i data-feather="search" class="me-1"></i>Analyze CV
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 mb-3 mb-lg-0">
+            <div class="card bg-dark bg-opacity-10 border-dark h-100">
+                <div class="card-body text-center">
+                    <i data-feather="file-text" class="mb-2" style="width: 40px; height: 40px;"></i>
+                    <h4 class="fw-bold">Cover Letters 
+                        <span class="badge ai-powered-badge ms-2" style="background-color: #ffffff !important; color: #212529 !important; font-weight: 700 !important; border: 1px solid #dee2e6 !important;">AI-Powered</span>
+                    </h4>
+                    <p class="mb-3">Create professional, company-specific cover letters with AI assistance and templates.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('cover_letters') }}" class="btn btn-dark">
+                            <i data-feather="file-text" class="me-1"></i>Manage Letters
+                        </a>
+                        <!-- Generate from Jobs removed - focusing on standalone cover letter management -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Interview AI feature removed - Ez2source focuses on core talent intelligence features -->
+    </div>
+
+    <!-- Public Interviews (Apply to Access) -->
+    {% if public_interviews %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Public Interviews - Apply to Access</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for interview in public_interviews %}
+                        <div class="col-lg-6 col-md-12 mb-3">
+                            <div class="card h-100 border-info">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ interview.title }}</h6>
+                                    <p class="card-text text-muted small">{{ interview.job_description[:100] }}...</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i data-feather="clock" style="width: 16px; height: 16px;"></i>
+                                            {{ interview.duration_minutes }} minutes
+                                        </small>
+                                    </p>
+                                    {% set application = my_applications|selectattr('interview_id', 'equalto', interview.id)|first %}
+                                    {% if application %}
+                                        {% if application.status == 'applied' %}
+                                            <span class="badge bg-warning">Application Pending</span>
+                                        {% elif application.status == 'approved' %}
+                                            <a href="{{ url_for('interview_interface', interview_id=interview.id) }}" 
+                                               class="btn btn-success w-100">Start Interview</a>
+                                        {% elif application.status == 'rejected' %}
+                                            <span class="badge bg-danger">Application Rejected</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="{{ url_for('apply_interview', interview_id=interview.id) }}" 
+                                           class="btn btn-info w-100">Apply Now</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Invited Interviews (Direct Access) -->
+    {% if invited_interviews %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Interview Invitations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for interview in invited_interviews %}
+                        <div class="col-lg-6 col-md-12 mb-3">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ interview.title }}</h6>
+                                    <p class="card-text text-muted small">{{ interview.job_description[:100] }}...</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i data-feather="clock" style="width: 16px; height: 16px;"></i>
+                                            {{ interview.duration_minutes }} minutes
+                                        </small>
+                                    </p>
+                                    {% set completed_response = completed_interviews|selectattr('interview_id', 'equalto', interview.id)|first %}
+                                    {% if completed_response %}
+                                        <a href="{{ url_for('interview_results', response_id=completed_response.id) }}" 
+                                           class="btn btn-success btn-sm">
+                                            <i data-feather="eye" class="me-1"></i>
+                                            View Results
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('interview_interface', interview_id=interview.id) }}" 
+                                           class="btn btn-warning btn-sm">Start Interview</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Scheduled Interviews -->
+    {% if scheduled_interviews %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Scheduled Interviews</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for interview in scheduled_interviews %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ interview.title }}</h6>
+                                    <p class="card-text text-muted small">{{ interview.job_description[:100] }}...</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i data-feather="clock" style="width: 16px; height: 16px;"></i>
+                                            {{ interview.duration_minutes }} minutes
+                                        </small>
+                                    </p>
+                                    <a href="{{ url_for('interview_interface', interview_id=interview.id) }}" 
+                                       class="btn btn-primary btn-sm">Start Interview</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Completed Interviews -->
+    {% if completed_interviews %}
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Completed Interviews</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Interview</th>
+                                    <th>Score</th>
+                                    <th>Completed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for response in completed_interviews %}
+                                <tr>
+                                    <td>{{ response.interview.title }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if response.ai_score >= 70 else ('warning' if response.ai_score >= 50 else 'danger') }}">
+                                            {{ "%.1f"|format(response.ai_score) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ response.completed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('interview_results', response_id=response.id) }}" 
+                                           class="btn btn-outline-primary btn-sm">View Results</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not public_interviews and not invited_interviews and not scheduled_interviews and not completed_interviews %}
+    <div class="text-center py-5">
+        <i data-feather="clipboard" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+        <h4 class="text-muted">No Interviews Available</h4>
+        <p class="text-muted">Check back later for new interview opportunities or contact your recruiter.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - AI Interview Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Settings</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#profile" class="list-group-item list-group-item-action active" onclick="showTab('profile')">
+                        <i class="fas fa-user me-2"></i>Profile
+                    </a>
+                    <a href="#security" class="list-group-item list-group-item-action" onclick="showTab('security')">
+                        <i class="fas fa-shield-alt me-2"></i>Security
+                    </a>
+                    <a href="#notifications" class="list-group-item list-group-item-action" onclick="showTab('notifications')">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </a>
+                    <a href="#integrations" class="list-group-item list-group-item-action" onclick="showTab('integrations')">
+                        <i class="fas fa-plug me-2"></i>Integrations
+                    </a>
+                    <a href="#billing" class="list-group-item list-group-item-action" onclick="showTab('billing')">
+                        <i class="fas fa-credit-card me-2"></i>Billing
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- Profile Tab -->
+            <div id="profile-tab" class="settings-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Profile Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('update_settings') }}" method="POST">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" name="username" 
+                                               value="{{ user.username }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               value="{{ user.email }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="role" class="form-label">Role</label>
+                                        <input type="text" class="form-control" value="{{ user.role.title() }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="joined" class="form-label">Member Since</label>
+                                        <input type="text" class="form-control" value="{{ user.created_at.strftime('%B %d, %Y') }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Tab -->
+            <div id="security-tab" class="settings-tab d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Security Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-4">
+                                <h6>Change Password</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="current-password" class="form-label">Current Password</label>
+                                            <input type="password" class="form-control" id="current-password">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="new-password" class="form-label">New Password</label>
+                                            <input type="password" class="form-control" id="new-password">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="confirm-password" class="form-label">Confirm New Password</label>
+                                            <input type="password" class="form-control" id="confirm-password">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="changePassword()">
+                                    <i class="fas fa-key me-2"></i>Update Password
+                                </button>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="mb-4">
+                                <h6>Two-Factor Authentication</h6>
+                                <p class="text-muted">Add an extra layer of security to your account</p>
+                                <button type="button" class="btn btn-outline-primary" onclick="setup2FA()">
+                                    <i class="fas fa-mobile-alt me-2"></i>Enable 2FA
+                                </button>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="mb-4">
+                                <h6>Session Management</h6>
+                                <p class="text-muted">Manage your active sessions across devices</p>
+                                <div class="session-item p-3 border rounded mb-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Current Session</strong><br>
+                                            <small class="text-muted">Chrome on Windows • Active now</small>
+                                        </div>
+                                        <span class="badge bg-success">Current</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-danger" onclick="logoutAllSessions()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout All Sessions
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="notifications-tab" class="settings-tab d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Notification Preferences</h5>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-4">
+                                <h6>Email Notifications</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="email-interviews" checked>
+                                    <label class="form-check-label" for="email-interviews">
+                                        New interview invitations
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="email-results" checked>
+                                    <label class="form-check-label" for="email-results">
+                                        Interview results and feedback
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="email-updates">
+                                    <label class="form-check-label" for="email-updates">
+                                        Product updates and features
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="email-marketing">
+                                    <label class="form-check-label" for="email-marketing">
+                                        Marketing and promotional emails
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6>Browser Notifications</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="browser-interviews" checked>
+                                    <label class="form-check-label" for="browser-interviews">
+                                        Real-time interview notifications
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="browser-reminders" checked>
+                                    <label class="form-check-label" for="browser-reminders">
+                                        Interview reminders
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-primary" onclick="saveNotificationSettings()">
+                                <i class="fas fa-save me-2"></i>Save Preferences
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integrations Tab -->
+            <div id="integrations-tab" class="settings-tab d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Integrations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6>Connected Services</h6>
+                            <p class="text-muted">Connect your account with third-party services</p>
+                            
+                            <div class="integration-item p-3 border rounded mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="integration-icon me-3">
+                                            <i class="fab fa-google fs-3 text-danger"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Google Calendar</strong><br>
+                                            <small class="text-muted">Sync interview schedules with your calendar</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm" onclick="connectService('google')">
+                                        Connect
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="integration-item p-3 border rounded mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="integration-icon me-3">
+                                            <i class="fab fa-slack fs-3 text-success"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Slack</strong><br>
+                                            <small class="text-muted">Get notifications in your Slack workspace</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm" onclick="connectService('slack')">
+                                        Connect
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="integration-item p-3 border rounded mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="integration-icon me-3">
+                                            <i class="fas fa-users fs-3 text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>ATS Systems</strong><br>
+                                            <small class="text-muted">Connect with Workday, Greenhouse, and more</small>
+                                        </div>
+                                    </div>
+                                    <a href="{{ url_for('team_management') }}" class="btn btn-outline-primary btn-sm">
+                                        Configure
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>API Access</h6>
+                            <p class="text-muted">Generate API keys for custom integrations</p>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" value="ai_platform_••••••••••••••••" readonly>
+                                <button class="btn btn-outline-secondary" onclick="regenerateApiKey()">
+                                    <i class="fas fa-sync me-1"></i>Regenerate
+                                </button>
+                            </div>
+                            <small class="text-muted">Keep your API key secure. Don't share it publicly.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Tab -->
+            <div id="billing-tab" class="settings-tab d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Billing & Subscription</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6>Current Plan</h6>
+                            <div class="plan-info p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Professional Plan</strong><br>
+                                        <small class="text-muted">$79/month • Renews on January 15, 2025</small>
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('pricing') }}" class="btn btn-outline-primary btn-sm">
+                                            Change Plan
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Usage This Month</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="usage-metric">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Interviews</span>
+                                            <span>47 / 200</span>
+                                        </div>
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar" style="width: 23.5%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="usage-metric">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Team Members</span>
+                                            <span>8 / 20</span>
+                                        </div>
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar" style="width: 40%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Payment Method</h6>
+                            <div class="payment-method p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fab fa-cc-visa fs-3 text-primary me-3"></i>
+                                        <div>
+                                            <strong>•••• •••• •••• 4242</strong><br>
+                                            <small class="text-muted">Expires 12/2027</small>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="updatePaymentMethod()">
+                                        Update
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Billing History</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Dec 15, 2024</td>
+                                            <td>Professional Plan</td>
+                                            <td>$79.00</td>
+                                            <td><span class="badge bg-success">Paid</span></td>
+                                            <td><a href="#" class="btn btn-sm btn-outline-secondary">Invoice</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nov 15, 2024</td>
+                                            <td>Professional Plan</td>
+                                            <td>$79.00</td>
+                                            <td><span class="badge bg-success">Paid</span></td>
+                                            <td><a href="#" class="btn btn-sm btn-outline-secondary">Invoice</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-tab {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.list-group-item.active {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.integration-item:hover {
+    background-color: #f8f9fa;
+}
+
+.usage-metric {
+    margin-bottom: 15px;
+}
+
+.progress {
+    height: 8px;
+}
+
+.session-item:hover {
+    background-color: #f8f9fa;
+}
+
+.payment-method:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
+<script>
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.settings-tab').forEach(tab => {
+        tab.classList.add('d-none');
+    });
+    
+    // Remove active class from all nav items
+    document.querySelectorAll('.list-group-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.remove('d-none');
+    
+    // Add active class to selected nav item
+    event.target.classList.add('active');
+}
+
+function changePassword() {
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        alert('Please fill in all password fields');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        alert('New passwords do not match');
+        return;
+    }
+    
+    // In real implementation, this would make an API call
+    alert('Password update functionality would be implemented here');
+}
+
+function setup2FA() {
+    alert('Two-factor authentication setup would be implemented here');
+}
+
+function logoutAllSessions() {
+    if (confirm('Are you sure you want to logout all sessions? You will need to login again.')) {
+        alert('Logout all sessions functionality would be implemented here');
+    }
+}
+
+function saveNotificationSettings() {
+    alert('Notification settings saved successfully');
+}
+
+function connectService(service) {
+    alert(`Connect to ${service} functionality would be implemented here`);
+}
+
+function regenerateApiKey() {
+    if (confirm('Are you sure you want to regenerate your API key? This will invalidate your current key.')) {
+        alert('API key regeneration would be implemented here');
+    }
+}
+
+function updatePaymentMethod() {
+    alert('Payment method update would be implemented here');
+}
+</script>
+{% endblock %}

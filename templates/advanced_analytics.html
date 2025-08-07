@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Analytics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-line text-primary me-2"></i>Advanced Analytics</h2>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" onclick="exportReport('pdf')">
+                        <i class="fas fa-file-pdf me-1"></i>Export PDF
+                    </button>
+                    <button class="btn btn-outline-success" onclick="exportReport('excel')">
+                        <i class="fas fa-file-excel me-1"></i>Export Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filters & Search</h5>
+                </div>
+                <div class="card-body">
+                    <form id="analyticsFilters" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Date Range</label>
+                            <input type="date" class="form-control" id="startDate" name="start_date">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">To</label>
+                            <input type="date" class="form-control" id="endDate" name="end_date">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Min Score</label>
+                            <input type="number" class="form-control" id="minScore" min="0" max="100" placeholder="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Max Score</label>
+                            <input type="number" class="form-control" id="maxScore" min="0" max="100" placeholder="100">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn-primary d-block" onclick="applyFilters()">
+                                <i class="fas fa-search me-1"></i>Apply
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h3 class="text-primary">{{ total_candidates }}</h3>
+                    <p class="text-muted">Total Candidates</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-clipboard-list fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ total_interviews }}</h3>
+                    <p class="text-muted">Active Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ "%.1f"|format(avg_score) }}</h3>
+                    <p class="text-muted">Average Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ "%.0f"|format(avg_time) }}m</h3>
+                    <p class="text-muted">Average Time</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Score Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="scoreChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Interview Completion Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="trendChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Comparison Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Candidate Comparison</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="selectAll()">Select All</button>
+                        <button class="btn btn-outline-primary" onclick="compareSelected()">Compare Selected</button>
+                        <button class="btn btn-outline-danger" onclick="bulkAction('delete')">Bulk Delete</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="candidatesTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
+                                    <th>Candidate</th>
+                                    <th>Interview</th>
+                                    <th>Score</th>
+                                    <th>Time Taken</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for response in responses %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="candidate-checkbox" value="{{ response.id }}">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                {{ response.candidate.username[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ response.candidate.username }}</strong><br>
+                                                <small class="text-muted">{{ response.candidate.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ response.interview.title }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if response.ai_score >= 80 %}bg-success
+                                            {% elif response.ai_score >= 60 %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(response.ai_score) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ response.time_taken_minutes or 'N/A' }} min</td>
+                                    <td>{{ response.completed_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if response.ai_score >= 80 %}
+                                            <span class="badge bg-success">Recommended</span>
+                                        {% elif response.ai_score >= 60 %}
+                                            <span class="badge bg-warning">Review</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Reject</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('interview_results', response_id=response.id) }}" 
+                                               class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button class="btn btn-outline-info" onclick="viewProfile({{ response.candidate.id }})">
+                                                <i class="fas fa-user"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success" onclick="downloadReport({{ response.id }})">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comparison Modal -->
+<div class="modal fade" id="comparisonModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Candidate Comparison</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="comparisonContent">
+                <!-- Comparison content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #007bff, #6f42c1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize charts
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+});
+
+function initializeCharts() {
+    // Score Distribution Chart
+    const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+    new Chart(scoreCtx, {
+        type: 'bar',
+        data: {
+            labels: ['0-20', '21-40', '41-60', '61-80', '81-100'],
+            datasets: [{
+                label: 'Number of Candidates',
+                data: {{ score_distribution | safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Trend Chart
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ trend_labels | safe }},
+            datasets: [{
+                label: 'Interviews Completed',
+                data: {{ trend_data | safe }},
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function applyFilters() {
+    const form = document.getElementById('analyticsFilters');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+    window.location.href = `{{ url_for('advanced_analytics') }}?${params.toString()}`;
+}
+
+function exportReport(format) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("export_report") }}';
+    
+    const formatInput = document.createElement('input');
+    formatInput.type = 'hidden';
+    formatInput.name = 'format';
+    formatInput.value = format;
+    form.appendChild(formatInput);
+    
+    // Add current filters
+    const filters = new FormData(document.getElementById('analyticsFilters'));
+    for (let [key, value] of filters.entries()) {
+        if (value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.candidate-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+}
+
+function selectAll() {
+    document.getElementById('selectAllCheckbox').checked = true;
+    toggleSelectAll();
+}
+
+function compareSelected() {
+    const selected = Array.from(document.querySelectorAll('.candidate-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selected.length < 2) {
+        alert('Please select at least 2 candidates to compare');
+        return;
+    }
+    
+    fetch('{{ url_for("compare_candidates") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ response_ids: selected })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('comparisonContent').innerHTML = data.html;
+        new bootstrap.Modal(document.getElementById('comparisonModal')).show();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to load comparison');
+    });
+}
+
+function bulkAction(action) {
+    const selected = Array.from(document.querySelectorAll('.candidate-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selected.length === 0) {
+        alert('Please select candidates first');
+        return;
+    }
+    
+    if (action === 'delete' && !confirm(`Are you sure you want to delete ${selected.length} responses?`)) {
+        return;
+    }
+    
+    fetch('{{ url_for("bulk_action") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            action: action,
+            response_ids: selected 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Action failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Action failed');
+    });
+}
+
+function viewProfile(candidateId) {
+    window.open(`{{ url_for('candidate_profile', user_id=0) }}`.replace('0', candidateId), '_blank');
+}
+
+function downloadReport(responseId) {
+    window.open(`{{ url_for('interview_results', response_id=0) }}`.replace('0', responseId), '_blank');
+}
+</script>
+{% endblock %}

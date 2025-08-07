@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Cover Letter Templates - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        Cover Letter Templates
+                        <span class="badge ai-powered-badge ms-2">AI-Powered</span>
+                    </h1>
+                    <p class="lead text-muted">Professional templates for different companies and roles.</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('cover_letters') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-2"></i>Back to Cover Letters
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="row mb-4">
+        {% for example_key, example in examples.items() %}
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <h5 class="card-title fw-bold mb-2">{{ example.title }}</h5>
+                        <div class="mb-2">
+                            <span class="badge bg-primary me-2">{{ example.company }}</span>
+                            <span class="badge bg-secondary">{{ example.position }}</span>
+                        </div>
+                        <p class="card-text text-muted">Professional cover letter template for {{ example.position }} role at {{ example.company }}.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong class="text-dark">Key Features:</strong>
+                        <ul class="list-unstyled mt-2">
+                            {% for feature in example.key_features %}
+                            <li class="mb-1">
+                                <i data-feather="check" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                                <small>{{ feature }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-auto">
+                        <a href="{{ url_for('view_cover_letter_example', example_key=example_key) }}" class="btn btn-outline-primary btn-sm flex-fill">
+                            <i data-feather="eye" class="me-1" style="width: 16px; height: 16px;"></i>
+                            Preview
+                        </a>
+                        <a href="{{ url_for('use_example_template', example_key=example_key) }}" class="btn btn-success btn-sm flex-fill">
+                            <i data-feather="copy" class="me-1" style="width: 16px; height: 16px;"></i>
+                            Use Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Tips Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="lightbulb" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Tips for Using Templates
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i data-feather="edit-3" class="text-primary" style="width: 30px; height: 30px;"></i>
+                                </div>
+                                <h6 class="fw-bold">Customize</h6>
+                                <p class="text-muted small">Always personalize the template with specific details about the company and position.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i data-feather="search" class="text-success" style="width: 30px; height: 30px;"></i>
+                                </div>
+                                <h6 class="fw-bold">Research</h6>
+                                <p class="text-muted small">Research the company's values, culture, and recent news to make your letter more relevant.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i data-feather="check-circle" class="text-warning" style="width: 30px; height: 30px;"></i>
+                                </div>
+                                <h6 class="fw-bold">Proofread</h6>
+                                <p class="text-muted small">Always proofread your cover letter for grammar, spelling, and formatting errors.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Feather icons
+    feather.replace();
+</script>
+{% endblock %}

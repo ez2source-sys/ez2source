@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Applications - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Applications</h2>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
+    </div>
+
+    {% if applications %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Candidate</th>
+                            <th>Interview</th>
+                            <th>Applied</th>
+                            <th>Status</th>
+                            <th>Cover Letter</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in applications %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ application.candidate.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ application.candidate.email }}</small>
+                                </div>
+                            </td>
+                            <td>{{ application.interview.title }}</td>
+                            <td>{{ application.applied_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'warning' if application.status == 'applied' else ('success' if application.status == 'approved' else 'danger') }}">
+                                    {{ application.status.title() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if application.cover_letter %}
+                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#coverLetter{{ application.id }}">
+                                        View Cover Letter
+                                    </button>
+                                    
+                                    <!-- Cover Letter Modal -->
+                                    <div class="modal fade" id="coverLetter{{ application.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Cover Letter - {{ application.candidate.username }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>{{ application.cover_letter }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">No cover letter</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if application.status == 'applied' %}
+                                    <div class="btn-group" role="group">
+                                        <form method="POST" action="{{ url_for('approve_application', application_id=application.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this application?')">
+                                                <i data-feather="check" style="width: 16px; height: 16px;"></i>
+                                                Approve
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('reject_application', application_id=application.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this application?')">
+                                                <i data-feather="x" style="width: 16px; height: 16px;"></i>
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">{{ application.status.title() }}</span>
+                                    {% if application.reviewed_at %}
+                                        <br><small class="text-muted">{{ application.reviewed_at.strftime('%Y-%m-%d') }}</small>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i data-feather="inbox" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+        <h4 class="text-muted">No Applications Yet</h4>
+        <p class="text-muted">When candidates apply for your interviews, they'll appear here for review.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

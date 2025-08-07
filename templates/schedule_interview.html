@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Interview - {{ interview.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card calendar-container">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-1">Schedule Interview: {{ interview.title }}</h4>
+                    <p class="mb-0 opacity-75">{{ interview.job_description[:100] }}...</p>
+                </div>
+                <div class="card-body">
+                    <form id="scheduleForm">
+                        <input type="hidden" name="interview_id" value="{{ interview.id }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Candidate</label>
+                            <select class="form-select" name="candidate_id" required>
+                                <option value="">Choose a candidate...</option>
+                                {% for candidate in candidates %}
+                                <option value="{{ candidate.id }}">{{ candidate.username }} ({{ candidate.email }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="interview-datetime" class="form-label fw-bold">Select Interview Date & Time:</label>
+                            <input type="datetime-local" class="form-control" id="interview-datetime" 
+                                   name="interview-datetime" min="" step="1800" required>
+                            <small class="form-text text-muted">Select a date and time at least 24 hours in advance (30-minute intervals)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Duration (minutes)</label>
+                            <select class="form-select" name="duration">
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60" selected>1 hour</option>
+                                <option value="90">1.5 hours</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Time Zone</label>
+                            <select class="form-select" name="time_zone">
+                                <option value="UTC">UTC</option>
+                                <option value="America/New_York">Eastern Time (ET)</option>
+                                <option value="America/Chicago">Central Time (CT)</option>
+                                <option value="America/Denver">Mountain Time (MT)</option>
+                                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                                <option value="Europe/London">London (GMT)</option>
+                                <option value="Europe/Paris">Paris (CET)</option>
+                                <option value="Asia/Tokyo">Tokyo (JST)</option>
+                                <option value="Asia/Kolkata">Mumbai (IST)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Meeting Link (Optional)</label>
+                            <input type="url" class="form-control" name="meeting_link" 
+                                   placeholder="https://zoom.us/j/... or Google Meet link">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notes (Optional)</label>
+                            <textarea class="form-control" name="notes" rows="3" 
+                                    placeholder="Any special instructions or notes for the interview..."></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="calendar" class="me-1"></i>
+                                Schedule Interview
+                            </button>
+                            <a href="{{ url_for('schedule_dashboard') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum datetime to tomorrow at 9 AM
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
+    const minDateTime = tomorrow.toISOString().slice(0, 16);
+    
+    const datetimeInput = document.getElementById('interview-datetime');
+    datetimeInput.setAttribute('min', minDateTime);
+});
+
+document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const datetimeValue = document.getElementById('interview-datetime').value;
+    
+    // Validate datetime selection
+    if (!datetimeValue) {
+        alert('Please select a date and time for the interview.');
+        return;
+    }
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Scheduling...';
+    submitBtn.disabled = true;
+    
+    fetch('/schedule/create', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Interview scheduled successfully!');
+            window.location.href = '/schedule';
+        } else {
+            return response.text().then(text => {
+                throw new Error(text);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error scheduling interview. Please try again.');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+</script>
+{% endblock %}

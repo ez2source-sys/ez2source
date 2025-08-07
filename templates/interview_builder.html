@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Create Interview - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                <i data-feather="plus-circle" class="me-3"></i>
+                Create New Interview
+                <span class="badge bg-primary ms-2">RECRUITER</span>
+            </h1>
+            <p class="lead text-muted">
+                AI will generate relevant questions based on your job description
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <!-- Interview Details Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="title" class="form-label fw-bold">
+                                        <i data-feather="briefcase" class="me-2"></i>
+                                        Job Title
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="title" name="title" 
+                                           placeholder="e.g., Senior Software Engineer, Marketing Manager" required>
+                                    <div class="form-text">
+                                        Enter the specific job title for this position
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="duration" class="form-label fw-bold">
+                                        <i data-feather="clock" class="me-2"></i>
+                                        Interview Duration
+                                    </label>
+                                    <select class="form-select form-select-lg" id="duration" name="duration">
+                                        <option value="15">15 minutes</option>
+                                        <option value="30" selected>30 minutes</option>
+                                        <option value="45">45 minutes</option>
+                                        <option value="60">60 minutes</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Recommended time for candidates to complete the interview
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="job_description" class="form-label fw-bold">
+                                <i data-feather="file-text" class="me-2"></i>
+                                Job Description
+                            </label>
+                            <textarea class="form-control" id="job_description" name="job_description" 
+                                      rows="8" required placeholder="Paste your complete job description here...
+
+Example:
+We are looking for a Senior Software Engineer to join our team. The ideal candidate will have:
+- 5+ years of experience in Python development
+- Strong knowledge of web frameworks (Django, Flask)
+- Experience with cloud platforms (AWS, GCP)
+- Excellent problem-solving skills
+- Bachelor's degree in Computer Science or related field
+
+Responsibilities:
+- Design and develop scalable web applications
+- Collaborate with cross-functional teams
+- Mentor junior developers
+- Participate in code reviews"></textarea>
+                            <div class="form-text">
+                                The more detailed your job description, the better the AI can generate relevant questions
+                            </div>
+                        </div>
+
+                        <!-- Interview Configuration -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="interview_type" class="form-label fw-bold">
+                                        <i data-feather="settings" class="me-2"></i>
+                                        Interview Type
+                                    </label>
+                                    <select class="form-select form-select-lg" id="interview_type" name="interview_type" required>
+                                        <option value="public" selected>Public - Candidates can apply</option>
+                                        <option value="private">Private - Invitation only</option>
+                                        <option value="scheduled">Scheduled - Specific date/time</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Choose how candidates will access this interview
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">
+                                        <i data-feather="shield" class="me-2"></i>
+                                        Access Options
+                                    </label>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="cross_org_accessible" name="cross_org_accessible">
+                                        <label class="form-check-label" for="cross_org_accessible">
+                                            Allow cross-organization access
+                                        </label>
+                                        <div class="form-text">Super admins can invite candidates from other organizations</div>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="public_invitation_enabled" name="public_invitation_enabled">
+                                        <label class="form-check-label" for="public_invitation_enabled">
+                                            Enable public invitations
+                                        </label>
+                                        <div class="form-text">Allow sending invitations to candidates outside your organization</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Information Alert -->
+                        <div class="alert alert-primary border-0 bg-primary bg-opacity-10">
+                            <div class="d-flex">
+                                <i data-feather="zap" class="me-3 mt-1 flex-shrink-0 text-primary"></i>
+                                <div>
+                                    <h6 class="mb-1 text-primary">AI-Powered Interview Generation</h6>
+                                    <p class="mb-0">Our AI will analyze your job description and automatically generate 5 relevant interview questions covering technical skills, problem-solving, communication, and cultural fit. Questions will be tailored to the specific role and requirements you've provided.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interview Type Preview Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card bg-primary bg-opacity-10 border-primary h-100">
+                                    <div class="card-body text-center">
+                                        <i data-feather="users" class="mb-2 text-primary" style="width: 32px; height: 32px;"></i>
+                                        <h6 class="card-title text-primary">Public</h6>
+                                        <p class="card-text small">Candidates can apply directly. You review and approve applications.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-warning bg-opacity-10 border-warning h-100">
+                                    <div class="card-body text-center">
+                                        <i data-feather="mail" class="mb-2 text-warning" style="width: 32px; height: 32px;"></i>
+                                        <h6 class="card-title text-warning">Private</h6>
+                                        <p class="card-text small">Invitation-only access. You select and invite specific candidates.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-success bg-opacity-10 border-success h-100">
+                                    <div class="card-body text-center">
+                                        <i data-feather="calendar" class="mb-2 text-success" style="width: 32px; height: 32px;"></i>
+                                        <h6 class="card-title text-success">Scheduled</h6>
+                                        <p class="card-text small">Time-based interviews with calendar integration and automated reminders.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i data-feather="zap" class="me-2"></i>
+                                Generate Interview with AI
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i data-feather="arrow-left" class="me-2"></i>
+                                Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Process Overview Section -->
+    <div class="row mt-5">
+        <div class="col">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h5 class="mb-4 text-center">
+                        <i data-feather="eye" class="me-2"></i>
+                        Interview Creation Process
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-primary bg-opacity-15 rounded-circle d-inline-flex p-3 mb-3">
+                                <i data-feather="zap" class="text-primary" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <h6 class="fw-bold">AI Generation</h6>
+                            <p class="small text-muted mb-0">Questions generated based on job requirements and role specifics</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-success bg-opacity-15 rounded-circle d-inline-flex p-3 mb-3">
+                                <i data-feather="link" class="text-success" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <h6 class="fw-bold">Interview Access</h6>
+                            <p class="small text-muted mb-0">Shareable link for candidates based on your chosen access type</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-info bg-opacity-15 rounded-circle d-inline-flex p-3 mb-3">
+                                <i data-feather="bar-chart" class="text-info" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <h6 class="fw-bold">AI Evaluation</h6>
+                            <p class="small text-muted mb-0">Automated scoring and detailed feedback for candidate responses</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Interview type change handler
+    document.getElementById('interview_type').addEventListener('change', function() {
+        const type = this.value;
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const submitIcon = submitBtn.querySelector('i');
+        const submitText = submitBtn.childNodes[2];
+        
+        // Update button text based on type
+        if (type === 'public') {
+            submitIcon.setAttribute('data-feather', 'zap');
+            submitText.textContent = ' Generate Public Interview';
+        } else if (type === 'private') {
+            submitIcon.setAttribute('data-feather', 'lock');
+            submitText.textContent = ' Generate Private Interview';
+        } else if (type === 'scheduled') {
+            submitIcon.setAttribute('data-feather', 'calendar');
+            submitText.textContent = ' Generate Scheduled Interview';
+        }
+        
+        // Refresh feather icons
+        feather.replace();
+    });
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const title = document.getElementById('title').value.trim();
+        const jobDescription = document.getElementById('job_description').value.trim();
+        
+        if (!title || !jobDescription) {
+            e.preventDefault();
+            alert('Please fill in both job title and job description fields.');
+            return false;
+        }
+        
+        if (jobDescription.length < 50) {
+            e.preventDefault();
+            alert('Please provide a more detailed job description (at least 50 characters) for better AI question generation.');
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = document.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Generating Questions...';
+    });
+});
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-resize textarea
+document.getElementById('job_description').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
+</script>
+{% endblock %}

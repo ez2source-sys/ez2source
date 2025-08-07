@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Import from LinkedIn - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i data-feather="linkedin" style="width: 40px; height: 40px;" class="text-info"></i>
+                </div>
+                <h2 class="fw-bold">Import from LinkedIn</h2>
+                <p class="text-muted">Automatically populate your profile with LinkedIn data</p>
+            </div>
+
+            <!-- LinkedIn Import Form -->
+            <div class="card border-info shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="download" class="me-2"></i>
+                        LinkedIn Profile Import
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('linkedin_import') }}">
+                        <div class="mb-4">
+                            <label for="linkedin_url" class="form-label fw-bold">LinkedIn Profile URL *</label>
+                            <input type="url" class="form-control form-control-lg" id="linkedin_url" name="linkedin_url" 
+                                   placeholder="https://linkedin.com/in/yourprofile" required>
+                            <div class="form-text">
+                                <small>
+                                    <i data-feather="info" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Copy your public LinkedIn profile URL. Make sure your profile is set to public visibility.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="email" class="form-label fw-bold">Email Address</label>
+                            <input type="email" class="form-control form-control-lg" id="email" name="email" 
+                                   value="{{ user.email }}" readonly>
+                            <div class="form-text">
+                                <small>This will be used to verify your identity and send notifications.</small>
+                            </div>
+                        </div>
+
+                        <!-- What will be imported -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i data-feather="list" class="me-2"></i>
+                                What will be imported:
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Professional bio and headline</li>
+                                <li>Work experience and job history</li>
+                                <li>Skills and endorsements</li>
+                                <li>Education background</li>
+                                <li>Current job title and company</li>
+                            </ul>
+                        </div>
+
+                        <!-- Privacy Notice -->
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i data-feather="shield" class="me-2"></i>
+                                Privacy Notice:
+                            </h6>
+                            <p class="mb-0 small">
+                                We only import publicly available information from your LinkedIn profile. 
+                                Your LinkedIn credentials are never stored or accessed.
+                            </p>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-block">
+                            <button type="submit" class="btn btn-info btn-lg">
+                                <i data-feather="download" class="me-2"></i>
+                                Import LinkedIn Profile
+                            </button>
+                            <a href="{{ url_for('candidate_profile', user_id=user.id) }}" class="btn btn-outline-secondary btn-lg">
+                                <i data-feather="arrow-left" class="me-2"></i>
+                                Back to Profile
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternative Options -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i data-feather="upload" class="text-success mb-2" style="width: 32px; height: 32px;"></i>
+                            <h6>Upload Resume Instead</h6>
+                            <p class="text-muted small">Have a resume ready? Upload it for automatic profile creation.</p>
+                            <a href="{{ url_for('complete_profile_import', import='resume') }}" class="btn btn-outline-success btn-sm">
+                                Upload Resume
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i data-feather="edit-3" class="text-primary mb-2" style="width: 32px; height: 32px;"></i>
+                            <h6>Manual Entry</h6>
+                            <p class="text-muted small">Prefer to fill out your profile manually? Complete it step by step.</p>
+                            <a href="{{ url_for('candidate_profile', user_id=user.id) }}" class="btn btn-outline-primary btn-sm">
+                                Manual Entry
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function(e) {
+        // Show loading state
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importing...';
+        submitBtn.disabled = true;
+    });
+    
+    // Validate LinkedIn URL format
+    const linkedinInput = document.getElementById('linkedin_url');
+    linkedinInput.addEventListener('blur', function() {
+        const url = this.value;
+        if (url && !url.includes('linkedin.com/in/')) {
+            this.setCustomValidity('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/yourprofile)');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %}

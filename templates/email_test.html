@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Test Email Configuration - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold">Test Email Configuration</h1>
+                    <p class="lead text-muted">Send a test email to verify your SMTP settings</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('system_email_settings') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-2"></i>
+                        Back to Email Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i data-feather="mail" class="me-2"></i>
+                        Email Test Configuration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="testEmailForm">
+                        <div class="mb-4">
+                            <label for="testEmailAddress" class="form-label">Test Email Address</label>
+                            <input type="email" 
+                                   class="form-control form-control-lg" 
+                                   id="testEmailAddress" 
+                                   name="email"
+                                   value="{{ current_user.email or 'admin@ez2hire.com' }}" 
+                                   placeholder="Enter email address to test" 
+                                   required>
+                            <div class="form-text">Enter the email address where you want to receive the test email</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="testEmailSubject" class="form-label">Test Email Subject</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="testEmailSubject" 
+                                   name="subject"
+                                   value="Test Email - Ez2source Configuration" 
+                                   placeholder="Enter email subject">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="testEmailMessage" class="form-label">Test Message (Optional)</label>
+                            <textarea class="form-control" 
+                                      id="testEmailMessage" 
+                                      name="message"
+                                      rows="4" 
+                                      placeholder="Enter a custom test message...">This is a test email to verify that the Ez2source email system is working correctly.</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i data-feather="send" class="me-2"></i>
+                                Send Test Email
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="testEmailResult" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current SMTP Status -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i data-feather="server" class="me-2"></i>
+                        Current SMTP Configuration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="server" class="text-success" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">Status</h6>
+                                <span class="badge bg-success">Configured</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="globe" class="text-info" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">SMTP Host</h6>
+                                <small class="text-muted">smtp.gmail.com</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="shield" class="text-success" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">Port</h6>
+                                <small class="text-muted">587 (TLS)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="user" class="text-primary" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">Username</h6>
+                                <small class="text-muted">dreamworld.nba3s@gmail.com</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('testEmailForm');
+    const resultDiv = document.getElementById('testEmailResult');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('testEmailAddress').value;
+        const subject = document.getElementById('testEmailSubject').value;
+        const message = document.getElementById('testEmailMessage').value;
+        
+        resultDiv.innerHTML = `
+            <div class="alert alert-info">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                Sending test email to ${email}...
+            </div>
+        `;
+        
+        fetch('/system/email-settings/test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                email: email,
+                subject: subject,
+                message: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i data-feather="check-circle" class="me-2"></i>
+                        Test email sent successfully to ${email}!
+                    </div>
+                `;
+                feather.replace();
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i data-feather="alert-circle" class="me-2"></i>
+                        <strong>Error:</strong> ${data.error}
+                    </div>
+                `;
+                feather.replace();
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i data-feather="alert-circle" class="me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+            feather.replace();
+        });
+    });
+});
+</script>
+{% endblock %}

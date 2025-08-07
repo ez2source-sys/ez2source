@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        <i data-feather="eye" class="me-3"></i>
+                        Audit Logs
+                        <span class="badge bg-danger ms-2">Admin Only</span>
+                    </h1>
+                    <p class="lead text-muted">Track all system activities and user actions.</p>
+                </div>
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-secondary">
+                    <i data-feather="arrow-left" class="me-2"></i>
+                    Back to Admin Panel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="activity" class="me-2"></i>
+                        Recent Activities (Last 100)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Resource</th>
+                                        <th>Details</th>
+                                        <th>IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs %}
+                                    <tr>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle bg-primary text-white me-2">
+                                                    {{ log.user.username[0].upper() }}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">{{ log.user.username }}</div>
+                                                    <small class="text-muted">{{ log.user.role.title() }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 
+                                                'danger' if 'DELETE' in log.action else
+                                                'warning' if 'UPDATE' in log.action else
+                                                'success' if 'CREATE' in log.action else
+                                                'info'
+                                            }}">
+                                                {{ log.action.replace('_', ' ').title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="text-capitalize">{{ log.resource_type }}</span>
+                                            {% if log.resource_id %}
+                                                <small class="text-muted">#{{ log.resource_id }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if log.details %}
+                                            <button class="btn btn-sm btn-outline-info" 
+                                                    data-bs-toggle="collapse" 
+                                                    data-bs-target="#details-{{ log.id }}"
+                                                    aria-expanded="false">
+                                                <i data-feather="info" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                            <div class="collapse mt-2" id="details-{{ log.id }}">
+                                                <div class="card card-body">
+                                                    <pre class="mb-0"><small>{{ log.details }}</small></pre>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ log.ip_address or '-' }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i data-feather="inbox" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+                            <h4 class="text-muted">No audit logs found</h4>
+                            <p class="text-muted">System activities will appear here when they occur.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+</style>
+{% endblock %}

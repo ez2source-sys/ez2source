@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Results - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2">Interview Results</h2>
+                            <h4 class="mb-1">{{ response.interview.title }}</h4>
+                            <p class="mb-0 opacity-75">
+                                {% if current_user.role == 'candidate' %}
+                                    Completed on {{ response.completed_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% else %}
+                                    Candidate: {{ response.candidate.username }} ({{ response.candidate.email }})
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="display-6 fw-bold">
+                                {{ response.ai_score|round(1) }}<small class="fs-4">/100</small>
+                            </div>
+                            <span class="badge bg-{{ 'success' if response.ai_score >= 70 else 'warning' if response.ai_score >= 50 else 'danger' }} fs-6">
+                                {% if response.ai_score >= 70 %}
+                                    Excellent
+                                {% elif response.ai_score >= 50 %}
+                                    Good
+                                {% else %}
+                                    Needs Improvement
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Feedback -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i data-feather="zap" class="me-2"></i>
+                        AI Analysis & Feedback
+                    </h5>
+                    <div class="btn-group">
+                        <a href="{{ url_for('interview_feedback_summary', response_id=response.id) }}" 
+                           class="btn btn-primary btn-sm">
+                            <i data-feather="bar-chart" class="me-1"></i>
+                            Detailed AI Summary
+                        </a>
+                        {% if current_user.role == 'recruiter' %}
+                        <button class="btn btn-outline-info btn-sm" onclick="viewQuickComparison()">
+                            <i data-feather="users" class="me-1"></i>
+                            Compare Candidates
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="ai-feedback-content bg-white border border-2 p-4 rounded shadow-sm" style="background-color: #ffffff !important;">
+                        <div class="text-dark fw-normal" style="color: #212529 !important;">{{ response.ai_feedback|replace('\n', '<br>')|safe }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Details -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-info bg-opacity-10 border-info">
+                        <div class="card-body text-center">
+                            <i data-feather="clock" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <h4 class="fw-bold">{{ response.time_taken_minutes or 'N/A' }}</h4>
+                            <p class="mb-0">Minutes Taken</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success bg-opacity-10 border-success">
+                        <div class="card-body text-center">
+                            <i data-feather="check-circle" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <h4 class="fw-bold">{{ answers|length }}</h4>
+                            <p class="mb-0">Questions Answered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-primary bg-opacity-10 border-primary">
+                        <div class="card-body text-center">
+                            <i data-feather="calendar" class="mb-2" style="width: 32px; height: 32px;"></i>
+                            <h4 class="fw-bold">{{ response.completed_at.strftime('%m/%d') }}</h4>
+                            <p class="mb-0">Completion Date</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question & Answer Review -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="message-square" class="me-2"></i>
+                        Interview Responses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for key, answer_data in answers.items() %}
+                    <div class="mb-4 {% if not loop.last %}border-bottom pb-4{% endif %}">
+                        <div class="row">
+                            <div class="col-md-1">
+                                <span class="badge bg-primary fs-6">{{ loop.index }}</span>
+                            </div>
+                            <div class="col-md-11">
+                                <h6 class="fw-bold mb-2">{{ answer_data.question }}</h6>
+                                <div class="bg-light border p-3 rounded">
+                                    {% if answer_data.answer.strip() %}
+                                        <p class="mb-0 text-dark">{{ answer_data.answer }}</p>
+                                    {% else %}
+                                        <p class="text-muted mb-0 fst-italic">No answer provided</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Answer Analysis (you could extend this with more detailed AI analysis) -->
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        Length: {{ answer_data.answer|length }} characters
+                                        {% if answer_data.answer.strip() %}
+                                            | Word count: {{ answer_data.answer.split()|length }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mb-4">
+                <div class="d-flex gap-3 justify-content-center">
+                    {% if current_user.role == 'recruiter' %}
+                        <a href="{{ url_for('candidate_analytics', interview_id=response.interview.id) }}" 
+                           class="btn btn-primary">
+                            <i data-feather="bar-chart" class="me-2"></i>
+                            View All Candidates
+                        </a>
+                    {% endif %}
+                    
+                    <button onclick="window.print()" class="btn btn-outline-secondary">
+                        <i data-feather="printer" class="me-2"></i>
+                        Print Results
+                    </button>
+                    
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                        <i data-feather="arrow-left" class="me-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Export Options (for recruiters) -->
+            {% if current_user.role == 'recruiter' %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body bg-light">
+                    <h6 class="mb-3 text-dark">
+                        <i data-feather="download" class="me-2"></i>
+                        Export Options
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-success w-100" onclick="exportToPDF()">
+                                <i data-feather="file-text" class="me-2"></i>
+                                Export to PDF
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-info w-100" onclick="exportToJSON()">
+                                <i data-feather="database" class="me-2"></i>
+                                Export Raw Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Performance Badge -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1000;">
+    <div class="card shadow-lg border-0 bg-{{ 'success' if response.ai_score >= 70 else 'warning' if response.ai_score >= 50 else 'danger' }}">
+        <div class="card-body text-white text-center p-3">
+            <h4 class="mb-1">{{ response.ai_score|round(1) }}%</h4>
+            <small>Overall Score</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* Force override any dark backgrounds in AI feedback section */
+.ai-feedback-content {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+}
+.ai-feedback-content * {
+    color: #212529 !important;
+}
+</style>
+<script>
+function exportToPDF() {
+    // In a real implementation, this would call a backend endpoint to generate PDF
+    alert('PDF export feature would be implemented with a backend service like WeasyPrint or similar.');
+}
+
+function exportToJSON() {
+    const data = {
+        interview: {
+            title: "{{ response.interview.title }}",
+            job_description: "{{ response.interview.job_description }}"
+        },
+        candidate: {
+            username: "{{ response.candidate.username }}",
+            email: "{{ response.candidate.email }}"
+        },
+        results: {
+            score: {{ response.ai_score }},
+            completed_at: "{{ response.completed_at.isoformat() }}",
+            time_taken: {{ response.time_taken_minutes or 0 }},
+            feedback: `{{ response.ai_feedback|replace('\n', '\\n')|replace('`', '\\`') }}`
+        },
+        answers: {{ answers|tojson }}
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interview_results_{{ response.candidate.username }}_{{ response.completed_at.strftime('%Y%m%d') }}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Print styles
+const printStyles = `
+@media print {
+    .navbar, .position-fixed, .btn, footer {
+        display: none !important;
+    }
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    .container {
+        max-width: 100% !important;
+    }
+}
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = printStyles;
+document.head.appendChild(styleSheet);
+</script>
+{% endblock %}

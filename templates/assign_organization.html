@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Join an Organization - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i data-feather="users" class="text-primary" style="width: 40px; height: 40px;"></i>
+                        </div>
+                        <h2 class="h3 fw-bold">Join an Organization</h2>
+                        <p class="text-muted">To access personalized job recommendations and apply to positions, please select an organization to join.</p>
+                    </div>
+
+                    {% if suggested_org_id %}
+                    <div class="alert alert-info border-0 mb-4">
+                        <div class="d-flex align-items-center">
+                            <i data-feather="lightbulb" class="text-info me-3" style="width: 20px; height: 20px;"></i>
+                            <div>
+                                <strong>Smart Suggestion</strong><br>
+                                <small>Based on your email domain ({{ user_email.split('@')[1] }}), we suggest joining the organization below.</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="{{ url_for('submit_organization_assignment') }}">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Select Organization</label>
+                            
+                            {% for org in organizations %}
+                            <div class="card mb-3 organization-option {% if org.id == suggested_org_id %}border-primary{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <input type="radio" class="form-check-input me-3" name="organization_id" value="{{ org.id }}" 
+                                               id="org_{{ org.id }}" {% if org.id == suggested_org_id %}checked{% endif %}>
+                                        <label for="org_{{ org.id }}" class="flex-grow-1 cursor-pointer">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1 fw-semibold">{{ org.name }}</h6>
+                                                    <small class="text-muted">
+                                                        {% if org.slug == 'techcorp' %}
+                                                        Technology solutions and software development
+                                                        {% elif org.slug == 'innovatetech' %}
+                                                        Innovation and emerging technology
+                                                        {% elif org.slug == 'startupxy' %}
+                                                        Fast-growing startup environment
+                                                        {% else %}
+                                                        Professional opportunities
+                                                        {% endif %}
+                                                    </small>
+                                                </div>
+                                                {% if org.id == suggested_org_id %}
+                                                <span class="badge bg-primary">Recommended</span>
+                                                {% endif %}
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">
+                                    <i data-feather="arrow-left" class="me-2"></i>
+                                    Skip for Now
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i data-feather="check" class="me-2"></i>
+                                    Join Organization
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6 class="fw-semibold mb-2">What happens when you join?</h6>
+                        <ul class="list-unstyled small text-muted mb-0">
+                            <li class="mb-1"><i data-feather="check" class="text-success me-2" style="width: 16px; height: 16px;"></i>Access personalized job recommendations</li>
+                            <li class="mb-1"><i data-feather="check" class="text-success me-2" style="width: 16px; height: 16px;"></i>Apply to organization-specific positions</li>
+                            <li class="mb-1"><i data-feather="check" class="text-success me-2" style="width: 16px; height: 16px;"></i>Receive interview invitations from recruiters</li>
+                            <li><i data-feather="check" class="text-success me-2" style="width: 16px; height: 16px;"></i>Track your application progress</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.organization-option {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.organization-option:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.organization-option .form-check-input:checked + label {
+    color: var(--bs-primary);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+</style>
+
+<script>
+// Make entire card clickable
+document.querySelectorAll('.organization-option').forEach(card => {
+    card.addEventListener('click', function() {
+        const radio = this.querySelector('input[type="radio"]');
+        radio.checked = true;
+    });
+});
+</script>
+{% endblock %}

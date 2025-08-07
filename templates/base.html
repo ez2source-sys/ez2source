@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#667eea">
+    <title>{% block title %}Ez2source - AI-Powered Talent Intelligence Platform{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ez2source-logo.png') }}">
+    
+    <!-- PWA Manifest -->
+    {% if current_user.is_authenticated and current_user.role == 'candidate' %}
+    <link rel="manifest" href="{{ url_for('static', filename='manifest-candidate.json') }}">
+    {% else %}
+    <link rel="manifest" href="{{ url_for('static', filename='manifest-recruiter.json') }}">
+    {% endif %}
+    
+    <!-- Apple PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-title" content="{% if current_user.is_authenticated and current_user.role == 'candidate' %}Ez2source Candidate{% else %}Ez2source Recruiting{% endif %}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='ez2source-logo.png') }}">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/accessibility-improvements.css') }}?v={{ range(1, 10000) | random }}" rel="stylesheet">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Moment.js for date formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/interview-fix.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-responsive.css') }}">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="{{ url_for('static', filename='images/ez2source-logo.png') }}" as="image">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/light-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form-validation.css') }}?v={{ range(1, 10000) | random }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v={{ range(1, 10000) | random }}">
+    
+    <style>
+        /* Mobile Navigation Toggle */
+        .mobile-nav-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1061;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-nav-toggle:hover {
+            background: #f8f9fa;
+        }
+        
+        .mobile-nav-toggle .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            background-size: 100%;
+            width: 20px;
+            height: 20px;
+        }
+        
+        @media (min-width: 992px) {
+            .mobile-nav-toggle {
+                display: none !important;
+            }
+        }
+        
+        /* Mobile sidebar adjustments */
+        @media (max-width: 991px) {
+            .main-content {
+                padding-top: 70px;
+            }
+            
+            .mobile-nav-toggle {
+                display: flex !important;
+            }
+        }
+        
+        /* Performance optimizations for mobile */
+        @media (max-width: 767px) {
+            .card {
+                will-change: transform;
+                transform: translateZ(0);
+            }
+            
+            .btn {
+                will-change: transform;
+                backface-visibility: hidden;
+            }
+            
+            .sidebar {
+                will-change: transform;
+                transform: translateZ(0);
+            }
+        }
+        
+        /* Critical AI-Powered Badge Fix - Bypass cache */
+        .ai-powered-badge {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            font-weight: 700 !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+            padding: 0.5rem 0.75rem !important;
+            border-radius: 0.375rem !important;
+        }
+        
+        /* Force override any badge with AI-Powered text */
+        .badge.ai-powered-badge,
+        span.ai-powered-badge,
+        .ai-powered-badge.badge,
+        .badge[class*="ai-powered"] {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            font-weight: 700 !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+            padding: 0.5rem 0.75rem !important;
+            border-radius: 0.375rem !important;
+        }
+        
+        /* Critical Button Text Visibility Fix */
+        .btn-primary {
+            background-color: #0d6efd !important;
+            color: #ffffff !important;
+            border-color: #0d6efd !important;
+            line-height: 1.2 !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+        }
+        
+        /* CRITICAL: Force light hover states everywhere */
+        .nav-link:hover,
+        .sidebar-nav .nav-link:hover,
+        .sidebar .nav-link:hover,
+        .nav-pills .nav-link:hover,
+        .nav-tabs .nav-link:hover,
+        .list-group-item:hover,
+        .dropdown-item:hover,
+        .btn:hover,
+        .sidebar-nav .nav-item .nav-link:hover,
+        a.nav-link:hover,
+        .nav-item .nav-link:hover,
+        .navbar-nav .nav-link:hover {
+            background-color: #f1f8ff !important;
+            color: #212529 !important;
+        }
+        
+        /* Force override any dark backgrounds */
+        .bg-dark:hover,
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .btn-dark:hover,
+        .dropdown-menu .dropdown-item:hover,
+        .nav-dark .nav-link:hover {
+            background-color: #f1f8ff !important;
+            color: #212529 !important;
+        }
+        
+        /* Additional specific overrides for all navigation elements */
+        .sidebar-nav .nav-item .nav-link:hover,
+        .sidebar-nav .nav-item .nav-link:focus,
+        .sidebar-nav .nav-item .nav-link.active:hover,
+        .sidebar-nav .nav-item .nav-link.active:focus,
+        .navbar-nav .nav-item .nav-link:hover,
+        .navbar-nav .nav-item .nav-link:focus,
+        .nav .nav-item .nav-link:hover,
+        .nav .nav-item .nav-link:focus {
+            background-color: #f1f8ff !important;
+            color: #212529 !important;
+            border-color: transparent !important;
+        }
+        
+        /* Override Bootstrap's default hover states */
+        .btn:hover,
+        .btn:focus,
+        .btn-outline-primary:hover,
+        .btn-outline-secondary:hover,
+        .btn-outline-success:hover,
+        .btn-outline-danger:hover,
+        .btn-outline-warning:hover,
+        .btn-outline-info:hover,
+        .btn-outline-light:hover,
+        .btn-outline-dark:hover {
+            background-color: #f1f8ff !important;
+            color: #212529 !important;
+            border-color: #dee2e6 !important;
+        }
+        
+        /* Force light theme on all potentially dark elements */
+        * {
+            --bs-dark: #f8f9fa !important;
+        }
+        
+        /* Sidebar Variables and Collapsed State */
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --topbar-height: 60px;
+        }
+        
+        /* Ensure sidebar collapse functionality works */
+        .sidebar {
+            width: var(--sidebar-width);
+            transition: width 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width) !important;
+        }
+        
+        .sidebar.collapsed .item-text,
+        .sidebar.collapsed .brand-text,
+        .sidebar.collapsed .sidebar-label {
+            display: none !important;
+        }
+        
+        .sidebar.collapsed .sidebar-item {
+            justify-content: center !important;
+            padding: 12px 8px !important;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed-width) !important;
+        }
+        
+        /* Mobile sidebar behavior */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: var(--sidebar-width);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0) !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+        
+        /* Light Theme Input Field Styling */
+        .form-control,
+        .form-select,
+        .form-check-input,
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="search"],
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"],
+        textarea,
+        select {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.375rem !important;
+        }
+        
+        /* Input focus states */
+        .form-control:focus,
+        .form-select:focus,
+        .form-check-input:focus,
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        input[type="tel"]:focus,
+        input[type="url"]:focus,
+        input[type="search"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="datetime-local"]:focus,
+        textarea:focus,
+        select:focus {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border-color: #86b7fe !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        }
+        
+        /* Input placeholder styling */
+        .form-control::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #6c757d !important;
+            opacity: 1 !important;
+        }
+        
+        /* Input group styling */
+        .input-group-text {
+            background-color: #f8f9fa !important;
+            color: #212529 !important;
+            border: 1px solid #dee2e6 !important;
+        }
+        
+        /* Disabled input styling */
+        .form-control:disabled,
+        .form-select:disabled,
+        input:disabled,
+        textarea:disabled,
+        select:disabled {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+            opacity: 1 !important;
+        }
+        
+        /* ENHANCED INPUT FIELD STYLING - Fix for modal and special inputs */
+        .modal input[type="text"],
+        .modal input[type="email"],
+        .modal input[type="password"],
+        .modal input[type="number"],
+        .modal input[type="tel"],
+        .modal input[type="url"],
+        .modal input[type="search"],
+        .modal input[type="date"],
+        .modal input[type="time"],
+        .modal input[type="datetime-local"],
+        .modal input[type="month"],
+        .modal input[type="week"],
+        .modal input[type="color"],
+        .modal textarea,
+        .modal select,
+        .modal .form-control,
+        .modal .form-select,
+        input[type="month"],
+        input[type="week"],
+        input[type="color"],
+        input[type="file"] {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.375rem !important;
+            font-size: 1rem !important;
+            line-height: 1.5 !important;
+            padding: 0.5rem 0.75rem !important;
+        }
+        
+        /* Focus states for modal and special inputs */
+        .modal input[type="text"]:focus,
+        .modal input[type="email"]:focus,
+        .modal input[type="password"]:focus,
+        .modal input[type="number"]:focus,
+        .modal input[type="tel"]:focus,
+        .modal input[type="url"]:focus,
+        .modal input[type="search"]:focus,
+        .modal input[type="date"]:focus,
+        .modal input[type="time"]:focus,
+        .modal input[type="datetime-local"]:focus,
+        .modal input[type="month"]:focus,
+        .modal input[type="week"]:focus,
+        .modal input[type="color"]:focus,
+        .modal textarea:focus,
+        .modal select:focus,
+        .modal .form-control:focus,
+        .modal .form-select:focus,
+        input[type="month"]:focus,
+        input[type="week"]:focus,
+        input[type="color"]:focus,
+        input[type="file"]:focus {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border-color: #86b7fe !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        }
+        
+        /* Force light backgrounds on date inputs specifically */
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="date"]::-webkit-datetime-edit-text,
+        input[type="date"]::-webkit-datetime-edit-month-field,
+        input[type="date"]::-webkit-datetime-edit-day-field,
+        input[type="date"]::-webkit-datetime-edit-year-field,
+        input[type="time"]::-webkit-datetime-edit,
+        input[type="time"]::-webkit-datetime-edit-text,
+        input[type="time"]::-webkit-datetime-edit-hour-field,
+        input[type="time"]::-webkit-datetime-edit-minute-field,
+        input[type="datetime-local"]::-webkit-datetime-edit,
+        input[type="datetime-local"]::-webkit-datetime-edit-text,
+        input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
+            background-color: transparent !important;
+            color: #212529 !important;
+        }
+        
+        /* Fix for Bootstrap dark mode override */
+        [data-bs-theme="dark"] input,
+        [data-bs-theme="dark"] textarea,
+        [data-bs-theme="dark"] select,
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select,
+        .dark input,
+        .dark textarea,
+        .dark select,
+        .dark .form-control,
+        .dark .form-select {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border-color: #dee2e6 !important;
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #0b5ed7 !important;
+            color: #ffffff !important;
+            border-color: #0a58ca !important;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d !important;
+            color: #ffffff !important;
+            border-color: #6c757d !important;
+            line-height: 1.2 !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+        }
+        
+        .btn-dark {
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            border-color: #212529 !important;
+            line-height: 1.2 !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+        }
+        
+        .btn-warning {
+            background-color: #fd7e14 !important;
+            color: #ffffff !important;
+            border-color: #fd7e14 !important;
+            line-height: 1.2 !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+        }
+        
+        .btn-info {
+            background-color: #0dcaf0 !important;
+            color: #000000 !important;
+            border-color: #0dcaf0 !important;
+            line-height: 1.2 !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+        }
+        
+        .btn-success {
+            background-color: #198754 !important;
+            color: #ffffff !important;
+            border-color: #198754 !important;
+            line-height: 1.2 !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+        }
+        
+        /* Ensure button text and icons are visible */
+        .btn i, .btn svg {
+            color: inherit !important;
+            fill: currentColor !important;
+        }
+        
+        /* Fix for 100% zoom responsive issues */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+        }
+        
+        .container, .container-fluid {
+            max-width: 100%;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        
+        .modal-dialog {
+            max-width: min(95vw, 800px);
+            margin: 0.5rem auto;
+        }
+        
+        .modal-lg {
+            max-width: min(95vw, 900px);
+        }
+        
+        .modal-xl {
+            max-width: min(95vw, 1200px);
+        }
+        
+        /* Fix modal z-index to appear above sidebar */
+        .modal {
+            z-index: 10000 !important;
+        }
+        
+        .modal-backdrop {
+            z-index: 9999 !important;
+        }
+        
+        /* Ensure modal appears above everything */
+        .modal.show {
+            z-index: 10001 !important;
+        }
+        
+        /* Fix modal positioning and prevent page hanging */
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 0.5rem;
+            pointer-events: none;
+        }
+        
+        .modal-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            pointer-events: auto;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 0.3rem;
+            outline: 0;
+        }
+        
+        /* Ensure modal can be clicked and interacted with */
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease-out;
+            transform: translate(0, -50px);
+        }
+        
+        .modal.show .modal-dialog {
+            transform: none;
+        }
+        
+        /* Override any conflicting styles */
+        .modal-backdrop.fade {
+            opacity: 0;
+        }
+        
+        .modal-backdrop.show {
+            opacity: 0.5;
+        }
+        
+        /* Force modal to be interactive */
+        .modal * {
+            pointer-events: auto !important;
+        }
+        
+        /* Force modal backdrop to be clickable */
+        .modal-backdrop {
+            pointer-events: auto !important;
+        }
+        
+        /* Ensure modal content is always on top */
+        .modal-content {
+            z-index: 10002 !important;
+        }
+        
+        /* Fix modal hanging issue */
+        .modal.show {
+            display: block !important;
+        }
+        
+        .modal-dialog {
+            z-index: 10003 !important;
+        }
+        
+        /* Fix skills wrapping display */
+        .skills-container {
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+        
+        .skills-container .badge {
+            display: inline-block;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+            white-space: nowrap;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-dialog, .modal-lg, .modal-xl {
+                max-width: 95vw;
+                margin: 0.25rem;
+            }
+            
+            .modal-body {
+                padding: 0.75rem;
+            }
+            
+            .row > .col, .row > [class*="col-"] {
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-control {
+                min-width: 0;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+        }
+        
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+        
+        .col, [class*="col-"] {
+            padding-left: 7.5px;
+            padding-right: 7.5px;
+        }
+        
+        .telentiq-logo {
+            display: inline-flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: #667eea;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            color: white;
+        }
+        
+        /* CRITICAL: Hide navbar completely when user is authenticated */
+        .authenticated .navbar {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="has-sidebar{% if current_user.is_authenticated %} authenticated{% endif %}">
+    <!-- Skip link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    {% if current_user.is_authenticated %}
+    <!-- Mobile Navigation Toggle -->
+    <button class="mobile-nav-toggle d-lg-none" id="mobile-nav-toggle" type="button" aria-label="Toggle navigation">
+        <i data-feather="menu" style="width: 20px; height: 20px;"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1059; display: none;"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="d-flex align-items-center w-100">
+                <div class="sidebar-brand">
+                    <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none text-dark">
+                        <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 40px; height: 40px;" class="me-2">
+                        <span class="brand-text">Ez2source</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-content">
+            {% if current_user.role == 'super_admin' %}
+                <!-- Super Admin Menu -->
+                <div class="sidebar-section">
+                    <div class="sidebar-item active" data-tooltip="Dashboard" onclick="navigateTo('{{ url_for('dashboard') }}')">
+                        <i data-feather="home"></i>
+                        <span class="item-text">Dashboard</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <span>Administration</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Organization Management" onclick="navigateTo('{{ url_for('admin_organizations') }}')">
+                        <i data-feather="briefcase"></i>
+                        <span class="item-text">Organizations</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Platform Analytics" onclick="navigateTo('{{ url_for('admin_analytics') }}')">
+                        <i data-feather="activity"></i>
+                        <span class="item-text">Analytics</span>
+                    </div>
+                    <!-- Job Scheduler and System Settings removed - Ez2source focuses on core talent intelligence features -->
+                </div>
+
+                <div class="sidebar-divider"></div>
+                
+                <!-- Reports section hidden for super admins as they have system-wide analytics access -->
+                {% if current_user.role != 'super_admin' %}
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <span>Reports</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Reports" onclick="navigateTo('{{ url_for('admin_analytics') }}')">
+                        <i data-feather="bar-chart-2"></i>
+                        <span class="item-text">Reports</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Team Directory" onclick="navigateTo('{{ url_for('team_directory') }}')">
+                        <i data-feather="users"></i>
+                        <span class="item-text">Team Directory</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Schedule" onclick="navigateTo('{{ url_for('schedule_dashboard') }}')">
+                        <i data-feather="calendar"></i>
+                        <span class="item-text">Schedule</span>
+                    </div>
+                </div>
+                {% endif %}
+            {% elif current_user.role == 'admin' %}
+                <!-- Admin Menu -->
+                <div class="sidebar-section">
+                    <div class="sidebar-item active" data-tooltip="Dashboard" onclick="navigateTo('{{ url_for('dashboard') }}')">
+                        <i data-feather="home"></i>
+                        <span class="item-text">Dashboard</span>
+                    </div>
+                    <!-- New Interview and Manage Applications removed - Ez2source streamlined admin interface -->
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <span>Organization Management</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Organization Settings" onclick="navigateTo('{{ url_for('organization_settings') }}')">
+                        <i data-feather="settings"></i>
+                        <span class="item-text">Organization Settings</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Organization Analytics" onclick="navigateTo('{{ url_for('admin_analytics') }}')">
+                        <i data-feather="bar-chart-2"></i>
+                        <span class="item-text">Organization Analytics</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Team Directory" onclick="navigateTo('{{ url_for('team_directory') }}')">
+                        <i data-feather="users"></i>
+                        <span class="item-text">Team Directory</span>
+                    </div>
+                </div>
+                
+            {% elif current_user.role == 'recruiter' %}
+                <!-- Recruiter Menu -->
+                <div class="sidebar-section">
+                    <div class="sidebar-item active" data-tooltip="Dashboard" onclick="navigateTo('{{ url_for('dashboard') }}')">
+                        <i data-feather="home"></i>
+                        <span class="item-text">Dashboard</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="New Interview" onclick="navigateTo('{{ url_for('create_interview') }}')">
+                        <i data-feather="plus-circle"></i>
+                        <span class="item-text">New Interview</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <span>Candidates</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Filter Candidates" onclick="navigateTo('{{ url_for('filter_candidates') }}')">
+                        <i data-feather="filter"></i>
+                        <span class="item-text">Filter Candidates</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Universal Access" onclick="navigateTo('{{ url_for('universal_candidates') }}')">
+                        <i data-feather="globe"></i>
+                        <span class="item-text">Universal Access</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Applications" onclick="navigateTo('{{ url_for('my_applications') }}')">
+                        <i data-feather="inbox"></i>
+                        <span class="item-text">Applications</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <span>Analytics</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Reports" onclick="navigateTo('{{ url_for('advanced_analytics') }}')">
+                        <i data-feather="bar-chart-2"></i>
+                        <span class="item-text">Reports</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Schedule" onclick="navigateTo('{{ url_for('schedule_dashboard') }}')">
+                        <i data-feather="calendar"></i>
+                        <span class="item-text">Schedule</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <span>Management</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Team" onclick="navigateTo('{{ url_for('team_directory') }}')">
+                        <i data-feather="users"></i>
+                        <span class="item-text">Team</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Settings" onclick="navigateTo('{{ url_for('settings') }}')">
+                        <i data-feather="settings"></i>
+                        <span class="item-text">Settings</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <!-- Empty sidebar section removed -->
+            {% elif current_user.role == 'candidate' %}
+                <!-- Candidate Menu -->
+                <div class="sidebar-section">
+                    <div class="sidebar-item active" data-tooltip="Dashboard" onclick="navigateTo('{{ url_for('dashboard') }}')">
+                        <i data-feather="home"></i>
+                        <span class="item-text">Dashboard</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="My Profile" onclick="navigateTo('{{ url_for('candidate_profile', user_id=current_user.id) }}')">
+                        <i data-feather="user"></i>
+                        <span class="item-text">My Profile</span>
+                    </div>
+                    <!-- Find Jobs removed - Ez2source focuses on talent intelligence features -->
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <span>Interviews</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Scheduled" onclick="navigateTo('{{ url_for('schedule_dashboard') }}')">
+                        <i data-feather="clock"></i>
+                        <span class="item-text">Scheduled</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Completed" onclick="navigateTo('{{ url_for('candidate_completed_interviews') }}')">
+                        <i data-feather="check-circle"></i>
+                        <span class="item-text">Completed</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Cross-Org Opportunities" onclick="navigateTo('{{ url_for('candidate_public_interviews') }}')">
+                        <i data-feather="globe"></i>
+                        <span class="item-text">Opportunities</span>
+                    </div>
+                    <div class="sidebar-item" data-tooltip="Personal Invitations" onclick="navigateTo('{{ url_for('candidate_invitations') }}')">
+                        <i data-feather="mail"></i>
+                        <span class="item-text">Invitations</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-divider"></div>
+                
+                <!-- Career section with job-related features removed - Ez2source focuses on talent intelligence -->
+                
+                <div class="sidebar-divider"></div>
+                
+                <!-- Empty sidebar section removed -->
+            {% endif %}
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="sidebar-item" data-tooltip="Profile" onclick="navigateTo('{{ url_for('candidate_profile', user_id=current_user.id) }}')">
+                <div class="user-avatar">
+                    {% if current_user.profile_image_url %}
+                        <img src="{{ current_user.profile_image_url }}" alt="Profile">
+                    {% else %}
+                        <i data-feather="user"></i>
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ current_user.first_name or current_user.username }}</div>
+                    <div class="user-role">{{ current_user.role.title() }}</div>
+                </div>
+            </div>
+            <div class="sidebar-item" data-tooltip="Logout" onclick="logout()">
+                <i data-feather="log-out"></i>
+                <span class="item-text">Logout</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <button class="btn btn-outline-secondary sidebar-toggle" onclick="toggleSidebar()">
+                <i data-feather="menu" id="menuIcon"></i>
+            </button>
+            <div class="topbar-title">
+                <h5 class="mb-0">{{ self.title() or 'Ez2source' }}</h5>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-outline-secondary" onclick="toggleTheme()">
+                    <i data-feather="moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Page Content -->
+        <div class="content-area">
+    {% else %}
+    <!-- ONLY show this navbar for non-authenticated users -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand talentiq-logo" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 32px; height: 32px;" class="me-2">
+                Ez2source
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <!-- Empty - no nav links needed -->
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i data-feather="log-in" class="me-1"></i>
+                            Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">
+                            <i data-feather="user-plus" class="me-1"></i>
+                            Register
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('candidate_register') }}">
+                            <i data-feather="users" class="me-1"></i>
+                            Join as Candidate
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="py-4" id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light border-top mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none">
+                            <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 36px; height: 36px;" class="me-2">
+                            <h5 class="mb-0 text-dark">Easy to Hire</h5>
+                        </a>
+                    </div>
+                    <p class="text-muted">Streamlining the interview process with artificial intelligence.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">© 2024 Ez2source. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Modal Fix -->
+    <script src="{{ url_for('static', filename='js/modal-fix.js') }}?v={{ range(1, 10000) | random }}"></script>
+    <!-- Emergency Modal Fix -->
+    <script src="{{ url_for('static', filename='js/modal-emergency-fix.js') }}?v={{ range(1, 10000) | random }}"></script>
+    
+    <!-- Form Validation JS -->
+    <script src="{{ url_for('static', filename='js/form-validation.js') }}?v={{ range(1, 10000) | random }}"></script>
+    
+    <!-- Mobile Optimizations JS -->
+    <script src="{{ url_for('static', filename='js/mobile-optimizations.js') }}?v={{ range(1, 10000) | random }}"></script>
+    
+    <!-- PWA Manager JS -->
+    <script src="{{ url_for('static', filename='js/pwa-manager.js') }}?v={{ range(1, 10000) | random }}"></script>
+    
+    <!-- Initialize PWA Manager -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize PWA Manager for mobile functionality if not already initialized
+            if (typeof window.pwaManager === 'undefined') {
+                const userRole = '{{ current_user.role if current_user.is_authenticated else "guest" }}';
+                const appType = userRole === 'candidate' ? 'candidate' : 'recruiter';
+                window.pwaManager = new PWAManager(appType);
+            }
+        });
+    </script>
+    
+    {% if current_user.is_authenticated %}
+    <!-- Sidebar JavaScript -->
+    <script>
+        // Sidebar state management
+        let sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        
+        // Initialize sidebar state
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            }
+            
+            // Initialize feather icons
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+            
+            // Set active menu item based on current path
+            setActiveMenuItem();
+        });
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth <= 768) {
+                // Mobile behavior
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            } else {
+                // Desktop behavior
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                sidebarCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+            }
+            
+            // Update icon - Fixed logic
+            const menuIcon = document.getElementById('menuIcon');
+            if (menuIcon) {
+                // When sidebar is collapsed or mobile is open, show menu icon
+                // When sidebar is expanded, show x icon
+                if (sidebar.classList.contains('collapsed')) {
+                    menuIcon.setAttribute('data-feather', 'menu');
+                } else if (sidebar.classList.contains('mobile-open')) {
+                    menuIcon.setAttribute('data-feather', 'x');
+                } else {
+                    menuIcon.setAttribute('data-feather', 'menu');
+                }
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
+            }
+        }
+        
+        function navigateTo(url) {
+            if (url !== '#') {
+                window.location.href = url;
+            }
+        }
+        
+        function logout() {
+            window.location.href = '/logout';
+        }
+        
+        // Mobile navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (mobileNavToggle) {
+                mobileNavToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                    mobileOverlay.style.display = sidebar.classList.contains('show') ? 'block' : 'none';
+                    
+                    // Update icon
+                    const icon = mobileNavToggle.querySelector('i');
+                    if (icon) {
+                        if (sidebar.classList.contains('show')) {
+                            icon.setAttribute('data-feather', 'x');
+                        } else {
+                            icon.setAttribute('data-feather', 'menu');
+                        }
+                        if (typeof feather !== 'undefined') {
+                            feather.replace();
+                        }
+                    }
+                });
+            }
+            
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    mobileOverlay.style.display = 'none';
+                    
+                    // Update icon
+                    if (mobileNavToggle) {
+                        const icon = mobileNavToggle.querySelector('i');
+                        if (icon) {
+                            icon.setAttribute('data-feather', 'menu');
+                            if (typeof feather !== 'undefined') {
+                                feather.replace();
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 992) {
+                    sidebar.classList.remove('show');
+                    mobileOverlay.style.display = 'none';
+                    
+                    // Update icon
+                    if (mobileNavToggle) {
+                        const icon = mobileNavToggle.querySelector('i');
+                        if (icon) {
+                            icon.setAttribute('data-feather', 'menu');
+                            if (typeof feather !== 'undefined') {
+                                feather.replace();
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        function setActiveMenuItem() {
+            const currentPath = window.location.pathname;
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            
+            sidebarItems.forEach(item => {
+                item.classList.remove('active');
+                const onclick = item.getAttribute('onclick');
+                if (onclick && onclick.includes(currentPath)) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const themeIcon = document.getElementById('themeIcon');
+            const isDark = document.body.classList.contains('dark-theme');
+            
+            themeIcon.setAttribute('data-feather', isDark ? 'sun' : 'moon');
+            localStorage.setItem('darkTheme', isDark);
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        }
+        
+        // Load theme preference
+        if (localStorage.getItem('darkTheme') === 'true') {
+            document.body.classList.add('dark-theme');
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+            }
+        });
+    </script>
+    {% else %}
+    <!-- Initialize Feather Icons for public pages -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        });
+    </script>
+    {% endif %}
+    
+    <!-- PWA Manager -->
+    <script>
+        // Pass user role to JavaScript for PWA manager
+        {% if current_user.is_authenticated %}
+        window.userRole = '{{ current_user.role }}';
+        {% endif %}
+    </script>
+    <script src="{{ url_for('static', filename='js/pwa-manager.js') }}?v={{ range(1, 10000) | random }}"></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

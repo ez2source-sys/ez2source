@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ez2source - AI-Powered Interview Platform | Professional Recruitment Solutions</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ez2source-logo.png') }}">
+    <meta name="description" content="Transform your hiring process with Ez2source's AI-powered interview platform. Create intelligent assessments, schedule interviews, and analyze candidates with advanced AI technology.">
+    <meta property="og:title" content="Ez2source - AI-Powered Interview Platform">
+    <meta property="og:description" content="Professional recruitment platform with AI-driven candidate assessment and intelligent interview scheduling.">
+    <meta property="og:url" content="https://ez2hire.eduaiart.com/">
+    <meta property="og:type" content="website">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        .stats-counter {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .testimonial-card {
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+        }
+        .pricing-card {
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .pricing-card:hover, .pricing-card.featured {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            color: white;
+        }
+        .section-padding {
+            padding: 80px 0;
+        }
+        .company-logo {
+            height: 40px;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+        .company-logo:hover {
+            opacity: 1;
+        }
+        .job2hire-logo {
+            display: inline-flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: #667eea;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container">
+            <a class="navbar-brand ez2source-logo" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 48px; height: 48px;" class="me-2">
+                Ez2source
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#solutions">Solutions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <a href="/login" class="btn btn-outline-primary">Login</a>
+                    <div class="dropdown">
+                        <button class="btn btn-gradient dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Get Started
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/candidate/register">
+                                <i data-feather="user" class="me-2" style="width: 16px; height: 16px;"></i>
+                                Join as Candidate
+                            </a></li>
+                            <li><a class="dropdown-item" href="/register">
+                                <i data-feather="briefcase" class="me-2" style="width: 16px; height: 16px;"></i>
+                                Join as Recruiter
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white section-padding" style="margin-top: 76px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Transform Your Hiring with Ez2source</h1>
+                    <p class="lead mb-4">Powered by EduAiArt's cutting-edge AI technology, streamline recruitment with intelligent video interviews, automated candidate assessment, and data-driven insights. Reduce hiring time by 75% while improving candidate quality through advanced educational AI innovations.</p>
+                    <!-- Call to Action Cards -->
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-0 shadow-sm bg-white">
+                                <div class="card-body text-center p-4">
+                                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <i data-feather="user" class="text-white" style="width: 24px; height: 24px;"></i>
+                                    </div>
+                                    <h5 class="text-dark">Looking for Opportunities?</h5>
+                                    <p class="text-muted mb-3">Join as a candidate to access AI-powered interviews and showcase your skills</p>
+                                    <a href="/candidate/register" class="btn btn-primary btn-lg w-100">
+                                        <i data-feather="user-plus" class="me-2"></i>
+                                        Join as Candidate
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-0 shadow-sm bg-white">
+                                <div class="card-body text-center p-4">
+                                    <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <i data-feather="briefcase" class="text-white" style="width: 24px; height: 24px;"></i>
+                                    </div>
+                                    <h5 class="text-dark">Hiring Top Talent?</h5>
+                                    <p class="text-muted mb-3">Start your recruiting journey with AI-powered candidate assessment</p>
+                                    <a href="/register" class="btn btn-success btn-lg w-100">
+                                        <i data-feather="briefcase" class="me-2"></i>
+                                        Start Recruiting
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="/jobs" class="btn btn-outline-light btn-lg me-3">
+                            <i data-feather="search" class="me-2"></i>Search Jobs
+                        </a>
+                        <button class="btn btn-outline-light btn-lg me-3" data-bs-toggle="modal" data-bs-target="#demoModal">
+                            <i data-feather="video" class="me-2"></i>Watch Demo
+                        </button>
+                        <a href="#features" class="btn btn-outline-light btn-lg">
+                            <i data-feather="info" class="me-2"></i>Learn More
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center gap-3 mt-3 opacity-75">
+                        <small>Powered by <strong>EduAiArt</strong></small>
+                        <small>•</small>
+                        <small>Advanced AI Education Technology</small>
+                        <small>•</small>
+                        <small>No credit card required</small>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="position-relative">
+                        <div class="bg-white bg-opacity-10 rounded shadow-lg p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-white rounded-circle p-2 me-3">
+                                    <i data-feather="message-circle" class="text-primary"></i>
+                                </div>
+                                <h5 class="mb-0">AI Chat Interview</h5>
+                            </div>
+                            <div class="bg-light text-dark rounded p-3 mb-3">
+                                <p class="mb-0">"Tell me about your experience with team collaboration..."</p>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <div class="bg-primary rounded p-3">
+                                    <p class="mb-0 text-white">"I've led cross-functional teams..."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trusted By Section -->
+    <section class="py-4 bg-light">
+        <div class="container">
+            <div class="text-center mb-4">
+                <small class="text-muted fw-bold">TRUSTED BY LEADING COMPANIES</small>
+            </div>
+            <div class="row align-items-center justify-content-center">
+                <div class="col-6 col-md-2 text-center mb-3">
+                    <div class="company-logo bg-secondary rounded p-2 d-flex align-items-center justify-content-center" style="height: 60px;">
+                        <span class="text-white fw-bold">TechCorp</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2 text-center mb-3">
+                    <div class="company-logo bg-secondary rounded p-2 d-flex align-items-center justify-content-center" style="height: 60px;">
+                        <span class="text-white fw-bold">InnovateInc</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2 text-center mb-3">
+                    <div class="company-logo bg-secondary rounded p-2 d-flex align-items-center justify-content-center" style="height: 60px;">
+                        <span class="text-white fw-bold">FutureTech</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2 text-center mb-3">
+                    <div class="company-logo bg-secondary rounded p-2 d-flex align-items-center justify-content-center" style="height: 60px;">
+                        <span class="text-white fw-bold">GlobalHR</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2 text-center mb-3">
+                    <div class="company-logo bg-secondary rounded p-2 d-flex align-items-center justify-content-center" style="height: 60px;">
+                        <span class="text-white fw-bold">StartupHub</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 mb-4">
+                    <div class="stats-counter">75%</div>
+                    <p class="text-muted">Faster Hiring</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stats-counter">10,000+</div>
+                    <p class="text-muted">Interviews Conducted</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stats-counter">95%</div>
+                    <p class="text-muted">Customer Satisfaction</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stats-counter">500+</div>
+                    <p class="text-muted">Companies Trust Us</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section-padding bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Powerful Features for Modern Hiring</h2>
+                <p class="lead text-muted">Complete AI-powered recruitment platform with advanced capabilities</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="message-circle" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>AI Chat Interviews</h4>
+                    <p class="text-muted">Real-time conversational AI interviews with ChatGPT-style voice dictation and intelligent response analysis.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="video" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Video Interview Recording</h4>
+                    <p class="text-muted">Built-in video recording with facial expression analysis and automated behavioral insights.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="mic" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Voice-to-Text Technology</h4>
+                    <p class="text-muted">Advanced speech recognition with animated waveforms and instant transcription using OpenAI Whisper.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="briefcase" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Job Marketplace</h4>
+                    <p class="text-muted">Comprehensive job aggregation system with smart search, company profiles, and application tracking.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="calendar" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Smart Scheduling</h4>
+                    <p class="text-muted">Google Calendar integration with automated scheduling, notifications, and availability management.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="cpu" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>AI Question Generation</h4>
+                    <p class="text-muted">Intelligent interview questions automatically generated from job descriptions using GPT-4o technology, powered by EduAiArt's educational AI framework.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="bar-chart" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Advanced Analytics</h4>
+                    <p class="text-muted">Real-time scoring, sentiment analysis, performance tracking, and comprehensive interview insights.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="users" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Multi-Tenant Platform</h4>
+                    <p class="text-muted">Organization-based access control with team collaboration and role-based permissions.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="download" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Resume Generation</h4>
+                    <p class="text-muted">Automated resume creation with candidate profiles, skills assessment, and interview performance history.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="save" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Auto-Save Technology</h4>
+                    <p class="text-muted">Intelligent auto-save system with progress restoration and seamless user experience across devices.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-icon">
+                        <i data-feather="shield" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>Enterprise Security</h4>
+                    <p class="text-muted">Multi-tenant architecture with organization-based data isolation and enterprise-grade security features.</p>
+                    </div>
+                    <h4>Team Collaboration</h4>
+                    <p class="text-muted">Multi-user support with role-based access, team management, and collaborative candidate evaluation.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-5">
+                    <div class="feature-icon">
+                        <i data-feather="settings" style="width: 40px; height: 40px; color: white;"></i>
+                    </div>
+                    <h4>ATS Integration</h4>
+                    <p class="text-muted">Seamless integration with existing HR systems and applicant tracking software for streamlined workflows.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section id="solutions" class="section-padding">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Solutions for Every Hiring Need</h2>
+                <p class="lead text-muted">Complete recruitment platform for organizations of all sizes</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="feature-icon me-3" style="width: 50px; height: 50px;">
+                                    <i data-feather="users" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h4>For Recruiters & HR Teams</h4>
+                                    <p class="text-muted mb-0">Streamline your entire hiring workflow</p>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>AI-powered interview creation and scoring</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Multi-tenant organization management</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Advanced candidate analytics and insights</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Team collaboration and role-based access</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Google Calendar integration and scheduling</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Comprehensive audit logging and reporting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="feature-icon me-3" style="width: 50px; height: 50px;">
+                                    <i data-feather="user" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h4>For Job Seekers & Candidates</h4>
+                                    <p class="text-muted mb-0">Showcase your skills and find opportunities</p>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Access to comprehensive job marketplace</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>AI-powered interview practice platform</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Voice-enabled interview responses</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Automated resume generation and download</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Real-time performance feedback and scoring</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Profile completion tracking and guidance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="feature-icon me-3" style="width: 50px; height: 50px;">
+                                    <i data-feather="briefcase" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h4>Job Marketplace Platform</h4>
+                                    <p class="text-muted mb-0">Complete job aggregation and management</p>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Automated job scraping from company websites</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Advanced search and filtering capabilities</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Company profiles and trending analytics</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Job save and application tracking</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Smart job recommendations and alerts</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Technology trend analysis and insights</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="feature-icon me-3" style="width: 50px; height: 50px;">
+                                    <i data-feather="zap" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h4>AI-Powered Intelligence</h4>
+                                    <p class="text-muted mb-0">Advanced artificial intelligence capabilities</p>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>GPT-4o powered question generation</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Real-time sentiment analysis and scoring</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Voice transcription with OpenAI Whisper</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Behavioral analysis and insights</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Automated interview quality assessment</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Intelligent candidate matching algorithms</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="feature-icon me-3" style="width: 50px; height: 50px;">
+                                    <i data-feather="shield" style="width: 24px; height: 24px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h4>For Enterprise</h4>
+                                    <p class="text-muted mb-0">Enterprise-grade security and compliance</p>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Advanced security features</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Audit logging & compliance</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Bulk interview scheduling</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Automated candidate screening</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Team collaboration tools</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Custom integration support</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-5">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-5">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="feature-icon me-4" style="width: 60px; height: 60px;">
+                                    <i data-feather="shield" style="width: 30px; height: 30px; color: white;"></i>
+                                </div>
+                                <div>
+                                    <h4>For Enterprise</h4>
+                                    <p class="text-muted mb-0">Enterprise-grade security and compliance</p>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Advanced security features</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Audit logging & compliance</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Custom integrations</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Dedicated support</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="section-padding bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">What Our Customers Say</h2>
+                <p class="lead text-muted">Join thousands of satisfied customers worldwide</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="card testimonial-card h-100">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                            </div>
+                            <p class="mb-4">"The AI interview analysis has completely transformed our hiring process. We're making better decisions faster than ever before."</p>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <span class="text-white fw-bold">SJ</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Sarah Johnson</h6>
+                                    <small class="text-muted">HR Director, TechCorp</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card testimonial-card h-100">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                            </div>
+                            <p class="mb-4">"The scheduling system saved us countless hours. Candidates love the flexibility and we love the efficiency."</p>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-success d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <span class="text-white fw-bold">MC</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Michael Chen</h6>
+                                    <small class="text-muted">Talent Acquisition Lead, InnovateInc</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card testimonial-card h-100">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                                <i data-feather="star" class="text-warning"></i>
+                            </div>
+                            <p class="mb-4">"The analytics dashboard gives us insights we never had before. It's like having a hiring consultant built into the platform."</p>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-info d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <span class="text-white fw-bold">EP</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Emily Parker</h6>
+                                    <small class="text-muted">Recruiter, FutureTech</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="section-padding">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Simple, Transparent Pricing</h2>
+                <p class="lead text-muted">Choose the plan that fits your hiring needs</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card pricing-card h-100">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title">Starter</h5>
+                            <div class="display-4 fw-bold mb-3">$49<small class="fs-6 text-muted">/month</small></div>
+                            <p class="text-muted">Perfect for small teams</p>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Up to 50 interviews/month</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>AI chat interviews</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Basic analytics</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Email support</li>
+                            </ul>
+                            <a href="/register" class="btn btn-outline-primary w-100">Start Free Trial</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card pricing-card featured h-100">
+                        <div class="card-header bg-gradient text-white text-center">
+                            <small class="fw-bold">MOST POPULAR</small>
+                        </div>
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title">Professional</h5>
+                            <div class="display-4 fw-bold mb-3">$149<small class="fs-6 text-muted">/month</small></div>
+                            <p class="text-muted">For growing companies</p>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Unlimited interviews</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>All interview types</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Advanced analytics</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Calendar integration</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Team collaboration</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Priority support</li>
+                            </ul>
+                            <a href="/register" class="btn btn-gradient w-100">Start Free Trial</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card pricing-card h-100">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title">Enterprise</h5>
+                            <div class="display-4 fw-bold mb-3">Custom</div>
+                            <p class="text-muted">For large organizations</p>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Everything in Professional</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Custom integrations</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Advanced security</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Audit logging</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Dedicated support</li>
+                                <li class="mb-2"><i data-feather="check" class="text-success me-2"></i>Custom training</li>
+                            </ul>
+                            <a href="mailto:sales@eduaiart.com?subject=Ez2source Enterprise Pricing Inquiry" class="btn btn-outline-primary w-100">Contact Sales</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="hero-gradient text-white section-padding">
+        <div class="container text-center">
+            <h2 class="display-5 fw-bold mb-4">Ready to Transform Your Hiring?</h2>
+            <p class="lead mb-4">Join thousands of companies using AI to make better hiring decisions</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/register" class="btn btn-light btn-lg">
+                    <i data-feather="play-circle" class="me-2"></i>Start Free Trial
+                </a>
+                <a href="mailto:sales@eduaiart.com?subject=Ez2source Enterprise Inquiry" class="btn btn-outline-light btn-lg">
+                    <i data-feather="phone" class="me-2"></i>Contact Sales
+                </a>
+            </div>
+            <p class="mt-3 opacity-75">14-day free trial • No credit card required • Cancel anytime</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 24px; height: 24px;" class="me-2">
+                        <h5 class="mb-0">Ez2source</h5>
+                    </div>
+                    <p class="text-muted">Revolutionizing recruitment with artificial intelligence and data-driven insights.</p>
+                    <div class="mt-3">
+                        <p class="mb-1"><strong>Contact Support:</strong></p>
+                        <p class="mb-1">📧 <a href="mailto:support@eduaiart.com" class="text-decoration-none">support@eduaiart.com</a></p>
+                        <p class="mb-1">💬 <a href="mailto:contact@eduaiart.com" class="text-decoration-none">contact@eduaiart.com</a></p>
+                        <p class="mb-0">🌐 <a href="https://eduaiart.com" class="text-decoration-none" target="_blank">eduaiart.com</a></p>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Product</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#features" class="text-muted text-decoration-none">Features</a></li>
+                        <li><a href="#pricing" class="text-muted text-decoration-none">Pricing</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Integrations</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">API</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Company</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="https://eduaiart.com/about" class="text-muted text-decoration-none" target="_blank">About EduAiArt</a></li>
+                        <li><a href="mailto:careers@eduaiart.com" class="text-muted text-decoration-none">Careers</a></li>
+                        <li><a href="mailto:contact@eduaiart.com" class="text-muted text-decoration-none">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Support</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="mailto:support@eduaiart.com" class="text-muted text-decoration-none">Technical Support</a></li>
+                        <li><a href="https://eduaiart.com/community" class="text-muted text-decoration-none" target="_blank">Community</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Legal</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted text-decoration-none">Privacy</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Terms</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+                    <p class="mb-0 text-muted">&copy; 2024 Ez2source by EduAiArt. All rights reserved.</p>
+                    <small class="text-muted">•</small>
+                    <p class="mb-0 text-muted">Visit us at <a href="https://ez2hire.eduaiart.com/" class="text-decoration-none">ez2hire.eduaiart.com</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Demo Modal -->
+    <div class="modal fade" id="demoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Platform Demo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center py-5">
+                        <i data-feather="video" style="width: 64px; height: 64px;" class="text-muted mb-3"></i>
+                        <h5>Interactive Demo Coming Soon</h5>
+                        <p class="text-muted">Experience our AI-powered interview platform with a guided walkthrough.</p>
+                        <a href="/register" class="btn btn-primary">Try It Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        feather.replace();
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

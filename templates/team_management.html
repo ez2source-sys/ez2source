@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Team Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-users-cog text-primary me-2"></i>Team Management</h2>
+                <div class="btn-group">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                        <i class="fas fa-user-plus me-1"></i>Add Team Member
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="exportTeamReport()">
+                        <i class="fas fa-download me-1"></i>Export Team Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h3 class="text-primary">{{ team_members|length }}</h3>
+                    <p class="text-muted">Team Members</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-clipboard-list fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ total_interviews }}</h3>
+                    <p class="text-muted">Team Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ "%.1f"|format(team_avg_score) }}</h3>
+                    <p class="text-muted">Team Avg Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-check fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ active_members }}</h3>
+                    <p class="text-muted">Active Members</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Members Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Team Members</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="filterMembers('all')">All</button>
+                        <button class="btn btn-outline-success" onclick="filterMembers('active')">Active</button>
+                        <button class="btn btn-outline-warning" onclick="filterMembers('inactive')">Inactive</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="teamMembersTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Role</th>
+                                    <th>Interviews Created</th>
+                                    <th>Total Responses</th>
+                                    <th>Avg Score</th>
+                                    <th>Last Active</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in team_members %}
+                                <tr data-status="{{ 'active' if member.is_active else 'inactive' }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                {{ member.username[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ member.username }}</strong><br>
+                                                <small class="text-muted">{{ member.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if member.role == 'admin' else 'secondary' }}">
+                                            {{ member.role.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ member.interviews_count }}</td>
+                                    <td>{{ member.responses_count }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if member.avg_score >= 80 %}bg-success
+                                            {% elif member.avg_score >= 60 %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(member.avg_score) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ member.last_active.strftime('%Y-%m-%d') if member.last_active else 'Never' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if member.is_active else 'secondary' }}">
+                                            {{ 'Active' if member.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="viewMemberDetails({{ member.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info" onclick="editMemberRole({{ member.id }})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-{{ 'warning' if member.is_active else 'success' }}" 
+                                                    onclick="toggleMemberStatus({{ member.id }})">
+                                                <i class="fas fa-{{ 'pause' if member.is_active else 'play' }}"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Integration Settings -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>API Integration Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Webhook URLs</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Interview Completion Webhook</label>
+                                <div class="input-group">
+                                    <input type="url" class="form-control" id="completionWebhook" 
+                                           placeholder="https://your-system.com/webhook/completion">
+                                    <button class="btn btn-outline-secondary" onclick="testWebhook('completion')">Test</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Candidate Status Update Webhook</label>
+                                <div class="input-group">
+                                    <input type="url" class="form-control" id="statusWebhook" 
+                                           placeholder="https://your-system.com/webhook/status">
+                                    <button class="btn btn-outline-secondary" onclick="testWebhook('status')">Test</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>ATS Integration</h6>
+                            <div class="mb-3">
+                                <label class="form-label">ATS Platform</label>
+                                <select class="form-select" id="atsProvider">
+                                    <option value="">Select ATS</option>
+                                    <option value="workday">Workday</option>
+                                    <option value="greenhouse">Greenhouse</option>
+                                    <option value="lever">Lever</option>
+                                    <option value="bamboohr">BambooHR</option>
+                                    <option value="custom">Custom API</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">API Key</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="atsApiKey" 
+                                           placeholder="Enter your ATS API key">
+                                    <button class="btn btn-outline-secondary" onclick="testAtsConnection()">Test</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-success" onclick="saveIntegrationSettings()">
+                                <i class="fas fa-save me-1"></i>Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Team Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMemberForm">
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select class="form-select" name="role" required>
+                            <option value="recruiter">Recruiter</option>
+                            <option value="admin">Admin</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="permissions" value="create_interviews">
+                            <label class="form-check-label">Create Interviews</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="permissions" value="view_analytics">
+                            <label class="form-check-label">View Analytics</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="permissions" value="manage_team">
+                            <label class="form-check-label">Manage Team</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addTeamMember()">Add Member</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Member Details Modal -->
+<div class="modal fade" id="memberDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Member Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="memberDetailsContent">
+                <!-- Member details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #007bff, #6f42c1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+</style>
+
+<script>
+function filterMembers(status) {
+    const rows = document.querySelectorAll('#teamMembersTable tbody tr');
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function viewMemberDetails(memberId) {
+    fetch(`{{ url_for('get_member_details', member_id=0) }}`.replace('0', memberId))
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('memberDetailsContent').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('memberDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load member details');
+        });
+}
+
+function editMemberRole(memberId) {
+    // Implementation for role editing
+    const newRole = prompt('Enter new role (recruiter/admin/viewer):');
+    if (newRole && ['recruiter', 'admin', 'viewer'].includes(newRole)) {
+        updateMemberRole(memberId, newRole);
+    }
+}
+
+function updateMemberRole(memberId, newRole) {
+    fetch('{{ url_for("update_member_role") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            member_id: memberId,
+            new_role: newRole 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to update role');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update role');
+    });
+}
+
+function toggleMemberStatus(memberId) {
+    fetch('{{ url_for("toggle_member_status") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ member_id: memberId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to update status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update status');
+    });
+}
+
+function addTeamMember() {
+    const form = document.getElementById('addMemberForm');
+    const formData = new FormData(form);
+    
+    const permissions = Array.from(form.querySelectorAll('input[name="permissions"]:checked'))
+        .map(checkbox => checkbox.value);
+    
+    const data = {
+        email: formData.get('email'),
+        role: formData.get('role'),
+        permissions: permissions
+    };
+    
+    fetch('{{ url_for("add_team_member") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('addMemberModal')).hide();
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to add member');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add member');
+    });
+}
+
+function testWebhook(type) {
+    const webhookUrl = document.getElementById(type + 'Webhook').value;
+    if (!webhookUrl) {
+        alert('Please enter a webhook URL first');
+        return;
+    }
+    
+    fetch('{{ url_for("test_webhook") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            webhook_url: webhookUrl,
+            webhook_type: type 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Webhook test successful!');
+        } else {
+            alert('Webhook test failed: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Webhook test failed');
+    });
+}
+
+function testAtsConnection() {
+    const provider = document.getElementById('atsProvider').value;
+    const apiKey = document.getElementById('atsApiKey').value;
+    
+    if (!provider || !apiKey) {
+        alert('Please select ATS provider and enter API key');
+        return;
+    }
+    
+    fetch('{{ url_for("test_ats_connection") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            provider: provider,
+            api_key: apiKey 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('ATS connection successful!');
+        } else {
+            alert('ATS connection failed: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('ATS connection test failed');
+    });
+}
+
+function saveIntegrationSettings() {
+    const settings = {
+        completion_webhook: document.getElementById('completionWebhook').value,
+        status_webhook: document.getElementById('statusWebhook').value,
+        ats_provider: document.getElementById('atsProvider').value,
+        ats_api_key: document.getElementById('atsApiKey').value
+    };
+    
+    fetch('{{ url_for("save_integration_settings") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Settings saved successfully!');
+        } else {
+            alert('Failed to save settings: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to save settings');
+    });
+}
+
+function exportTeamReport() {
+    window.open('{{ url_for("export_team_report") }}', '_blank');
+}
+</script>
+{% endblock %}

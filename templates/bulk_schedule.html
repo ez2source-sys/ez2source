@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Schedule Interviews{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Bulk Schedule Interviews</h2>
+        <a href="{{ url_for('schedule_dashboard') }}" class="btn btn-outline-secondary">
+            <i data-feather="arrow-left" class="me-1"></i>Back to Schedule
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Schedule Multiple Interviews</h5>
+                </div>
+                <div class="card-body">
+                    <form id="bulkScheduleForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Select Interview</label>
+                                <select class="form-select" name="interview_id" required>
+                                    <option value="">Choose an interview...</option>
+                                    {% for interview in interviews %}
+                                    <option value="{{ interview.id }}">{{ interview.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Duration (minutes)</label>
+                                <select class="form-select" name="duration_minutes">
+                                    <option value="30">30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                    <option value="60" selected>1 hour</option>
+                                    <option value="90">1.5 hours</option>
+                                    <option value="120">2 hours</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" name="start_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" name="end_date" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" class="form-control" name="start_time" value="09:00" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">End Time</label>
+                                <input type="time" class="form-control" name="end_time" value="17:00" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Time Zone</label>
+                                <select class="form-select" name="time_zone">
+                                    <option value="UTC">UTC</option>
+                                    <option value="America/New_York">Eastern Time</option>
+                                    <option value="America/Chicago">Central Time</option>
+                                    <option value="America/Denver">Mountain Time</option>
+                                    <option value="America/Los_Angeles">Pacific Time</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Break Between Interviews (minutes)</label>
+                                <select class="form-select" name="break_minutes">
+                                    <option value="15">15 minutes</option>
+                                    <option value="30" selected>30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                    <option value="60">1 hour</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Working Days</label>
+                            <div class="form-check-group">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="0" id="monday" checked>
+                                    <label class="form-check-label" for="monday">Mon</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="1" id="tuesday" checked>
+                                    <label class="form-check-label" for="tuesday">Tue</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="2" id="wednesday" checked>
+                                    <label class="form-check-label" for="wednesday">Wed</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="3" id="thursday" checked>
+                                    <label class="form-check-label" for="thursday">Thu</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="4" id="friday" checked>
+                                    <label class="form-check-label" for="friday">Fri</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="5" id="saturday">
+                                    <label class="form-check-label" for="saturday">Sat</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="working_days" value="6" id="sunday">
+                                    <label class="form-check-label" for="sunday">Sun</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-outline-info me-md-2" onclick="generateTimeSlots()">
+                                <i data-feather="clock" class="me-1"></i>
+                                Generate Time Slots
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="bulkSchedule()">
+                                <i data-feather="calendar" class="me-1"></i>
+                                Bulk Schedule
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Available Time Slots</h5>
+                </div>
+                <div class="card-body">
+                    <div id="timeSlotsList">
+                        <div class="text-center py-4">
+                            <i data-feather="clock" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                            <p class="text-muted">Click "Generate Time Slots" to see available times</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Bulk Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="importCandidates()">
+                            <i data-feather="upload" class="me-1"></i>
+                            Import Candidates
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="autoAssign()">
+                            <i data-feather="shuffle" class="me-1"></i>
+                            Auto-Assign Slots
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="exportSchedule()">
+                            <i data-feather="download" class="me-1"></i>
+                            Export Schedule
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Schedule Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div id="scheduleSummary">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Total Slots:</span>
+                            <span id="totalSlots">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Available:</span>
+                            <span id="availableSlots" class="text-success">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Assigned:</span>
+                            <span id="assignedSlots" class="text-warning">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Scheduled:</span>
+                            <span id="scheduledSlots" class="text-primary">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Selection Modal -->
+    <div class="modal fade" id="candidateSelectionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Candidates for Bulk Scheduling</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" placeholder="Search candidates..." id="candidateSearch">
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary" onclick="selectAllCandidates()">
+                                <i data-feather="check-square" class="me-1"></i>
+                                Select All
+                            </button>
+                        </div>
+                    </div>
+                    <div id="candidatesList">
+                        <!-- Candidates will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmCandidateSelection()">
+                        Schedule Selected Candidates
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let generatedTimeSlots = [];
+let selectedCandidates = [];
+
+function generateTimeSlots() {
+    const formData = new FormData(document.getElementById('bulkScheduleForm'));
+    const data = Object.fromEntries(formData);
+    
+    if (!data.start_date || !data.end_date || !data.start_time || !data.end_time) {
+        alert('Please fill in all date and time fields');
+        return;
+    }
+    
+    // Generate time slots based on the form data
+    const slots = [];
+    const startDate = new Date(data.start_date);
+    const endDate = new Date(data.end_date);
+    const workingDays = document.querySelectorAll('input[name="working_days"]:checked');
+    const workingDayValues = Array.from(workingDays).map(cb => parseInt(cb.value));
+    
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        if (workingDayValues.includes(currentDate.getDay())) {
+            const startTime = new Date(currentDate);
+            const [startHour, startMin] = data.start_time.split(':');
+            startTime.setHours(parseInt(startHour), parseInt(startMin), 0, 0);
+            
+            const endTime = new Date(currentDate);
+            const [endHour, endMin] = data.end_time.split(':');
+            endTime.setHours(parseInt(endHour), parseInt(endMin), 0, 0);
+            
+            const duration = parseInt(data.duration_minutes);
+            const breakTime = parseInt(data.break_minutes);
+            
+            let currentSlot = new Date(startTime);
+            while (currentSlot.getTime() + (duration * 60000) <= endTime.getTime()) {
+                slots.push({
+                    datetime: new Date(currentSlot),
+                    duration: duration,
+                    available: true
+                });
+                currentSlot = new Date(currentSlot.getTime() + (duration + breakTime) * 60000);
+            }
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    generatedTimeSlots = slots;
+    displayTimeSlots();
+    updateSummary();
+}
+
+function displayTimeSlots() {
+    const container = document.getElementById('timeSlotsList');
+    
+    if (generatedTimeSlots.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i data-feather="calendar" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                <p class="text-muted">No time slots generated</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    generatedTimeSlots.forEach((slot, index) => {
+        const statusClass = slot.available ? 'success' : 'secondary';
+        const statusText = slot.available ? 'Available' : 'Booked';
+        
+        html += `
+            <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                <div>
+                    <small class="fw-bold">${slot.datetime.toLocaleDateString()}</small><br>
+                    <small class="text-muted">${slot.datetime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+                </div>
+                <span class="badge bg-${statusClass}">${statusText}</span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    feather.replace();
+}
+
+function updateSummary() {
+    const total = generatedTimeSlots.length;
+    const available = generatedTimeSlots.filter(slot => slot.available).length;
+    
+    document.getElementById('totalSlots').textContent = total;
+    document.getElementById('availableSlots').textContent = available;
+    document.getElementById('assignedSlots').textContent = '0';
+    document.getElementById('scheduledSlots').textContent = '0';
+}
+
+function bulkSchedule() {
+    if (generatedTimeSlots.length === 0) {
+        alert('Please generate time slots first');
+        return;
+    }
+    
+    // Show candidate selection modal
+    loadCandidates();
+    new bootstrap.Modal(document.getElementById('candidateSelectionModal')).show();
+}
+
+function loadCandidates() {
+    const formData = new FormData(document.getElementById('bulkScheduleForm'));
+    const interviewId = formData.get('interview_id');
+    
+    if (!interviewId) {
+        alert('Please select an interview first');
+        return;
+    }
+    
+    // Load candidates from server
+    const candidatesList = document.getElementById('candidatesList');
+    candidatesList.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
+    
+    fetch(`/schedule/bulk/candidates/${interviewId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayCandidates(data.candidates);
+            } else {
+                candidatesList.innerHTML = `
+                    <div class="text-center py-4">
+                        <i data-feather="alert-circle" class="mb-3" style="width: 48px; height: 48px; color: #dc3545;"></i>
+                        <p class="text-muted">Error loading candidates: ${data.error}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading candidates:', error);
+            candidatesList.innerHTML = `
+                <div class="text-center py-4">
+                    <i data-feather="wifi-off" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                    <p class="text-muted">Failed to load candidates. Please try again.</p>
+                </div>
+            `;
+        });
+}
+
+function displayCandidates(candidates) {
+    const candidatesList = document.getElementById('candidatesList');
+    
+    if (candidates.length === 0) {
+        candidatesList.innerHTML = `
+            <div class="text-center py-4">
+                <i data-feather="users" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                <p class="text-muted">No candidates available for scheduling</p>
+                <p class="text-muted">Candidates must complete the interview before scheduling</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    candidates.forEach(candidate => {
+        const scoreColor = candidate.score >= 70 ? 'success' : candidate.score >= 50 ? 'warning' : 'danger';
+        html += `
+            <div class="candidate-item p-3 border rounded mb-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="${candidate.id}" id="candidate_${candidate.id}">
+                    <label class="form-check-label w-100" for="candidate_${candidate.id}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${candidate.name}</strong><br>
+                                <small class="text-muted">${candidate.email}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-${scoreColor}">${candidate.score}%</span><br>
+                                <small class="text-muted">${new Date(candidate.completed_at).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        `;
+    });
+    
+    candidatesList.innerHTML = html;
+    feather.replace();
+}
+
+function selectAllCandidates() {
+    const checkboxes = document.querySelectorAll('#candidatesList input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+    });
+    
+    const button = document.querySelector('button[onclick="selectAllCandidates()"]');
+    button.innerHTML = allChecked ? 
+        '<i data-feather="check-square" class="me-1"></i>Select All' :
+        '<i data-feather="square" class="me-1"></i>Deselect All';
+    feather.replace();
+}
+
+function confirmCandidateSelection() {
+    const selectedCheckboxes = document.querySelectorAll('#candidatesList input[type="checkbox"]:checked');
+    const selectedCandidateIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+    
+    if (selectedCandidateIds.length === 0) {
+        alert('Please select at least one candidate');
+        return;
+    }
+    
+    if (selectedCandidateIds.length > generatedTimeSlots.length) {
+        alert(`You have selected ${selectedCandidateIds.length} candidates but only ${generatedTimeSlots.length} time slots available. Please generate more time slots or select fewer candidates.`);
+        return;
+    }
+    
+    // Close modal and create schedules
+    bootstrap.Modal.getInstance(document.getElementById('candidateSelectionModal')).hide();
+    createBulkSchedules(selectedCandidateIds);
+}
+
+function createBulkSchedules(candidateIds) {
+    const formData = new FormData(document.getElementById('bulkScheduleForm'));
+    const interviewId = formData.get('interview_id');
+    
+    // Prepare time slots data
+    const timeSlots = generatedTimeSlots.slice(0, candidateIds.length).map(slot => ({
+        datetime: slot.datetime.toISOString(),
+        duration: slot.duration
+    }));
+    
+    // Show loading state
+    const loadingToast = showToast('Creating interview schedules...', 'info');
+    
+    // Send request to server
+    fetch('/schedule/bulk/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            interview_id: parseInt(interviewId),
+            candidate_ids: candidateIds,
+            time_slots: timeSlots
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingToast.hide();
+        
+        if (data.success) {
+            showToast(`Successfully created ${data.schedules_created} interview schedules!`, 'success');
+            // Update UI
+            updateScheduledSlots(data.schedules_created);
+            // Redirect to schedule dashboard after 2 seconds
+            setTimeout(() => {
+                window.location.href = '/schedule';
+            }, 2000);
+        } else {
+            showToast(`Error: ${data.error}`, 'danger');
+        }
+    })
+    .catch(error => {
+        loadingToast.hide();
+        console.error('Error creating schedules:', error);
+        showToast('Failed to create schedules. Please try again.', 'danger');
+    });
+}
+
+function updateScheduledSlots(count) {
+    document.getElementById('scheduledSlots').textContent = count;
+    document.getElementById('availableSlots').textContent = 
+        parseInt(document.getElementById('availableSlots').textContent) - count;
+}
+
+function showToast(message, type = 'info') {
+    // Create toast element
+    const toastId = 'toast_' + Date.now();
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type}" role="alert" id="${toastId}" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = new bootstrap.Toast(document.getElementById(toastId));
+    toastElement.show();
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        const element = document.getElementById(toastId);
+        if (element) element.remove();
+    }, 5000);
+    
+    return toastElement;
+}
+
+function importCandidates() {
+    alert('Import Candidates feature will be implemented in next version.\nCurrently, candidates are loaded from completed interviews.');
+}
+
+function autoAssign() {
+    if (generatedTimeSlots.length === 0) {
+        alert('Please generate time slots first');
+        return;
+    }
+    
+    // Auto-load candidates and assign them to slots
+    const formData = new FormData(document.getElementById('bulkScheduleForm'));
+    const interviewId = formData.get('interview_id');
+    
+    if (!interviewId) {
+        alert('Please select an interview first');
+        return;
+    }
+    
+    // Load candidates and auto-assign
+    fetch(`/schedule/bulk/candidates/${interviewId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.candidates.length > 0) {
+                const candidateIds = data.candidates.slice(0, generatedTimeSlots.length).map(c => c.id);
+                if (confirm(`Auto-assign ${candidateIds.length} candidates to available time slots?`)) {
+                    createBulkSchedules(candidateIds);
+                }
+            } else {
+                alert('No candidates available for auto-assignment');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading candidates:', error);
+            alert('Failed to load candidates for auto-assignment');
+        });
+}
+
+function exportSchedule() {
+    if (generatedTimeSlots.length === 0) {
+        alert('Please generate time slots first');
+        return;
+    }
+    
+    // Create CSV content
+    const csvContent = [
+        ['Date', 'Time', 'Duration (minutes)', 'Status'],
+        ...generatedTimeSlots.map(slot => [
+            slot.datetime.toLocaleDateString(),
+            slot.datetime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            slot.duration,
+            slot.available ? 'Available' : 'Booked'
+        ])
+    ].map(row => row.join(',')).join('\n');
+    
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interview_schedule_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+    feather.replace();
+}
+
+function selectAllCandidates() {
+    alert('Select all candidates functionality');
+}
+
+function confirmCandidateSelection() {
+    alert('Candidate selection confirmed. Bulk scheduling would proceed here.');
+}
+
+function importCandidates() {
+    alert('Import candidates from CSV or Excel file');
+}
+
+function autoAssign() {
+    alert('Automatically assign candidates to available time slots');
+}
+
+function exportSchedule() {
+    alert('Export the generated schedule to CSV or PDF');
+}
+
+// Initialize with current date
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelector('input[name="start_date"]').value = today;
+    
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    document.querySelector('input[name="end_date"]').value = nextWeek.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

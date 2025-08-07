@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Team Directory - {{ organization.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Organization Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h2 class="mb-2">{{ organization.name }}</h2>
+                    <p class="text-muted mb-2">Team Directory</p>
+                    <span class="badge badge-primary">{{ organization.subscription_plan.title() }} Plan</span>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <h5>{{ admins|length + recruiters|length + candidates|length + (technical_persons|length if technical_persons else 0) }}</h5>
+                            <small class="text-muted">Total Members</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h5>{{ recruiters|length }}</h5>
+                            <small class="text-muted">Recruiters</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h5>{{ candidates|length }}</h5>
+                            <small class="text-muted">Candidates</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h5>{{ technical_persons|length if technical_persons else 0 }}</h5>
+                            <small class="text-muted">Technical Interviewers</small>
+                        </div>
+                    </div>
+                    {% if current_user.role in ['admin', 'recruiter'] %}
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <a href="{{ url_for('schedule_google_meet') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-video mr-2"></i>Schedule Google Meet Interview
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="teamTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="recruiters-tab" data-toggle="tab" href="#recruiters" role="tab">
+                <i class="fas fa-user-tie mr-2"></i>Recruiters ({{ recruiters|length }})
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="candidates-tab" data-toggle="tab" href="#candidates" role="tab">
+                <i class="fas fa-users mr-2"></i>Candidates ({{ candidates|length }})
+            </a>
+        </li>
+        {% if technical_persons and technical_persons|length > 0 %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="technical-persons-tab" data-toggle="tab" href="#technical-persons" role="tab">
+                <i class="fas fa-code mr-2"></i>Technical Interviewers ({{ technical_persons|length }})
+            </a>
+        </li>
+        {% endif %}
+        {% if admins|length > 0 %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="admins-tab" data-toggle="tab" href="#admins" role="tab">
+                <i class="fas fa-user-shield mr-2"></i>Administrators ({{ admins|length }})
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="teamTabsContent">
+        <!-- Recruiters Tab -->
+        <div class="tab-pane fade show active" id="recruiters" role="tabpanel">
+            <div class="row">
+                {% for recruiter in recruiters %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="mr-3">
+                                    {% if recruiter.profile_image_url %}
+                                        <img src="{{ recruiter.profile_image_url }}" class="rounded-circle" width="60" height="60" alt="Profile">
+                                    {% else %}
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 60px; height: 60px; font-size: 24px;">
+                                            {% if recruiter.first_name and recruiter.last_name %}
+                                                {{ recruiter.first_name[0] }}{{ recruiter.last_name[0] }}
+                                            {% else %}
+                                                {{ recruiter.username[0].upper() }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        {% if recruiter.first_name and recruiter.last_name %}
+                                            {{ recruiter.first_name }} {{ recruiter.last_name }}
+                                        {% else %}
+                                            {{ recruiter.username }}
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted mb-1 small">{{ recruiter.job_title or 'Recruiter' }}</p>
+                                    <p class="text-muted mb-0 small">{{ recruiter.department or 'Human Resources' }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if recruiter.bio %}
+                            <p class="small text-muted mb-2">{{ recruiter.bio[:100] }}{% if recruiter.bio|length > 100 %}...{% endif %}</p>
+                            {% endif %}
+                            
+                            <div class="row small text-muted mb-3">
+                                <div class="col-6">
+                                    <i class="fas fa-clock mr-1"></i>{{ recruiter.experience_years or 0 }} years exp.
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ recruiter.location or 'N/A' }}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% if recruiter.linkedin_url %}
+                                        <a href="{{ recruiter.linkedin_url }}" target="_blank" class="text-primary mr-2" title="LinkedIn">
+                                            <i class="fab fa-linkedin"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="mailto:{{ recruiter.email }}" class="text-secondary" title="Email">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                </div>
+                                <a href="{{ url_for('user_profile', user_id=recruiter.id) }}" class="btn btn-outline-primary btn-sm">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Candidates Tab -->
+        <div class="tab-pane fade" id="candidates" role="tabpanel">
+            <div class="row">
+                {% for candidate in candidates %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="mr-3">
+                                    {% if candidate.profile_image_url %}
+                                        <img src="{{ candidate.profile_image_url }}" class="rounded-circle" width="60" height="60" alt="Profile">
+                                    {% else %}
+                                        <div class="bg-success rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 60px; height: 60px; font-size: 24px;">
+                                            {% if candidate.first_name and candidate.last_name %}
+                                                {{ candidate.first_name[0] }}{{ candidate.last_name[0] }}
+                                            {% else %}
+                                                {{ candidate.username[0].upper() }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        {% if candidate.first_name and candidate.last_name %}
+                                            {{ candidate.first_name }} {{ candidate.last_name }}
+                                        {% else %}
+                                            {{ candidate.username }}
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted mb-1 small">{{ candidate.job_title or 'Candidate' }}</p>
+                                    {% if candidate.availability %}
+                                    <span class="badge badge-{{ 'success' if candidate.availability == 'immediate' else 'warning' }} badge-sm">
+                                        {{ candidate.availability.replace('_', ' ').title() }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if candidate.bio %}
+                            <p class="small text-muted mb-2">{{ candidate.bio[:100] }}{% if candidate.bio|length > 100 %}...{% endif %}</p>
+                            {% endif %}
+                            
+                            {% if candidate.skills %}
+                            <div class="mb-2">
+                                {% set skills = candidate.skills|from_json %}
+                                {% for skill in skills[:3] %}
+                                    <span class="badge badge-light small mr-1">{{ skill }}</span>
+                                {% endfor %}
+                                {% if skills|length > 3 %}
+                                    <span class="badge badge-secondary small">+{{ skills|length - 3 }} more</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row small text-muted mb-3">
+                                <div class="col-6">
+                                    <i class="fas fa-clock mr-1"></i>{{ candidate.experience_years or 0 }} years exp.
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ candidate.location or 'N/A' }}
+                                </div>
+                            </div>
+                            
+                            {% if candidate.salary_expectation %}
+                            <div class="small text-muted mb-2">
+                                <i class="fas fa-dollar-sign mr-1"></i>{{ candidate.salary_expectation }}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% if candidate.linkedin_url %}
+                                        <a href="{{ candidate.linkedin_url }}" target="_blank" class="text-primary mr-2" title="LinkedIn">
+                                            <i class="fab fa-linkedin"></i>
+                                        </a>
+                                    {% endif %}
+                                    {% if candidate.portfolio_url %}
+                                        <a href="{{ candidate.portfolio_url }}" target="_blank" class="text-info mr-2" title="Portfolio">
+                                            <i class="fas fa-globe"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="mailto:{{ candidate.email }}" class="text-secondary" title="Email">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                </div>
+                                <a href="{{ url_for('user_profile', user_id=candidate.id) }}" class="btn btn-outline-success btn-sm">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Technical Interviewers Tab -->
+        {% if technical_persons and technical_persons|length > 0 %}
+        <div class="tab-pane fade" id="technical-persons" role="tabpanel">
+            <div class="row">
+                {% for tech_person in technical_persons %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="mr-3">
+                                    {% if tech_person.profile_image_url %}
+                                        <img src="{{ tech_person.profile_image_url }}" class="rounded-circle" width="60" height="60" alt="Profile">
+                                    {% else %}
+                                        <div class="bg-info rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 60px; height: 60px; font-size: 24px;">
+                                            {% if tech_person.first_name and tech_person.last_name %}
+                                                {{ tech_person.first_name[0] }}{{ tech_person.last_name[0] }}
+                                            {% else %}
+                                                {{ tech_person.username[0].upper() }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        {% if tech_person.first_name and tech_person.last_name %}
+                                            {{ tech_person.first_name }} {{ tech_person.last_name }}
+                                        {% else %}
+                                            {{ tech_person.username }}
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted mb-1 small">{{ tech_person.job_title or 'Technical Interviewer' }}</p>
+                                    <p class="text-muted mb-0 small">{{ tech_person.department or 'Technical Team' }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if tech_person.bio %}
+                            <p class="small text-muted mb-2">{{ tech_person.bio[:100] }}{% if tech_person.bio|length > 100 %}...{% endif %}</p>
+                            {% endif %}
+                            
+                            {% if tech_person.skills %}
+                            <div class="mb-2">
+                                {% set skills = tech_person.skills|from_json %}
+                                {% for skill in skills[:3] %}
+                                    <span class="badge badge-info small mr-1">{{ skill }}</span>
+                                {% endfor %}
+                                {% if skills|length > 3 %}
+                                    <span class="badge badge-secondary small">+{{ skills|length - 3 }} more</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row small text-muted mb-3">
+                                <div class="col-6">
+                                    <i class="fas fa-clock mr-1"></i>{{ tech_person.experience_years or 0 }} years exp.
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ tech_person.location or 'N/A' }}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% if tech_person.linkedin_url %}
+                                        <a href="{{ tech_person.linkedin_url }}" target="_blank" class="text-primary mr-2" title="LinkedIn">
+                                            <i class="fab fa-linkedin"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="mailto:{{ tech_person.email }}" class="text-secondary" title="Email">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                </div>
+                                <a href="{{ url_for('user_profile', user_id=tech_person.id) }}" class="btn btn-outline-info btn-sm">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Administrators Tab -->
+        {% if admins|length > 0 %}
+        <div class="tab-pane fade" id="admins" role="tabpanel">
+            <div class="row">
+                {% for admin in admins %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="mr-3">
+                                    {% if admin.profile_image_url %}
+                                        <img src="{{ admin.profile_image_url }}" class="rounded-circle" width="60" height="60" alt="Profile">
+                                    {% else %}
+                                        <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center text-dark" style="width: 60px; height: 60px; font-size: 24px;">
+                                            {% if admin.first_name and admin.last_name %}
+                                                {{ admin.first_name[0] }}{{ admin.last_name[0] }}
+                                            {% else %}
+                                                {{ admin.username[0].upper() }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        {% if admin.first_name and admin.last_name %}
+                                            {{ admin.first_name }} {{ admin.last_name }}
+                                        {% else %}
+                                            {{ admin.username }}
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted mb-1 small">{{ admin.job_title or 'Administrator' }}</p>
+                                    <p class="text-muted mb-0 small">{{ admin.department or 'Administration' }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if admin.bio %}
+                            <p class="small text-muted mb-2">{{ admin.bio[:100] }}{% if admin.bio|length > 100 %}...{% endif %}</p>
+                            {% endif %}
+                            
+                            <div class="row small text-muted mb-3">
+                                <div class="col-6">
+                                    <i class="fas fa-clock mr-1"></i>{{ admin.experience_years or 0 }} years exp.
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ admin.location or 'N/A' }}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% if admin.linkedin_url %}
+                                        <a href="{{ admin.linkedin_url }}" target="_blank" class="text-primary mr-2" title="LinkedIn">
+                                            <i class="fab fa-linkedin"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="mailto:{{ admin.email }}" class="text-secondary" title="Email">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                </div>
+                                <a href="{{ url_for('user_profile', user_id=admin.id) }}" class="btn btn-outline-warning btn-sm">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Add filter functionality for better navigation
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tabs
+    var triggerTabList = [].slice.call(document.querySelectorAll('#teamTabs a'));
+    triggerTabList.forEach(function (triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl);
+        
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+});
+</script>
+{% endblock %}

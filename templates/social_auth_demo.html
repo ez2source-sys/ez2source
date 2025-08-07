@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up with {{ provider }} - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    {% if provider == 'Google' %}
+                        <i data-feather="chrome" style="width: 40px; height: 40px;" class="text-primary"></i>
+                    {% elif provider == 'LinkedIn' %}
+                        <i data-feather="linkedin" style="width: 40px; height: 40px;" class="text-info"></i>
+                    {% elif provider == 'GitHub' %}
+                        <i data-feather="github" style="width: 40px; height: 40px;" class="text-dark"></i>
+                    {% elif provider == 'Facebook' %}
+                        <i data-feather="facebook" style="width: 40px; height: 40px;" class="text-primary"></i>
+                    {% endif %}
+                </div>
+                <h2 class="fw-bold">Complete {{ provider }} Registration</h2>
+                <p class="text-muted">Confirm your details to create your Ez2source account</p>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i data-feather="user-check" class="me-2"></i>
+                        Account Information from {{ provider }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('social_auth_complete') }}">
+                        <input type="hidden" name="provider" value="{{ provider }}">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-bold">Full Name</label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                   value="{{ demo_data.name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold">Email Address</label>
+                            <input type="email" class="form-control form-control-lg" id="email" name="email" 
+                                   value="{{ demo_data.email }}" required>
+                            <div class="form-text">This email will be used for login and notifications</div>
+                        </div>
+
+                        {% if demo_data.job_title %}
+                        <div class="mb-3">
+                            <label for="job_title" class="form-label fw-bold">Job Title</label>
+                            <input type="text" class="form-control form-control-lg" id="job_title" name="job_title" 
+                                   value="{{ demo_data.job_title }}">
+                        </div>
+                        {% endif %}
+
+                        {% if demo_data.username %}
+                        <div class="mb-3">
+                            <label for="username_display" class="form-label fw-bold">Username</label>
+                            <input type="text" class="form-control form-control-lg" id="username_display" 
+                                   value="{{ demo_data.username }}" readonly>
+                            <div class="form-text">Generated from your {{ provider }} profile</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Profile Preview -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i data-feather="info" class="me-2"></i>
+                                What happens next:
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Your Ez2source account will be created instantly</li>
+                                <li>You'll receive login credentials via email</li>
+                                <li>Profile data from {{ provider }} will be imported</li>
+                                <li>You can complete your profile and start applying</li>
+                            </ul>
+                        </div>
+
+                        <!-- Terms and Privacy -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" class="text-primary">Terms of Service</a> and 
+                                <a href="#" class="text-primary">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i data-feather="user-plus" class="me-2"></i>
+                                Create Ez2source Account
+                            </button>
+                            <a href="{{ url_for('candidate_register') }}" class="btn btn-outline-secondary">
+                                <i data-feather="arrow-left" class="me-2"></i>
+                                Back to Registration Options
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Benefits Reminder -->
+            <div class="card mt-4 border-success">
+                <div class="card-body text-center">
+                    <h6 class="text-success mb-3">
+                        <i data-feather="check-circle" class="me-2"></i>
+                        Welcome to Ez2source Benefits
+                    </h6>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <i data-feather="search" class="text-primary mb-2"></i>
+                            <p class="small mb-0">AI Job Matching</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i data-feather="video" class="text-success mb-2"></i>
+                            <p class="small mb-0">Video Interviews</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i data-feather="trending-up" class="text-info mb-2"></i>
+                            <p class="small mb-0">Career Growth</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function(e) {
+        // Show loading state
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Account...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

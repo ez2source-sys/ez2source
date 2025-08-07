@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}Create Cover Letter - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                Create Cover Letter
+                <span class="badge bg-success ms-2">AI Assistant</span>
+            </h1>
+            <p class="lead text-muted">Generate professional cover letters tailored to specific companies and positions</p>
+        </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-success">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h5 class="mb-0 text-success">
+                        <i data-feather="navigation" class="me-2"></i>
+                        Quick Navigation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ url_for('cover_letters') }}" class="btn btn-outline-success w-100">
+                                <i data-feather="list" class="me-2"></i>My Cover Letters
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ url_for('cover_letter_examples') }}" class="btn btn-outline-success w-100">
+                                <i data-feather="book" class="me-2"></i>Templates
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">
+                                <i data-feather="home" class="me-2"></i>Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('cover_letters') }}" class="btn btn-sm btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-1"></i>
+                        Back to Cover Letters
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cover Letter Generation Form -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i data-feather="edit" class="me-2"></i>
+                                AI-Powered Cover Letter Generator
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="coverLetterForm">
+                                <!-- Job Details -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label for="company_name" class="form-label">Company Name *</label>
+                                        <input type="text" class="form-control" id="company_name" name="company_name" 
+                                               placeholder="e.g., Google, Amazon, Tesla" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="position_title" class="form-label">Position Title *</label>
+                                        <input type="text" class="form-control" id="position_title" name="position_title" 
+                                               placeholder="e.g., Software Engineer, Product Manager" required>
+                                    </div>
+                                </div>
+
+                                <!-- Template Selection -->
+                                <div class="mb-4">
+                                    <label for="template_type" class="form-label">Template Type</label>
+                                    <select class="form-select" id="template_type" name="template_type">
+                                        <option value="custom">Custom (General Purpose)</option>
+                                        <optgroup label="Company-Specific Templates">
+                                            {% for key, template in templates.items() if template.category == 'Company-Specific' %}
+                                            <option value="{{ key }}" 
+                                                    {% if request.args.get('template') == key %}selected{% endif %}>
+                                                {{ template.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </optgroup>
+                                        <optgroup label="Role-Specific Templates">
+                                            {% for key, template in templates.items() if template.category == 'Role-Specific' %}
+                                            <option value="{{ key }}"
+                                                    {% if request.args.get('template') == key %}selected{% endif %}>
+                                                {{ template.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    </select>
+                                    <div class="form-text">
+                                        Select a template optimized for specific companies or roles.
+                                    </div>
+                                </div>
+
+                                <!-- Tone Selection -->
+                                <div class="mb-4">
+                                    <label for="tone" class="form-label">Writing Tone</label>
+                                    <select class="form-select" id="tone" name="tone">
+                                        <option value="professional">Professional</option>
+                                        <option value="enthusiastic">Enthusiastic</option>
+                                        <option value="technical">Technical</option>
+                                        <option value="creative">Creative</option>
+                                        <option value="formal">Formal</option>
+                                    </select>
+                                </div>
+
+                                <!-- Job Description -->
+                                <div class="mb-4">
+                                    <label for="job_description" class="form-label">Job Description (Optional)</label>
+                                    <textarea class="form-control" id="job_description" name="job_description" 
+                                              rows="6" placeholder="Paste the job description here to get a more tailored cover letter..."></textarea>
+                                    <div class="form-text">
+                                        Providing the job description helps create a more targeted cover letter.
+                                    </div>
+                                </div>
+
+                                <!-- Generation Button -->
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="generateBtn">
+                                        <i data-feather="cpu" class="me-2"></i>
+                                        Generate AI Cover Letter
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Loading State -->
+                            <div id="loadingState" class="text-center py-5" style="display: none;">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Generating...</span>
+                                </div>
+                                <h5>Generating Your Cover Letter</h5>
+                                <p class="text-muted">Our AI is crafting a personalized cover letter for you...</p>
+                            </div>
+
+                            <!-- Generated Cover Letter Display -->
+                            <div id="generatedContent" style="display: none;">
+                                <hr class="my-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">
+                                        <i data-feather="check-circle" class="text-success me-2"></i>
+                                        Generated Cover Letter
+                                    </h5>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary" onclick="regenerateContent()">
+                                            <i data-feather="refresh-cw" class="me-1"></i>
+                                            Regenerate
+                                        </button>
+                                        <button type="button" class="btn btn-success" onclick="saveCoverLetter()">
+                                            <i data-feather="save" class="me-1"></i>
+                                            Save & Edit
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Cover Letter Preview -->
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div id="coverLetterPreview" style="white-space: pre-line; line-height: 1.6;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Key Points & Suggestions -->
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">
+                                                    <i data-feather="star" class="me-1"></i>
+                                                    Key Strengths Highlighted
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul id="keyPointsList" class="list-unstyled mb-0"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">
+                                                    <i data-feather="lightbulb" class="me-1"></i>
+                                                    Suggestions
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul id="suggestionsList" class="list-unstyled mb-0"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Template Information Sidebar -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="info" class="me-1"></i>
+                                Template Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="templateInfo">
+                                <p class="text-muted">Select a template to see detailed information.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tips Card -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="help-circle" class="me-1"></i>
+                                Tips for Great Cover Letters
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2">
+                                    <i data-feather="check" class="text-success me-1" style="width: 14px; height: 14px;"></i>
+                                    Customize for each company and role
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="check" class="text-success me-1" style="width: 14px; height: 14px;"></i>
+                                    Include specific examples of achievements
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="check" class="text-success me-1" style="width: 14px; height: 14px;"></i>
+                                    Research the company's values and culture
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="check" class="text-success me-1" style="width: 14px; height: 14px;"></i>
+                                    Keep it concise (3-4 paragraphs)
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="check" class="text-success me-1" style="width: 14px; height: 14px;"></i>
+                                    End with a strong call to action
+                                </li>
+                                <li>
+                                    <i data-feather="check" class="text-success me-1" style="width: 14px; height: 14px;"></i>
+                                    Proofread for spelling and grammar
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Your Profile Summary -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="user" class="me-1"></i>
+                                Your Profile Summary
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Name:</strong> {{ candidate.first_name }} {{ candidate.last_name }}</p>
+                            {% if candidate.job_title %}
+                            <p><strong>Current Role:</strong> {{ candidate.job_title }}</p>
+                            {% endif %}
+                            {% if candidate.experience_years %}
+                            <p><strong>Experience:</strong> {{ candidate.experience_years }} years</p>
+                            {% endif %}
+                            <p class="small text-muted">
+                                The AI will use your profile information to personalize the cover letter.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+let generatedData = null;
+
+// Template information data
+const templateData = {
+    {% for key, template in templates.items() %}
+    '{{ key }}': {
+        name: '{{ template.name }}',
+        description: '{{ template.description }}',
+        focus: {{ template.focus | tojson }},
+        category: '{{ template.category }}'
+    },
+    {% endfor %}
+};
+
+// Update template information when selection changes
+document.getElementById('template_type').addEventListener('change', function() {
+    const selectedTemplate = this.value;
+    const infoDiv = document.getElementById('templateInfo');
+    
+    if (selectedTemplate === 'custom') {
+        infoDiv.innerHTML = `
+            <h6>Custom Template</h6>
+            <p class="text-muted">A versatile template suitable for any company or role. The AI will create a professional cover letter based on your profile and the job details you provide.</p>
+        `;
+    } else if (templateData[selectedTemplate]) {
+        const template = templateData[selectedTemplate];
+        infoDiv.innerHTML = `
+            <h6>${template.name}</h6>
+            <p class="text-muted">${template.description}</p>
+            <p><strong>Focus Areas:</strong></p>
+            <ul class="small">
+                ${template.focus.map(focus => `<li>${focus}</li>`).join('')}
+            </ul>
+            <span class="badge bg-${template.category === 'Company-Specific' ? 'primary' : 'success'}">${template.category}</span>
+        `;
+    }
+});
+
+// Trigger initial template info update
+document.getElementById('template_type').dispatchEvent(new Event('change'));
+
+// Handle form submission
+document.getElementById('coverLetterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    generateCoverLetter();
+});
+
+function generateCoverLetter() {
+    const form = document.getElementById('coverLetterForm');
+    const formData = new FormData(form);
+    const generateBtn = document.getElementById('generateBtn');
+    const loadingState = document.getElementById('loadingState');
+    const generatedContent = document.getElementById('generatedContent');
+    
+    // Show loading state
+    form.style.display = 'none';
+    loadingState.style.display = 'block';
+    generatedContent.style.display = 'none';
+    
+    // Make API call
+    fetch('/cover-letters/generate', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            generatedData = data;
+            displayGeneratedContent(data);
+        } else {
+            alert('Error: ' + (data.error || 'Failed to generate cover letter'));
+            form.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while generating the cover letter.');
+        form.style.display = 'block';
+    })
+    .finally(() => {
+        loadingState.style.display = 'none';
+    });
+}
+
+function displayGeneratedContent(data) {
+    const generatedContent = document.getElementById('generatedContent');
+    const preview = document.getElementById('coverLetterPreview');
+    const keyPointsList = document.getElementById('keyPointsList');
+    const suggestionsList = document.getElementById('suggestionsList');
+    
+    // Display cover letter content
+    preview.textContent = data.content;
+    
+    // Display key points
+    keyPointsList.innerHTML = '';
+    if (data.key_points) {
+        data.key_points.forEach(point => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i data-feather="check" class="text-success me-2" style="width: 14px; height: 14px;"></i>${point}`;
+            keyPointsList.appendChild(li);
+        });
+    }
+    
+    // Display suggestions
+    suggestionsList.innerHTML = '';
+    if (data.suggestions) {
+        data.suggestions.forEach(suggestion => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i data-feather="arrow-right" class="text-primary me-2" style="width: 14px; height: 14px;"></i>${suggestion}`;
+            suggestionsList.appendChild(li);
+        });
+    }
+    
+    // Show generated content
+    generatedContent.style.display = 'block';
+    
+    // Replace feather icons
+    feather.replace();
+}
+
+function regenerateContent() {
+    generateCoverLetter();
+}
+
+function saveCoverLetter() {
+    if (generatedData && generatedData.cover_letter_id) {
+        window.location.href = `/cover-letters/${generatedData.cover_letter_id}/edit`;
+    }
+}
+
+// Initialize Feather Icons
+feather.replace();
+</script>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        top: 5rem;
+    }
+}
+</style>
+{% endblock %}

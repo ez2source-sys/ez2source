@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}My Interview Schedule{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Interview Schedule</h2>
+        <a href="{{ url_for('manage_availability') }}" class="btn btn-outline-primary">
+            <i data-feather="clock" class="me-1"></i>Manage Availability
+        </a>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="calendar" class="mb-2" style="width: 32px; height: 32px; color: #007bff;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|length }}</h3>
+                    <p class="mb-0 text-muted">Scheduled</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="check-circle" class="mb-2" style="width: 32px; height: 32px; color: #28a745;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|selectattr('status', 'equalto', 'confirmed')|list|length }}</h3>
+                    <p class="mb-0 text-muted">Confirmed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="clock" class="mb-2" style="width: 32px; height: 32px; color: #ffc107;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|selectattr('status', 'equalto', 'scheduled')|list|length }}</h3>
+                    <p class="mb-0 text-muted">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="check" class="mb-2" style="width: 32px; height: 32px; color: #17a2b8;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|selectattr('status', 'equalto', 'completed')|list|length }}</h3>
+                    <p class="mb-0 text-muted">Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Upcoming Interviews -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Upcoming Interviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if scheduled_interviews %}
+                        <div class="list-group list-group-flush">
+                            {% for schedule in scheduled_interviews %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ schedule.interview.title }}</h6>
+                                        <p class="mb-1 text-muted">
+                                            With: {{ schedule.recruiter.username }}
+                                        </p>
+                                        <small class="text-muted">
+                                            <i data-feather="calendar" style="width: 14px; height: 14px;"></i>
+                                            {{ schedule.scheduled_datetime.strftime('%B %d, %Y at %I:%M %p') }}
+                                        </small>
+                                        {% if schedule.duration_minutes %}
+                                        <small class="text-muted ms-3">
+                                            <i data-feather="clock" style="width: 14px; height: 14px;"></i>
+                                            {{ schedule.duration_minutes }} minutes
+                                        </small>
+                                        {% endif %}
+                                        {% if schedule.notes %}
+                                        <div class="mt-2">
+                                            <small class="text-info">
+                                                <i data-feather="info" style="width: 14px; height: 14px;"></i>
+                                                {{ schedule.notes }}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ 'success' if schedule.status == 'confirmed' else 'warning' if schedule.status == 'scheduled' else 'info' if schedule.status == 'completed' else 'danger' }} mb-2">
+                                            {{ schedule.status.title() }}
+                                        </span>
+                                        <div>
+                                            {% if schedule.status == 'scheduled' %}
+                                            <button class="btn btn-sm btn-success me-1" 
+                                                    onclick="updateScheduleStatus({{ schedule.id }}, 'confirmed')">
+                                                <i data-feather="check" style="width: 14px; height: 14px;"></i>
+                                                Confirm
+                                            </button>
+                                            {% endif %}
+                                            {% if schedule.meeting_link %}
+                                            <a href="{{ schedule.meeting_link }}" class="btn btn-sm btn-primary me-1" target="_blank">
+                                                <i data-feather="video" style="width: 14px; height: 14px;"></i>
+                                                Join
+                                            </a>
+                                            {% endif %}
+                                            {% if schedule.status != 'completed' and schedule.status != 'cancelled' %}
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    onclick="requestReschedule({{ schedule.id }})">
+                                                <i data-feather="edit" style="width: 14px; height: 14px;"></i>
+                                                Reschedule
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i data-feather="calendar" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+                            <h4 class="text-muted">No scheduled interviews</h4>
+                            <p class="text-muted">Your upcoming interviews will appear here once scheduled by recruiters.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Slots -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="clock" class="me-2"></i>
+                        My Availability
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if availability_slots %}
+                        <div class="list-group list-group-flush">
+                            {% for slot in availability_slots %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][slot.day_of_week] }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</small>
+                                </div>
+                                <span class="badge bg-{{ 'success' if slot.is_active else 'secondary' }}">
+                                    {{ 'Active' if slot.is_active else 'Inactive' }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ url_for('manage_availability') }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i data-feather="edit" class="me-1"></i>
+                                Edit Availability
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="clock" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                            <p class="text-muted">No availability set</p>
+                            <a href="{{ url_for('manage_availability') }}" class="btn btn-primary btn-sm">
+                                <i data-feather="plus" class="me-1"></i>
+                                Set Availability
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportCalendar()">
+                            <i data-feather="download" class="me-1"></i>
+                            Export to Calendar
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="setNotificationPreferences()">
+                            <i data-feather="bell" class="me-1"></i>
+                            Notification Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateScheduleStatus(scheduleId, status) {
+    fetch(`/schedule/${scheduleId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            status: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error updating schedule: ' + data.error);
+        }
+    });
+}
+
+function requestReschedule(scheduleId) {
+    alert('Reschedule request sent to recruiter. You will be notified when new times are available.');
+}
+
+function exportCalendar() {
+    alert('Calendar export feature will be available once calendar integration is configured.');
+}
+
+function setNotificationPreferences() {
+    alert('Notification preferences will be available in the next update.');
+}
+</script>
+{% endblock %}

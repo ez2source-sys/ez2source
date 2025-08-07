@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Send Bulk Email - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold">Send Bulk Email Notification</h1>
+                    <p class="lead text-muted">Send notifications to multiple users across the platform</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('system_email_settings') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-2"></i>
+                        Back to Email Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i data-feather="users" class="me-2"></i>
+                        Bulk Email Configuration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="bulkEmailForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="bulkEmailSubject" class="form-label">Email Subject</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="bulkEmailSubject" 
+                                           name="subject"
+                                           placeholder="Enter email subject" 
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="bulkEmailRecipients" class="form-label">Recipients</label>
+                                    <select class="form-select" id="bulkEmailRecipients" name="recipients" required>
+                                        <option value="">Select recipient group</option>
+                                        <option value="all_users">All Users</option>
+                                        <option value="candidates">Candidates Only</option>
+                                        <option value="recruiters">Recruiters Only</option>
+                                        <option value="admins">Admins Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="bulkEmailTemplate" class="form-label">Email Template</label>
+                            <select class="form-select" id="bulkEmailTemplate" name="template">
+                                <option value="notification">General Notification</option>
+                                <option value="announcement">Announcement</option>
+                                <option value="maintenance">Maintenance Notice</option>
+                                <option value="user_invitation">User Invitation</option>
+                                <option value="test_email">Test Email</option>
+                            </select>
+                            <div class="form-text">Choose an appropriate template for your message</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="bulkEmailMessage" class="form-label">Message Content</label>
+                            <textarea class="form-control" 
+                                      id="bulkEmailMessage" 
+                                      name="message"
+                                      rows="8" 
+                                      placeholder="Enter your message content here..."
+                                      required></textarea>
+                            <div class="form-text">This message will be included in the email template</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmSend" required>
+                                <label class="form-check-label" for="confirmSend">
+                                    I confirm that I want to send this email to the selected recipients
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i data-feather="send" class="me-2"></i>
+                                Send Bulk Email
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="bulkEmailResult" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Email Activity -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i data-feather="activity" class="me-2"></i>
+                        Recent Email Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="mail" class="text-success" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">Today Sent</h6>
+                                <span class="badge bg-success">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="alert-triangle" class="text-warning" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">Today Failed</h6>
+                                <span class="badge bg-warning">5</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="users" class="text-info" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">Total Users</h6>
+                                <span class="badge bg-info">12</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i data-feather="zap" class="text-primary" style="width: 48px; height: 48px;"></i>
+                                <h6 class="mt-2">Success Rate</h6>
+                                <span class="badge bg-primary">85%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bulkEmailForm');
+    const resultDiv = document.getElementById('bulkEmailResult');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const subject = document.getElementById('bulkEmailSubject').value;
+        const recipients = document.getElementById('bulkEmailRecipients').value;
+        const template = document.getElementById('bulkEmailTemplate').value;
+        const message = document.getElementById('bulkEmailMessage').value;
+        
+        resultDiv.innerHTML = `
+            <div class="alert alert-info">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                Sending bulk emails to ${recipients}...
+            </div>
+        `;
+        
+        fetch('/system/email-settings/bulk-send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                subject: subject,
+                recipients: recipients,
+                template: template,
+                message: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sent > 0) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i data-feather="check-circle" class="me-2"></i>
+                        <strong>Success!</strong> Bulk emails sent successfully!<br>
+                        <small>Sent: ${data.sent} | Failed: ${data.failed}</small>
+                    </div>
+                `;
+                feather.replace();
+                form.reset();
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i data-feather="alert-circle" class="me-2"></i>
+                        <strong>Error:</strong> Failed to send bulk emails<br>
+                        <small>Failed: ${data.failed}</small>
+                    </div>
+                `;
+                feather.replace();
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i data-feather="alert-circle" class="me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+            feather.replace();
+        });
+    });
+});
+</script>
+{% endblock %}

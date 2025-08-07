@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Scheduling - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Interview Scheduling</h2>
+        <div>
+            <a href="{{ url_for('bulk_schedule') }}" class="btn btn-outline-primary me-2">
+                <i data-feather="calendar" class="me-1"></i>Bulk Schedule
+            </a>
+            <a href="{{ url_for('manage_availability') }}" class="btn btn-outline-secondary">
+                <i data-feather="clock" class="me-1"></i>Manage Availability
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="calendar" class="mb-2" style="width: 32px; height: 32px; color: #007bff;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|length }}</h3>
+                    <p class="mb-0 text-muted">Scheduled</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="check-circle" class="mb-2" style="width: 32px; height: 32px; color: #28a745;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|selectattr('status', 'equalto', 'confirmed')|list|length }}</h3>
+                    <p class="mb-0 text-muted">Confirmed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="clock" class="mb-2" style="width: 32px; height: 32px; color: #ffc107;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|selectattr('status', 'equalto', 'scheduled')|list|length }}</h3>
+                    <p class="mb-0 text-muted">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i data-feather="x-circle" class="mb-2" style="width: 32px; height: 32px; color: #dc3545;"></i>
+                    <h3 class="fw-bold">{{ scheduled_interviews|selectattr('status', 'equalto', 'cancelled')|list|length }}</h3>
+                    <p class="mb-0 text-muted">Cancelled</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Available Interviews to Schedule -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="list" class="me-2"></i>
+                        Interviews Available for Scheduling
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if interviews %}
+                        <div class="list-group list-group-flush">
+                            {% for interview in interviews %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ interview.title }}</h6>
+                                    <small class="text-muted">{{ interview.duration_minutes }} minutes</small>
+                                </div>
+                                <a href="{{ url_for('schedule_interview', interview_id=interview.id) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i data-feather="calendar" class="me-1"></i>Schedule
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="calendar" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                            <p class="text-muted">No interviews available for scheduling</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Scheduled Interviews -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="clock" class="me-2"></i>
+                        Upcoming Scheduled Interviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if scheduled_interviews %}
+                        <div class="list-group list-group-flush">
+                            {% for schedule in scheduled_interviews[:5] %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ schedule.interview.title }}</h6>
+                                        <p class="mb-1 text-muted">
+                                            With: {{ schedule.candidate.username }}
+                                        </p>
+                                        <small class="text-muted">
+                                            <i data-feather="calendar" style="width: 14px; height: 14px;"></i>
+                                            {{ schedule.scheduled_datetime.strftime('%B %d, %Y at %I:%M %p') }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-{{ 'success' if schedule.status == 'confirmed' else 'warning' if schedule.status == 'scheduled' else 'danger' }}">
+                                        {{ schedule.status.title() }}
+                                    </span>
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary me-1" 
+                                            onclick="editSchedule({{ schedule.id }})">
+                                        <i data-feather="edit" style="width: 14px; height: 14px;"></i>
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info me-1"
+                                            onclick="sendReminder({{ schedule.id }})">
+                                        <i data-feather="mail" style="width: 14px; height: 14px;"></i>
+                                        Remind
+                                    </button>
+                                    {% if schedule.status != 'cancelled' %}
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            onclick="cancelSchedule({{ schedule.id }})">
+                                        <i data-feather="x" style="width: 14px; height: 14px;"></i>
+                                        Cancel
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if scheduled_interviews|length > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="#" class="btn btn-outline-primary btn-sm">View All Scheduled Interviews</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="clock" class="mb-3" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                            <p class="text-muted">No scheduled interviews</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Integration -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Calendar Integration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <i data-feather="calendar" style="width: 24px; height: 24px; color: #4285f4;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Google Calendar</h6>
+                                    <small class="text-muted">Sync interviews with your Google Calendar</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="connectGoogleCalendar()">
+                                        Connect
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <i data-feather="mail" style="width: 24px; height: 24px; color: #0078d4;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Email Notifications</h6>
+                                    <small class="text-muted">Automated interview reminders</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Schedule Modal -->
+<div class="modal fade" id="editScheduleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Interview Schedule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editScheduleForm">
+                    <input type="hidden" id="editScheduleId">
+                    <div class="mb-3">
+                        <label class="form-label">Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="editDateTime">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="editStatus">
+                            <option value="scheduled">Scheduled</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" id="editNotes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveScheduleChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editSchedule(scheduleId) {
+    // Implementation for editing schedule
+    document.getElementById('editScheduleId').value = scheduleId;
+    new bootstrap.Modal(document.getElementById('editScheduleModal')).show();
+}
+
+function saveScheduleChanges() {
+    const scheduleId = document.getElementById('editScheduleId').value;
+    const dateTime = document.getElementById('editDateTime').value;
+    const status = document.getElementById('editStatus').value;
+    const notes = document.getElementById('editNotes').value;
+    
+    fetch(`/schedule/${scheduleId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            scheduled_datetime: dateTime,
+            status: status,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error updating schedule: ' + data.error);
+        }
+    });
+}
+
+function cancelSchedule(scheduleId) {
+    if (confirm('Are you sure you want to cancel this interview?')) {
+        fetch(`/schedule/${scheduleId}/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: 'cancelled'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error cancelling schedule: ' + data.error);
+            }
+        });
+    }
+}
+
+function sendReminder(scheduleId) {
+    // Implementation for sending reminder
+    alert('Reminder sent to candidate');
+}
+
+function connectGoogleCalendar() {
+    // Implementation for Google Calendar connection
+    alert('Google Calendar integration requires API credentials to be configured');
+}
+</script>
+{% endblock %}

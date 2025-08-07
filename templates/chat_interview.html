@@ -1,0 +1,616 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Interview - {{ interview.title }} - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!-- Interview Info Sidebar -->
+        <div class="col-md-3 sidebar-panel border-end h-100">
+            <div class="p-3">
+                <h5 class="fw-bold mb-3 sidebar-title">{{ interview.title }}</h5>
+                <div class="interview-info">
+                    <div class="info-item mb-3">
+                        <small class="sidebar-label">Duration</small>
+                        <div class="fw-bold sidebar-value">{{ interview.duration_minutes }} minutes</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <small class="sidebar-label">Time Remaining</small>
+                        <div class="fw-bold text-primary sidebar-value" id="timeRemaining">{{ interview.duration_minutes }}:00</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <small class="sidebar-label">Progress</small>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-primary" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <small class="sidebar-progress" id="progressText">0 of {{ questions|length }} questions</small>
+                    </div>
+                </div>
+                
+                <hr class="sidebar-divider">
+                
+                <div class="tips">
+                    <h6 class="fw-bold mb-2 sidebar-tips-title">💡 Tips</h6>
+                    <ul class="sidebar-tips-list list-unstyled">
+                        <li class="mb-1">• Be concise and specific</li>
+                        <li class="mb-1">• Use examples when possible</li>
+                        <li class="mb-1">• Take your time to think</li>
+                        <li class="mb-1">• Ask for clarification if needed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="col-md-9 d-flex flex-column h-100">
+            <!-- Chat Header -->
+            <div class="chat-header p-3 border-bottom bg-blue">
+                <div class="d-flex align-items-center">
+                    <div class="ai-avatar me-3">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">AI Interviewer</h6>
+                        <small class="text-success">Online</small>
+                    </div>
+                    <div class="ms-auto">
+                        <button class="btn btn-outline-danger btn-sm" onclick="endInterview()">
+                            <i class="fas fa-stop me-1"></i>End Interview
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+                <div class="message ai-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble ai-bubble">
+                            Hello! I'm your AI interviewer for today. I'll be asking you some questions to get to know you better and understand your qualifications for this role. 
+                            <br><br>
+                            Are you ready to begin?
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input border-top bg-white p-3">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="messageInput" 
+                           placeholder="Type your response..." disabled>
+                    <button class="btn btn-primary" id="sendButton" onclick="sendMessage()" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-actions mt-2">
+                    <button class="btn btn-outline-secondary btn-sm me-2" onclick="startInterview()">
+                        <i class="fas fa-play me-1"></i>Start Interview
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="askClarification()">
+                        <i class="fas fa-question-circle me-1"></i>Ask for Clarification
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interview Complete Modal -->
+<div class="modal fade" id="interviewCompleteModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Interview Complete!</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h4>Thank you for completing the interview!</h4>
+                <p class="lead">Your responses have been submitted and are being analyzed by our AI system.</p>
+                
+                <div class="interview-summary mt-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="summary-stat">
+                                <h5 id="questionsAnswered">0</h5>
+                                <small class="text-muted">Questions Answered</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-stat">
+                                <h5 id="timeSpent">0 min</h5>
+                                <small class="text-muted">Time Spent</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-stat">
+                                <h5>Analyzing...</h5>
+                                <small class="text-muted">AI Assessment</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="instant-feedback mt-4" id="instantFeedback" style="display: none;">
+                    <div class="alert alert-info">
+                        <h6>Initial Assessment</h6>
+                        <p id="feedbackText"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    Return to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-messages {
+    overflow-y: auto;
+    background: #f8f9fa;
+    min-height: 400px;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.3s ease;
+}
+
+.ai-message .message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 10px;
+}
+
+.user-message {
+    flex-direction: row-reverse;
+}
+
+.user-message .message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #28a745;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-left: 10px;
+}
+
+.message-content {
+    max-width: 70%;
+}
+
+.ai-bubble {
+    background: #e3f2fd !important;
+    color: #1565c0 !important;
+    border: 1px solid #bbdefb !important;
+    padding: 12px 16px;
+    border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 5px;
+}
+
+.message-bubble {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 5px;
+    color: #333;
+    border: 1px solid #e9ecef;
+}
+
+.user-message .message-bubble {
+    background: #007bff;
+    color: white;
+    border: 1px solid #0056b3;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #666;
+    margin-left: 16px;
+}
+
+.user-message .message-time {
+    text-align: right;
+    margin-right: 16px;
+    margin-left: 0;
+}
+
+.ai-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.typing-dots {
+    display: flex;
+    margin-left: 50px;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    margin: 0 2px;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.summary-stat {
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    background: #f8f9fa;
+}
+
+.summary-stat h5 {
+    margin-bottom: 5px;
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* Sidebar Styling */
+.sidebar-panel {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+}
+
+.sidebar-title {
+    color: #ecf0f1;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.sidebar-label {
+    color: #bdc3c7;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-value {
+    color: #ecf0f1;
+    font-size: 16px;
+}
+
+.sidebar-progress {
+    color: #bdc3c7;
+    font-size: 12px;
+}
+
+.sidebar-divider {
+    border-color: #34495e;
+    margin: 20px 0;
+}
+
+.sidebar-tips-title {
+    color: #f39c12;
+    font-size: 14px;
+}
+
+.sidebar-tips-list {
+    font-size: 12px;
+    color: #bdc3c7;
+}
+
+.sidebar-tips-list li {
+    margin-bottom: 8px;
+    padding-left: 5px;
+}
+</style>
+
+<script>
+let currentQuestionIndex = 0;
+let questions = {{ questions | safe }};
+let responses = [];
+let interviewStartTime = null;
+let timerInterval = null;
+let interviewActive = false;
+
+function startInterview() {
+    interviewActive = true;
+    interviewStartTime = new Date();
+    
+    // Enable input
+    document.getElementById('messageInput').disabled = false;
+    document.getElementById('sendButton').disabled = false;
+    
+    // Start timer
+    startTimer();
+    
+    // Hide start button
+    document.querySelector('.input-actions').style.display = 'none';
+    
+    // Send first question
+    setTimeout(() => {
+        askNextQuestion();
+    }, 1000);
+}
+
+function startTimer() {
+    const duration = {{ interview.duration_minutes }} * 60; // Convert to seconds
+    let timeLeft = duration;
+    
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('timeRemaining').textContent = 
+            `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 0) {
+            endInterview();
+        }
+    }, 1000);
+}
+
+function askNextQuestion() {
+    if (currentQuestionIndex < questions.length) {
+        const question = questions[currentQuestionIndex];
+        
+        showTypingIndicator();
+        
+        setTimeout(() => {
+            hideTypingIndicator();
+            
+            // Add indicator for final question
+            if (currentQuestionIndex === questions.length - 1) {
+                addAIMessage(`This is our final question: ${question.text}`);
+            } else {
+                addAIMessage(question.text);
+            }
+            
+            updateProgress();
+        }, 1500);
+    } else {
+        // End interview after all questions are answered
+        setTimeout(() => {
+            showTypingIndicator();
+            setTimeout(() => {
+                hideTypingIndicator();
+                addAIMessage("Thank you for completing all the questions! Your interview is now complete.");
+                setTimeout(() => {
+                    endInterview();
+                }, 2000);
+            }, 1000);
+        }, 1000);
+    }
+}
+
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (message && interviewActive) {
+        // Add user message
+        addUserMessage(message);
+        
+        // Store response
+        responses.push({
+            question_index: currentQuestionIndex,
+            question: questions[currentQuestionIndex]?.text || '',
+            answer: message,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Clear input
+        input.value = '';
+        
+        // Move to next question
+        currentQuestionIndex++;
+        
+        // Analyze response and ask next question
+        setTimeout(() => {
+            analyzeResponse(message);
+            askNextQuestion();
+        }, 1000);
+    }
+}
+
+function analyzeResponse(response) {
+    // Real-time AI analysis would happen here
+    // For now, we'll show a brief analysis
+    if (response.length < 20) {
+        showAIMessage("Could you provide a bit more detail in your response?");
+    }
+}
+
+function addAIMessage(text) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ai-message';
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble ai-bubble">${text}</div>
+            <div class="message-time">Just now</div>
+        </div>
+    `;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function addUserMessage(text) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message user-message';
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">${text}</div>
+            <div class="message-time">Just now</div>
+        </div>
+    `;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `
+        <div class="typing-dots">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    `;
+    messagesDiv.appendChild(typingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const typingDiv = document.getElementById('typingIndicator');
+    if (typingDiv) {
+        typingDiv.remove();
+    }
+}
+
+function updateProgress() {
+    const answeredQuestions = responses.length;
+    const progress = (answeredQuestions / questions.length) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    
+    if (answeredQuestions === questions.length) {
+        document.getElementById('progressText').textContent = 
+            `Interview Complete - ${answeredQuestions} of ${questions.length} questions`;
+    } else {
+        document.getElementById('progressText').textContent = 
+            `${answeredQuestions} of ${questions.length} questions`;
+    }
+}
+
+function endInterview() {
+    interviewActive = false;
+    clearInterval(timerInterval);
+    
+    // Disable input
+    document.getElementById('messageInput').disabled = true;
+    document.getElementById('sendButton').disabled = true;
+    
+    // Submit responses
+    submitInterview();
+    
+    // Show completion modal
+    showCompletionModal();
+}
+
+function submitInterview() {
+    const timeSpent = interviewStartTime ? 
+        Math.round((new Date() - interviewStartTime) / 60000) : 0;
+    
+    fetch(`{{ url_for('submit_chat_interview', interview_id=interview.id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            responses: responses,
+            time_taken: timeSpent
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show instant feedback
+            setTimeout(() => {
+                showInstantFeedback(data.feedback);
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting interview:', error);
+    });
+}
+
+function showCompletionModal() {
+    const timeSpent = interviewStartTime ? 
+        Math.round((new Date() - interviewStartTime) / 60000) : 0;
+    
+    document.getElementById('questionsAnswered').textContent = responses.length;
+    document.getElementById('timeSpent').textContent = timeSpent + ' min';
+    
+    new bootstrap.Modal(document.getElementById('interviewCompleteModal')).show();
+}
+
+function showInstantFeedback(feedback) {
+    document.getElementById('feedbackText').textContent = feedback;
+    document.getElementById('instantFeedback').style.display = 'block';
+}
+
+function askClarification() {
+    if (interviewActive && currentQuestionIndex > 0) {
+        addAIMessage("Could you clarify or expand on your previous answer? I'd like to understand your perspective better.");
+    }
+}
+
+// Handle Enter key for sending messages
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+</script>
+{% endblock %}

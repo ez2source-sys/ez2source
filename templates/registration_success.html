@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Registration Successful - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Header -->
+            <div class="text-center mb-5">
+                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i data-feather="check-circle" style="width: 40px; height: 40px;" class="text-success"></i>
+                </div>
+                <h2 class="fw-bold text-success">Welcome to Ez2source!</h2>
+                <p class="text-muted">Your account has been created successfully</p>
+            </div>
+
+            <!-- Login Credentials Card -->
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="key" class="me-2"></i>
+                        Your Login Credentials
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i data-feather="alert-triangle" class="me-2"></i>
+                        <strong>Important:</strong> Please save these credentials in a secure place. You'll need them to access your account.
+                    </div>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Username:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="username" value="{{ username }}" readonly>
+                                <button class="btn btn-outline-secondary" onclick="copyToClipboard('username')">
+                                    <i data-feather="copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Email:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="email" value="{{ email }}" readonly>
+                                <button class="btn btn-outline-secondary" onclick="copyToClipboard('email')">
+                                    <i data-feather="copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if password %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Temporary Password:</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" value="{{ password }}" readonly>
+                            <button class="btn btn-outline-secondary" onclick="togglePassword()">
+                                <i data-feather="eye" id="eye-icon"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="copyToClipboard('password')">
+                                <i data-feather="copy"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Please change this password after your first login</small>
+                    </div>
+                    {% else %}
+                    <div class="mb-4">
+                        <div class="alert alert-info">
+                            <i data-feather="info" class="me-2"></i>
+                            <strong>Password:</strong> You have set your own password during registration. Use the password you created to log in.
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Quick Actions -->
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{{ url_for('login') }}" class="btn btn-primary">
+                            <i data-feather="log-in" class="me-2"></i>
+                            Login Now
+                        </a>
+                        <a href="{{ profile_url }}" class="btn btn-outline-primary">
+                            <i data-feather="user" class="me-2"></i>
+                            Complete Profile
+                        </a>
+                        {% if password %}
+                        <button class="btn btn-outline-success" onclick="downloadCredentials()">
+                            <i data-feather="download" class="me-2"></i>
+                            Download Credentials
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information Card -->
+            <div class="card border-info mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="user-check" class="me-2"></i>
+                        Account Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">Your account has been created with the email address:</p>
+                    <p class="fw-bold text-primary">{{ email }}</p>
+                    <small class="text-muted">You can now log in using your email address and the password you set during registration.</small>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="list" class="me-2"></i>
+                        Next Steps
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Immediate Actions:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i data-feather="check-square" class="text-success me-2"></i>
+                                    Save your login credentials
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="log-in" class="text-primary me-2"></i>
+                                    Log in to your account
+                                </li>
+                                {% if password %}
+                                <li class="mb-2">
+                                    <i data-feather="key" class="text-warning me-2"></i>
+                                    Change your temporary password
+                                </li>
+                                {% endif %}
+                                <li class="mb-2">
+                                    <i data-feather="user" class="text-info me-2"></i>
+                                    Complete your profile
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Start Your Journey:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i data-feather="search" class="text-success me-2"></i>
+                                    Browse available interviews
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="send" class="text-primary me-2"></i>
+                                    Apply to public interviews
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="calendar" class="text-warning me-2"></i>
+                                    Schedule interview sessions
+                                </li>
+                                <li class="mb-2">
+                                    <i data-feather="trending-up" class="text-info me-2"></i>
+                                    Track your progress
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    document.execCommand('copy');
+    
+    // Show toast notification
+    showToast('Copied to clipboard!');
+}
+
+function togglePassword() {
+    const passwordField = document.getElementById('password');
+    const eyeIcon = document.getElementById('eye-icon');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        eyeIcon.setAttribute('data-feather', 'eye-off');
+    } else {
+        passwordField.type = 'password';
+        eyeIcon.setAttribute('data-feather', 'eye');
+    }
+    feather.replace();
+}
+
+function downloadCredentials() {
+    const credentials = `Ez2source Login Credentials
+    
+Username: {{ username }}
+Email: {{ email }}
+Temporary Password: {{ password }}
+
+Login URL: {{ url_for('login', _external=True) }}
+Profile URL: {{ profile_url }}
+
+Important: Please change your password after first login.
+
+Welcome to Ez2source!`;
+
+    const blob = new Blob([credentials], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'talentiq_credentials.txt';
+    link.click();
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `<i data-feather="check" class="me-2"></i>${message}`;
+    document.body.appendChild(toast);
+    
+    // Replace feather icons
+    feather.replace();
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

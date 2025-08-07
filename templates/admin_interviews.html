@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}View Interviews - Ez2source Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                <i data-feather="eye" class="me-2"></i>
+                Interview Management
+                <span class="badge bg-info ms-2">{{ current_user.role.title() }}</span>
+            </h1>
+            <p class="lead text-muted">
+                {% if current_user.role == 'super_admin' %}
+                    View and manage all interviews across all organizations.
+                {% else %}
+                    View and manage all interviews in your organization.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center">
+                    <i data-feather="clipboard" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ interviews|length }}</h3>
+                    <p class="mb-0">Total Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <i data-feather="check-circle" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ interviews|selectattr('is_active', 'equalto', true)|list|length if interviews else 0 }}</h3>
+                    <p class="mb-0">Active Interviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center">
+                    <i data-feather="users" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">
+                        {% set total_responses = 0 %}
+                        {% for interview in interviews %}
+                            {% set total_responses = total_responses + interview.responses|length %}
+                        {% endfor %}
+                        {{ total_responses }}
+                    </h3>
+                    <p class="mb-0">Total Responses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <i data-feather="globe" class="mb-2" style="width: 32px; height: 32px;"></i>
+                    <h3 class="fw-bold">{{ interviews|selectattr('interview_type', 'equalto', 'public')|list|length }}</h3>
+                    <p class="mb-0">Public Interviews</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interviews Table -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="list" class="me-2"></i>
+                        All Interviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if interviews %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Recruiter</th>
+                                    {% if current_user.role == 'super_admin' %}
+                                    <th>Organization</th>
+                                    {% endif %}
+                                    <th>Status</th>
+                                    <th>Responses</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for interview in interviews %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ interview.title }}</strong>
+                                        {% if interview.job_description %}
+                                        <br><small class="text-muted">{{ interview.job_description[:50] }}...</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if interview.interview_type == 'public' %}
+                                            <span class="badge bg-success">Public</span>
+                                        {% elif interview.interview_type == 'private' %}
+                                            <span class="badge bg-warning">Private</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Scheduled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                <i data-feather="user" style="width: 16px; height: 16px;"></i>
+                                            </div>
+                                            <div>
+                                                <strong>{{ interview.recruiter.username if interview.recruiter else 'System' }}</strong>
+                                                <br><small class="text-muted">{{ interview.recruiter.email if interview.recruiter else 'system@ez2hire.com' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    {% if current_user.role == 'super_admin' %}
+                                    <td>
+                                        <span class="badge bg-primary">{{ interview.organization.name if interview.organization else 'System' }}</span>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if interview.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ interview.responses|length }}</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ interview.created_at.strftime('%Y-%m-%d') }}</small>
+                                        <br><small class="text-muted">{{ interview.created_at.strftime('%H:%M') }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('interview_details', interview_id=interview.id) }}" 
+                                               class="btn btn-outline-primary" title="View Details">
+                                                <i data-feather="eye" style="width: 16px; height: 16px;"></i>
+                                            </a>
+                                            {% if interview.responses %}
+                                            <a href="{{ url_for('interview_analytics', interview_id=interview.id) }}" 
+                                               class="btn btn-outline-info" title="View Analytics">
+                                                <i data-feather="bar-chart" style="width: 16px; height: 16px;"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if current_user.role == 'admin' or (current_user.role == 'super_admin') %}
+                                            <a href="{{ url_for('edit_interview', interview_id=interview.id) }}" 
+                                               class="btn btn-outline-warning" title="Edit Interview">
+                                                <i data-feather="edit" style="width: 16px; height: 16px;"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="inbox" style="width: 48px; height: 48px;" class="text-muted mb-3"></i>
+                        <h5 class="text-muted">No Interviews Found</h5>
+                        <p class="text-muted">There are no interviews created yet in your organization.</p>
+                        {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('create_interview') }}" class="btn btn-primary">
+                            <i data-feather="plus-circle" class="me-2"></i>
+                            Create First Interview
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Feather icons
+    feather.replace();
+    
+    // Add any additional JavaScript for interview management
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add tooltips to action buttons
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

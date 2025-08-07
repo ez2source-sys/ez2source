@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Feedback Summary - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i data-feather="bar-chart" class="me-2"></i>Interview Feedback Summary</h2>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="regenerateSummary()">
+                        <i data-feather="refresh-cw" class="me-1"></i>
+                        Regenerate Summary
+                    </button>
+                    {% if current_user.role == 'recruiter' %}
+                    <button class="btn btn-outline-info" onclick="viewComparison()">
+                        <i data-feather="users" class="me-1"></i>
+                        Compare Candidates
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Generating AI-powered feedback summary...</p>
+            </div>
+
+            <!-- Summary Content -->
+            <div id="summaryContent" style="display: none;">
+                <!-- Overall Summary Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i data-feather="clipboard" class="me-2"></i>Overall Assessment</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p id="overallSummary" class="lead"></p>
+                                <div class="mt-3">
+                                    <span class="badge fs-6" id="hiringRecommendation"></span>
+                                    <span class="badge bg-info fs-6 ms-2" id="confidenceLevel"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <div class="circular-progress mb-3" id="overallScore">
+                                        <span class="score-text">0</span>
+                                    </div>
+                                    <h6>Overall Score</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis Row -->
+                <div class="row mb-4">
+                    <!-- Technical Competency -->
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i data-feather="code" class="me-1"></i>Technical Skills</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <div class="progress-circle" id="technicalScore">
+                                        <span class="score-text">0</span>
+                                    </div>
+                                </div>
+                                <p id="technicalAssessment" class="small"></p>
+                                <div id="technicalSkills"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Communication Skills -->
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i data-feather="message-circle" class="me-1"></i>Communication</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <div class="progress-circle" id="communicationScore">
+                                        <span class="score-text">0</span>
+                                    </div>
+                                </div>
+                                <p id="communicationAssessment" class="small"></p>
+                                <div id="communicationPoints"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cultural Fit -->
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-warning text-white">
+                                <h6 class="mb-0"><i data-feather="heart" class="me-1"></i>Cultural Fit</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <div class="progress-circle" id="culturalScore">
+                                        <span class="score-text">0</span>
+                                    </div>
+                                </div>
+                                <p id="culturalAssessment" class="small"></p>
+                                <div id="culturalIndicators"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strengths and Improvements -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i data-feather="check-circle" class="me-2"></i>Key Strengths</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="strengthsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="mb-0"><i data-feather="alert-triangle" class="me-2"></i>Areas for Improvement</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="improvementsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality Metrics -->
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i data-feather="trending-up" class="me-2"></i>Interview Quality Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="metric-item">
+                                    <div class="metric-value" id="responseDepth">0</div>
+                                    <div class="metric-label">Response Depth</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-item">
+                                    <div class="metric-value" id="relevanceToRole">0</div>
+                                    <div class="metric-label">Relevance to Role</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="metric-item">
+                                    <div class="metric-value" id="problemSolving">0</div>
+                                    <div class="metric-label">Problem Solving</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations and Notes -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i data-feather="arrow-right" class="me-2"></i>Next Steps</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="nextStepsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i data-feather="edit" class="me-2"></i>Recruiter Notes</h5>
+                            </div>
+                            <div class="card-body">
+                                <p id="recruiterNotes"></p>
+                                <div class="mt-3">
+                                    <h6>Response Metadata:</h6>
+                                    <small class="text-muted">
+                                        <div>Total Words: <span id="totalWords"></span></div>
+                                        <div>Avg Response Length: <span id="avgResponseLength"></span> words</div>
+                                        <div>Completion Time: <span id="completionTime"></span> minutes</div>
+                                        <div>Generated: <span id="generatedAt"></span></div>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="alert alert-danger" style="display: none;">
+                <h5><i data-feather="alert-circle" class="me-2"></i>Unable to Generate Summary</h5>
+                <p id="errorMessage"></p>
+                <button class="btn btn-outline-danger" onclick="loadSummary()">
+                    <i data-feather="refresh-cw" class="me-1"></i>
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Candidate Comparison Modal -->
+<div class="modal fade" id="comparisonModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i data-feather="users" class="me-2"></i>Candidate Comparison</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="comparisonContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Analyzing candidates...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.circular-progress {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    position: relative;
+    margin: 0 auto;
+    background: conic-gradient(from 0deg, #e9ecef 0deg, #007bff 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    position: relative;
+    margin: 0 auto;
+    background: conic-gradient(from 0deg, #e9ecef 0deg, #28a745 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.score-text {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.metric-item {
+    padding: 1rem;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+.strength-item, .improvement-item {
+    padding: 0.5rem 0;
+    border-left: 3px solid #28a745;
+    padding-left: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.improvement-item {
+    border-left-color: #ffc107;
+}
+
+.badge-strong-hire { background-color: #28a745; }
+.badge-hire { background-color: #007bff; }
+.badge-on-fence { background-color: #ffc107; color: #000; }
+.badge-no-hire { background-color: #dc3545; }
+</style>
+
+<script>
+const responseId = {{ response_id }};
+const interviewId = {{ interview_id }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadSummary();
+});
+
+function loadSummary() {
+    showLoading();
+    
+    fetch(`/interview/response/${responseId}/summary`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displaySummary(data.summary);
+            } else {
+                showError(data.error || 'Failed to load summary');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading summary:', error);
+            showError('Network error occurred');
+        });
+}
+
+function displaySummary(summary) {
+    hideLoading();
+    
+    // Overall summary
+    document.getElementById('overallSummary').textContent = summary.overall_summary || 'No summary available';
+    
+    // Hiring recommendation
+    const hiringRec = summary.hiring_recommendation || 'Pending';
+    const recElement = document.getElementById('hiringRecommendation');
+    recElement.textContent = hiringRec;
+    recElement.className = `badge fs-6 badge-${hiringRec.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    // Confidence level
+    document.getElementById('confidenceLevel').textContent = `${summary.confidence_level || 0}% Confidence`;
+    
+    // Overall score
+    updateCircularProgress('overallScore', summary.overall_score || 0, '#007bff');
+    
+    // Technical competency
+    if (summary.technical_competency) {
+        updateCircularProgress('technicalScore', summary.technical_competency.score || 0, '#28a745');
+        document.getElementById('technicalAssessment').textContent = summary.technical_competency.assessment || '';
+        
+        const skillsHtml = (summary.technical_competency.key_skills_demonstrated || [])
+            .map(skill => `<span class="badge bg-success me-1">${skill}</span>`)
+            .join('');
+        document.getElementById('technicalSkills').innerHTML = skillsHtml;
+    }
+    
+    // Communication skills
+    if (summary.communication_skills) {
+        updateCircularProgress('communicationScore', summary.communication_skills.score || 0, '#17a2b8');
+        document.getElementById('communicationAssessment').textContent = summary.communication_skills.assessment || '';
+        
+        const pointsHtml = (summary.communication_skills.notable_points || [])
+            .map(point => `<small class="d-block text-muted">• ${point}</small>`)
+            .join('');
+        document.getElementById('communicationPoints').innerHTML = pointsHtml;
+    }
+    
+    // Cultural fit
+    if (summary.cultural_fit) {
+        updateCircularProgress('culturalScore', summary.cultural_fit.score || 0, '#ffc107');
+        document.getElementById('culturalAssessment').textContent = summary.cultural_fit.assessment || '';
+        
+        const indicatorsHtml = (summary.cultural_fit.indicators || [])
+            .map(indicator => `<small class="d-block text-muted">• ${indicator}</small>`)
+            .join('');
+        document.getElementById('culturalIndicators').innerHTML = indicatorsHtml;
+    }
+    
+    // Strengths
+    const strengthsHtml = (summary.strengths || [])
+        .map(strength => `<div class="strength-item">${strength}</div>`)
+        .join('');
+    document.getElementById('strengthsList').innerHTML = strengthsHtml;
+    
+    // Areas for improvement
+    const improvementsHtml = (summary.areas_for_improvement || [])
+        .map(improvement => `<div class="improvement-item">${improvement}</div>`)
+        .join('');
+    document.getElementById('improvementsList').innerHTML = improvementsHtml;
+    
+    // Quality metrics
+    if (summary.interview_quality_metrics) {
+        document.getElementById('responseDepth').textContent = summary.interview_quality_metrics.response_depth || 0;
+        document.getElementById('relevanceToRole').textContent = summary.interview_quality_metrics.relevance_to_role || 0;
+        document.getElementById('problemSolving').textContent = summary.interview_quality_metrics.problem_solving_approach || 0;
+    }
+    
+    // Next steps
+    const nextStepsHtml = (summary.recommended_next_steps || [])
+        .map(step => `<div class="mb-2"><i data-feather="arrow-right" class="me-2"></i>${step}</div>`)
+        .join('');
+    document.getElementById('nextStepsList').innerHTML = nextStepsHtml;
+    
+    // Recruiter notes
+    document.getElementById('recruiterNotes').textContent = summary.recruiter_notes || 'No additional notes';
+    
+    // Metadata
+    if (summary.metadata) {
+        document.getElementById('totalWords').textContent = summary.metadata.total_words || 0;
+        document.getElementById('avgResponseLength').textContent = summary.metadata.average_response_length || 0;
+        document.getElementById('completionTime').textContent = summary.metadata.completion_time_minutes || 0;
+        document.getElementById('generatedAt').textContent = new Date(summary.metadata.generated_at).toLocaleString();
+    }
+    
+    // Re-render feather icons
+    feather.replace();
+}
+
+function updateCircularProgress(elementId, value, color) {
+    const element = document.getElementById(elementId);
+    const percentage = Math.min(100, Math.max(0, value));
+    const degrees = (percentage / 100) * 360;
+    
+    element.style.background = `conic-gradient(from 0deg, ${color} ${degrees}deg, #e9ecef ${degrees}deg)`;
+    element.querySelector('.score-text').textContent = Math.round(percentage);
+}
+
+function regenerateSummary() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i data-feather="refresh-cw" class="me-1 spinning"></i>Regenerating...';
+    btn.disabled = true;
+    
+    fetch(`/interview/response/${responseId}/regenerate-summary`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displaySummary(data.summary);
+            showToast('Summary regenerated successfully!', 'success');
+        } else {
+            showToast(data.error || 'Failed to regenerate summary', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error regenerating summary:', error);
+        showToast('Network error occurred', 'error');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        feather.replace();
+    });
+}
+
+function viewComparison() {
+    const modal = new bootstrap.Modal(document.getElementById('comparisonModal'));
+    modal.show();
+    
+    fetch(`/interview/${interviewId}/comparison`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayComparison(data.comparison);
+            } else {
+                document.getElementById('comparisonContent').innerHTML = 
+                    `<div class="alert alert-warning">${data.error || 'No comparison data available'}</div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading comparison:', error);
+            document.getElementById('comparisonContent').innerHTML = 
+                '<div class="alert alert-danger">Failed to load comparison</div>';
+        });
+}
+
+function displayComparison(comparison) {
+    // Implementation for comparison display
+    let html = '<div class="row">';
+    
+    if (comparison.ranking) {
+        html += '<div class="col-md-6"><h6>Candidate Ranking</h6>';
+        comparison.ranking.forEach((item, index) => {
+            html += `<div class="card mb-2">
+                <div class="card-body">
+                    <h6>${index + 1}. Candidate ${item.candidate_number}</h6>
+                    <p class="small">${item.rationale}</p>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+    }
+    
+    if (comparison.decision_summary) {
+        html += `<div class="col-md-6">
+            <h6>Decision Summary</h6>
+            <div class="alert alert-info">${comparison.decision_summary}</div>
+        </div>`;
+    }
+    
+    html += '</div>';
+    document.getElementById('comparisonContent').innerHTML = html;
+}
+
+function showLoading() {
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('summaryContent').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+}
+
+function hideLoading() {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('summaryContent').style.display = 'block';
+    document.getElementById('errorState').style.display = 'none';
+}
+
+function showError(message) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('summaryContent').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+    document.getElementById('errorMessage').textContent = message;
+}
+
+function showToast(message, type) {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Add spinning animation for loading states
+const style = document.createElement('style');
+style.textContent = '.spinning { animation: spin 1s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
+</script>
+{% endblock %}

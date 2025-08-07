@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for Interview - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h4 class="mb-0">
+                        <i data-feather="briefcase" class="me-2"></i>
+                        Apply for Interview
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Interview Details Section -->
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <h5 class="text-primary mb-2">{{ interview.title }}</h5>
+                        <p class="text-muted mb-2">{{ interview.job_description }}</p>
+                        <div class="d-flex align-items-center text-muted">
+                            <i data-feather="clock" class="me-2"></i>
+                            <span>Duration: {{ interview.duration_minutes }} minutes</span>
+                            {% if interview.organization %}
+                            <span class="ms-3">
+                                <i data-feather="briefcase" class="me-1"></i>
+                                {{ interview.organization.name }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('submit_application', interview_id=interview.id) }}">
+                        <!-- Cover Letter Section -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label for="cover_letter" class="form-label fw-bold mb-0">
+                                    <i data-feather="file-text" class="me-2"></i>
+                                    Cover Letter
+                                </label>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="generateCoverLetterForInterview()">
+                                        <i data-feather="cpu" class="me-1"></i>
+                                        Generate with AI
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="generateCoverLetterForInterview('professional')">Professional Tone</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="generateCoverLetterForInterview('enthusiastic')">Enthusiastic Tone</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="generateCoverLetterForInterview('technical')">Technical Tone</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="generateCoverLetterForInterview('custom', 'google')">Google Template</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="generateCoverLetterForInterview('custom', 'amazon')">Amazon Template</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="generateCoverLetterForInterview('custom', 'tesla')">Tesla Template</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Generation Loading -->
+                            <div id="coverLetterLoading" class="text-center py-4" style="display: none;">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Generating...</span>
+                                </div>
+                                <h6 class="text-primary">Generating Your Cover Letter</h6>
+                                <p class="text-muted small">Our AI is crafting a personalized cover letter based on your profile and the interview requirements...</p>
+                            </div>
+                            
+                            <!-- Cover Letter Textarea -->
+                            <div id="coverLetterTextarea">
+                                <textarea class="form-control" id="cover_letter" name="cover_letter" rows="8" 
+                                    placeholder="Tell us why you're interested in this position and what makes you a good fit...
+
+✨ Tip: Use the 'Generate with AI' button above to create a personalized cover letter based on your profile and this interview position."></textarea>
+                                <div class="form-text">
+                                    <i data-feather="info" class="me-1"></i>
+                                    A well-crafted cover letter can significantly improve your chances. Consider highlighting relevant experience and enthusiasm for the role.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Application Actions -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <i data-feather="arrow-left" class="me-1"></i>
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i data-feather="send" class="me-2"></i>
+                                Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Alert for Cover Letter Generation -->
+<div id="coverLetterSuccessAlert" class="alert alert-success alert-dismissible fade" role="alert" style="display: none;">
+    <i data-feather="check-circle" class="me-2"></i>
+    <strong>Cover Letter Generated!</strong> Your AI-powered cover letter has been created and added to the form.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<!-- Error Alert for Cover Letter Generation -->
+<div id="coverLetterErrorAlert" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+    <i data-feather="alert-circle" class="me-2"></i>
+    <strong>Generation Failed!</strong> <span id="errorMessage">Please try again or write your cover letter manually.</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function generateCoverLetterForInterview(tone = 'professional', templateType = 'custom') {
+    // Show loading state
+    document.getElementById('coverLetterLoading').style.display = 'block';
+    document.getElementById('coverLetterTextarea').style.display = 'none';
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('company_name', {{ (interview.organization.name if interview.organization else "Organization")|tojson }});
+    formData.append('position_title', {{ interview.title|tojson }});
+    formData.append('job_description', {{ interview.job_description|tojson }});
+    formData.append('template_type', templateType);
+    formData.append('tone', tone);
+    
+    // Call the cover letter generation API
+    fetch('/generate-cover-letter', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            // Fill the textarea with generated content
+            document.getElementById('cover_letter').value = data.content;
+            showSuccessAlert();
+        } else {
+            showErrorAlert(data.error || 'Failed to generate cover letter');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showErrorAlert('Network error: ' + error.message);
+    });
+}
+
+function hideLoading() {
+    document.getElementById('coverLetterLoading').style.display = 'none';
+    document.getElementById('coverLetterTextarea').style.display = 'block';
+}
+
+function showSuccessAlert() {
+    const alert = document.getElementById('coverLetterSuccessAlert');
+    alert.style.display = 'block';
+    alert.classList.add('show');
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => {
+            alert.style.display = 'none';
+        }, 150);
+    }, 5000);
+    
+    // Refresh feather icons
+    feather.replace();
+}
+
+function showErrorAlert(message) {
+    const alert = document.getElementById('coverLetterErrorAlert');
+    document.getElementById('errorMessage').textContent = message;
+    alert.style.display = 'block';
+    alert.classList.add('show');
+    
+    // Auto-hide after 7 seconds
+    setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => {
+            alert.style.display = 'none';
+        }, 150);
+    }, 7000);
+    
+    // Refresh feather icons
+    feather.replace();
+}
+
+// Initialize feather icons when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+</script>
+{% endblock %}

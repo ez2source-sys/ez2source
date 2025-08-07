@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Send Public Interview Invitation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('universal_candidates') }}">Universal Candidate Access</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Send Public Interview Invitation</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i data-feather="send" class="me-2"></i>
+                        Send Public Interview Invitation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form id="publicInvitationForm" method="POST">
+                        <!-- Candidate Information -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i data-feather="user" class="me-2"></i>
+                                Candidate
+                            </label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="mb-1">{{ candidate.first_name }} {{ candidate.last_name }}</h6>
+                                    <p class="text-muted mb-0">{{ candidate.email }}</p>
+                                    {% if candidate.job_title %}
+                                    <p class="text-muted mb-0"><small>{{ candidate.job_title }}</small></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interview Selection -->
+                        <div class="mb-4">
+                            <label for="interview_id" class="form-label fw-bold">
+                                <i data-feather="clipboard" class="me-2"></i>
+                                Select Interview
+                            </label>
+                            <select class="form-select" id="interview_id" name="interview_id" required>
+                                <option value="">Choose an interview...</option>
+                                {% for interview in available_interviews %}
+                                <option value="{{ interview.id }}">
+                                    {{ interview.title }} 
+                                    {% if interview.organization_name %}
+                                    ({{ interview.organization_name }})
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if not available_interviews %}
+                            <div class="alert alert-info mt-2">
+                                <i data-feather="info" class="me-2"></i>
+                                No public interviews are currently available. Please create a public interview first.
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Personal Message -->
+                        <div class="mb-4">
+                            <label for="message" class="form-label fw-bold">
+                                <i data-feather="message-circle" class="me-2"></i>
+                                Personal Message (Optional)
+                            </label>
+                            <textarea class="form-control" id="message" name="message" rows="4" 
+                                    placeholder="Add a personal note for the candidate..."></textarea>
+                            <div class="form-text">
+                                This message will be shown to the candidate along with the interview invitation.
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary flex-grow-1" {{ 'disabled' if not available_interviews }}>
+                                <i data-feather="send" class="me-2"></i>
+                                Send Invitation
+                            </button>
+                            <a href="{{ url_for('universal_candidates') }}" class="btn btn-outline-secondary">
+                                <i data-feather="x" class="me-2"></i>
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('publicInvitationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        candidate_id: {{ candidate.id }},
+        interview_id: parseInt(formData.get('interview_id')),
+        message: formData.get('message')
+    };
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i data-feather="loader" class="me-2"></i>Sending...';
+    submitBtn.disabled = true;
+    
+    fetch('/api/send-public-invitation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success';
+            alertDiv.innerHTML = '<i data-feather="check-circle" class="me-2"></i>Public invitation sent successfully!';
+            this.parentNode.insertBefore(alertDiv, this);
+            
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                window.location.href = "{{ url_for('universal_candidates') }}";
+            }, 2000);
+        } else {
+            // Show error message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger';
+            alertDiv.innerHTML = '<i data-feather="alert-circle" class="me-2"></i>Error: ' + data.message;
+            this.parentNode.insertBefore(alertDiv, this);
+            
+            // Restore button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+        
+        // Re-render feather icons
+        feather.replace();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger';
+        alertDiv.innerHTML = '<i data-feather="alert-circle" class="me-2"></i>An error occurred while sending the invitation';
+        this.parentNode.insertBefore(alertDiv, this);
+        
+        // Restore button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        // Re-render feather icons
+        feather.replace();
+    });
+});
+</script>
+{% endblock %}

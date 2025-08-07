@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Completed Interviews - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        <i data-feather="check-circle" class="me-3" style="width: 32px; height: 32px;"></i>
+                        Completed Interviews
+                    </h1>
+                    <p class="lead text-muted">Review your interview performance and scores.</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success fs-6">{{ completed_interviews|length }} Completed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if completed_interviews %}
+        <div class="row">
+            {% for response, interview, recruiter_name, organization_name in completed_interviews %}
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">{{ interview.title }}</h5>
+                                <p class="text-muted mb-2 small">
+                                    <i data-feather="briefcase" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {{ organization_name }}
+                                </p>
+                                <p class="text-muted mb-0 small">
+                                    <i data-feather="user" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Recruiter: {{ recruiter_name }}
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                {% set score_class = 'success' if response.ai_score >= 70 else ('warning' if response.ai_score >= 50 else 'danger') %}
+                                <span class="badge bg-{{ score_class }} fs-6">{{ "%.1f"|format(response.ai_score or 0) }}%</span>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <small class="text-muted d-block">Score</small>
+                                <strong class="text-{{ score_class }}">{{ "%.1f"|format(response.ai_score or 0) }}%</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Completed</small>
+                                <small class="fw-medium">{{ response.completed_at.strftime('%b %d, %Y') if response.completed_at else 'N/A' }}</small>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Duration</small>
+                                <small class="fw-medium">{{ interview.duration_minutes }}min</small>
+                            </div>
+                        </div>
+
+                        <!-- AI Feedback Preview -->
+                        {% if response.ai_feedback %}
+                        <div class="bg-light rounded p-3 mb-3">
+                            <small class="text-muted d-block mb-1">AI Feedback:</small>
+                            <p class="mb-0 small">{{ (response.ai_feedback[:120] + '...') if response.ai_feedback|length > 120 else response.ai_feedback }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('interview_results', response_id=response.id) }}" 
+                               class="btn btn-sm btn-outline-primary flex-grow-1">
+                                <i data-feather="eye" class="me-1" style="width: 14px; height: 14px;"></i>
+                                View Results
+                            </a>
+                            {% if response.video_url %}
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="playVideo('{{ response.video_url }}')">
+                                <i data-feather="play" class="me-1" style="width: 14px; height: 14px;"></i>
+                                Video
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination placeholder for future enhancement -->
+        {% if completed_interviews|length >= 10 %}
+        <div class="row mt-4">
+            <div class="col text-center">
+                <button class="btn btn-outline-primary" onclick="loadMoreInterviews()">
+                    <i data-feather="more-horizontal" class="me-2"></i>
+                    Load More
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col text-center py-5">
+                <i data-feather="check-circle" class="mb-3" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+                <h4 class="text-muted">No Completed Interviews Yet</h4>
+                <p class="text-muted">Your completed interviews will appear here once you finish them.</p>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    <i data-feather="home" class="me-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Interview Recording</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <video id="modalVideo" controls class="w-100" style="max-height: 400px;">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function playVideo(videoUrl) {
+    const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+    const video = document.getElementById('modalVideo');
+    video.src = videoUrl;
+    modal.show();
+}
+
+function loadMoreInterviews() {
+    // Placeholder for pagination functionality
+    console.log('Load more interviews...');
+}
+</script>
+{% endblock %}

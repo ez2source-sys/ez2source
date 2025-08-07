@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Registration - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Navigation -->
+    <div class="row pt-3">
+        <div class="col">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+                <i data-feather="arrow-left" class="me-2"></i>
+                Back to Home
+            </a>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='images/ez2source-logo.png') }}" alt="Ez2source" style="width: 80px; height: 80px;" class="mb-3">
+                        <h2 class="fw-bold text-dark">Registration</h2>
+                        <p class="text-muted">Join Ez2source - AI-Powered Talent Platform</p>
+                    </div>
+
+                    <!-- Registration Options -->
+                    <div class="registration-options">
+                        <!-- Candidate Registration -->
+                        <a href="{{ url_for('candidate_register') }}" class="btn btn-outline-primary w-100 mb-3 py-3 text-start" style="text-decoration: none;">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i data-feather="user" class="text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 fw-bold">Join as Candidate</h6>
+                                    <small class="text-muted">Create your profile and start your job search journey</small>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- HR Registration -->
+                        <a href="/hr/register" class="btn btn-outline-secondary w-100 mb-3 py-3 text-start" style="text-decoration: none;">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i data-feather="users" class="text-secondary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 fw-bold">Join as Employer</h6>
+                                    <small class="text-muted">Register your organization with verification process</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Features Section -->
+                    <div class="mt-4 pt-4 border-top">
+                        <div class="text-center mb-3">
+                            <h6 class="text-muted">
+                                <i data-feather="star" class="me-2"></i>
+                                Platform Features
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="zap" class="text-primary mb-1"></i>
+                                    <small class="d-block text-muted">AI-Powered Matching</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="mouse-pointer" class="text-success mb-1"></i>
+                                    <small class="d-block text-muted">One-Click Applications</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="file-text" class="text-info mb-1"></i>
+                                    <small class="d-block text-muted">Resume Builder</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2">
+                                    <i data-feather="video" class="text-warning mb-1"></i>
+                                    <small class="d-block text-muted">Interview Tools</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-muted mb-0">
+                            Already have an account? 
+                            <a href="{{ url_for('login') }}" class="text-decoration-none">Sign in here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

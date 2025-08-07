@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}CV Checker - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                CV Checker
+                <span class="badge bg-success ms-2">AI Analysis</span>
+            </h1>
+            <p class="lead text-muted">Get AI-powered analysis of your resume with detailed feedback and improvement suggestions</p>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-success">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h5 class="mb-0 text-success">
+                        <i data-feather="upload" class="me-2"></i>
+                        Upload Your Resume
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="mb-3">
+                            <i data-feather="file-plus" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                        </div>
+                        <h5>Drop your resume here or click to browse</h5>
+                        <p class="text-muted mb-3">Supports PDF, DOC, DOCX, and TXT files (max 10MB)</p>
+                        <input type="file" id="cvFile" class="d-none" accept=".pdf,.doc,.docx,.txt">
+                        <button type="button" class="btn btn-success" onclick="document.getElementById('cvFile').click()">
+                            <i data-feather="upload" class="me-1"></i>Choose File
+                        </button>
+                    </div>
+                    
+                    <!-- Upload Status Alert -->
+                    <div id="uploadStatus" class="alert alert-info d-none mt-3" role="alert">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                            <span id="statusText">Processing your resume...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Analyses Section -->
+    {% if recent_analyses %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="history" class="me-2"></i>
+                        Recent CV Analyses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for analysis in recent_analyses %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i data-feather="file-text" class="me-2"></i>
+                                        {{ analysis.candidate_name }}
+                                    </h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i data-feather="calendar" class="me-1"></i>
+                                            Analyzed {{ analysis.analyzed_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        </small>
+                                    </p>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="me-2">Overall Score:</span>
+                                        <span class="badge bg-{{ 'success' if analysis.overall_score >= 70 else 'warning' if analysis.overall_score >= 50 else 'danger' }} fs-6">
+                                            {{ analysis.overall_score }}%
+                                        </span>
+                                    </div>
+                                    <a href="{{ url_for('cv_analysis_results', analysis_id=analysis.id) }}" class="btn btn-success btn-sm">
+                                        <i data-feather="eye" class="me-1"></i>View Results
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CV Analysis Features -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="cpu" class="me-2"></i>
+                        AI-Powered Analysis Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i data-feather="target" class="text-primary"></i>
+                                </div>
+                                <h6>ATS Compatibility</h6>
+                                <p class="text-muted small">Ensures your resume passes Applicant Tracking Systems</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i data-feather="trending-up" class="text-success"></i>
+                                </div>
+                                <h6>Content Analysis</h6>
+                                <p class="text-muted small">Analyzes content quality, keywords, and relevance</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                    <i data-feather="edit-3" class="text-warning"></i>
+                                </div>
+                                <h6>Improvement Tips</h6>
+                                <p class="text-muted small">Provides actionable recommendations for enhancement</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.upload-area {
+    border: 3px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+.upload-area.dragover {
+    border-color: #10b981;
+    background-color: #dcfce7;
+}
+
+/* Spinner and Status Styling */
+.spinner-border-sm {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-width: 0.15em;
+}
+
+/* Alert styling for upload status */
+.alert {
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+.alert-info {
+    color: #055160;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.alert-success {
+    color: #0a3622;
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+
+.alert-danger {
+    color: #58151c;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('cvFile');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const statusText = document.getElementById('statusText');
+
+    // Drag and drop handlers
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileUpload(files[0]);
+        }
+    });
+
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleFileUpload(e.target.files[0]);
+        }
+    });
+
+    // Click to upload
+    uploadArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    function handleFileUpload(file) {
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please upload a PDF, DOC, DOCX, or TXT file.');
+            return;
+        }
+
+        // Validate file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB.');
+            return;
+        }
+
+        // Show upload status
+        showUploadStatus('info', 'Uploading resume...', true);
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('cv_file', file);
+
+        // Upload file
+        fetch('{{ url_for("cv_checker_upload") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
+            showUploadStatus('info', 'Analyzing resume with AI...', true);
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showUploadStatus('success', 'Analysis complete! Redirecting...', false);
+                
+                // Small delay to show completion message
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Upload failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showUploadStatus('danger', 'Analysis failed. Please try again.', false);
+            
+            // Hide status after 5 seconds
+            setTimeout(() => {
+                document.getElementById('uploadStatus').classList.add('d-none');
+            }, 5000);
+        });
+    }
+
+    // Function to show upload status with spinner
+    function showUploadStatus(type, message, showSpinner) {
+        const uploadStatus = document.getElementById('uploadStatus');
+        const statusText = document.getElementById('statusText');
+        
+        statusText.textContent = message;
+        uploadStatus.className = `alert alert-${type} mt-3`;
+        uploadStatus.classList.remove('d-none');
+        
+        const spinner = uploadStatus.querySelector('.spinner-border');
+        if (showSpinner) {
+            spinner.classList.remove('d-none');
+        } else {
+            spinner.classList.add('d-none');
+        }
+    }
+
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

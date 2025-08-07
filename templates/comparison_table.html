@@ -1,0 +1,111 @@
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Criteria</th>
+                {% for response in responses %}
+                <th class="text-center">
+                    <div class="candidate-header">
+                        <div class="avatar-circle mb-2">
+                            {{ response.candidate.username[0].upper() }}
+                        </div>
+                        <strong>{{ response.candidate.username }}</strong><br>
+                        <small class="text-muted">{{ response.interview.title }}</small>
+                    </div>
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Overall Score</strong></td>
+                {% for response in responses %}
+                <td class="text-center">
+                    <span class="badge fs-6 
+                        {% if response.ai_score >= 80 %}bg-success
+                        {% elif response.ai_score >= 60 %}bg-warning
+                        {% else %}bg-danger{% endif %}">
+                        {{ "%.1f"|format(response.ai_score) }}%
+                    </span>
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><strong>Time Taken</strong></td>
+                {% for response in responses %}
+                <td class="text-center">{{ response.time_taken_minutes or 'N/A' }} min</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><strong>Interview Date</strong></td>
+                {% for response in responses %}
+                <td class="text-center">{{ response.completed_at.strftime('%Y-%m-%d') }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><strong>AI Recommendation</strong></td>
+                {% for response in responses %}
+                <td class="text-center">
+                    {% if response.ai_score >= 80 %}
+                        <span class="badge bg-success">Hire</span>
+                    {% elif response.ai_score >= 60 %}
+                        <span class="badge bg-warning">Review</span>
+                    {% else %}
+                        <span class="badge bg-danger">Pass</span>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><strong>Key Strengths</strong></td>
+                {% for response in responses %}
+                <td>
+                    <small class="text-muted">
+                        {{ response.ai_feedback[:100] }}{% if response.ai_feedback|length > 100 %}...{% endif %}
+                    </small>
+                </td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-3">
+    <h6>Detailed Comparison</h6>
+    <div class="row">
+        {% for response in responses %}
+        <div class="col-md-{{ 12 // responses|length }}">
+            <div class="card">
+                <div class="card-header">
+                    <strong>{{ response.candidate.username }}</strong>
+                </div>
+                <div class="card-body">
+                    <p><strong>Email:</strong> {{ response.candidate.email }}</p>
+                    <p><strong>Join Date:</strong> {{ response.candidate.created_at.strftime('%B %Y') }}</p>
+                    <p><strong>AI Feedback:</strong></p>
+                    <p class="small text-muted">{{ response.ai_feedback }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.candidate-header {
+    min-height: 80px;
+}
+
+.avatar-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #007bff, #6f42c1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    margin: 0 auto;
+}
+</style>
