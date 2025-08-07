@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary">
+                        <i data-feather="user" class="me-2"></i>
+                        Edit Profile
+                    </h1>
+                    <p class="lead text-muted">Update your personal information and preferences</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('candidate_profile', user_id=current_user.id) }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-2"></i>
+                        Back to Profile
+                    </a>
+                </div>
+            </div>
+
+            <!-- Profile Edit Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('update_candidate_profile') }}" id="profileForm">
+                        <div class="row">
+                            <!-- Personal Information Section -->
+                            <div class="col-md-6">
+                                <h4 class="mb-3 text-primary">
+                                    <i data-feather="user" class="me-2"></i>
+                                    Personal Information
+                                </h4>
+                                
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">First Name *</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ current_user.first_name or '' }}" required>
+                                    <div class="invalid-feedback" id="first_name_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">Last Name *</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ current_user.last_name or '' }}" required>
+                                    <div class="invalid-feedback" id="last_name_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ current_user.email or '' }}" required>
+                                    <div class="invalid-feedback" id="email_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" 
+                                           value="{{ current_user.phone or '' }}" required>
+                                    <div class="invalid-feedback" id="phone_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="location" name="location" 
+                                           value="{{ current_user.location or '' }}" 
+                                           placeholder="e.g., New York, NY">
+                                    <div class="invalid-feedback" id="location_error"></div>
+                                </div>
+                            </div>
+
+                            <!-- Professional Information Section -->
+                            <div class="col-md-6">
+                                <h4 class="mb-3 text-primary">
+                                    <i data-feather="briefcase" class="me-2"></i>
+                                    Professional Information
+                                </h4>
+                                
+                                <div class="mb-3">
+                                    <label for="job_title" class="form-label">Job Title</label>
+                                    <input type="text" class="form-control" id="job_title" name="job_title" 
+                                           value="{{ current_user.job_title or '' }}" 
+                                           placeholder="e.g., Software Engineer">
+                                    <div class="invalid-feedback" id="job_title_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="linkedin_url" class="form-label">LinkedIn URL</label>
+                                    <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" 
+                                           value="{{ current_user.linkedin_url or '' }}" 
+                                           placeholder="https://linkedin.com/in/yourprofile">
+                                    <div class="invalid-feedback" id="linkedin_url_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="portfolio_url" class="form-label">Portfolio URL</label>
+                                    <input type="url" class="form-control" id="portfolio_url" name="portfolio_url" 
+                                           value="{{ current_user.portfolio_url or '' }}" 
+                                           placeholder="https://yourportfolio.com">
+                                    <div class="invalid-feedback" id="portfolio_url_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="years_of_experience" class="form-label">Years of Experience</label>
+                                    <select class="form-select" id="years_of_experience" name="years_of_experience">
+                                        <option value="">Select experience level</option>
+                                        <option value="0-1" {{ 'selected' if current_user.years_of_experience == '0-1' else '' }}>0-1 years</option>
+                                        <option value="1-3" {{ 'selected' if current_user.years_of_experience == '1-3' else '' }}>1-3 years</option>
+                                        <option value="3-5" {{ 'selected' if current_user.years_of_experience == '3-5' else '' }}>3-5 years</option>
+                                        <option value="5-10" {{ 'selected' if current_user.years_of_experience == '5-10' else '' }}>5-10 years</option>
+                                        <option value="10+" {{ 'selected' if current_user.years_of_experience == '10+' else '' }}>10+ years</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="years_of_experience_error"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="salary_expectation" class="form-label">Salary Expectation</label>
+                                    <select class="form-select" id="salary_expectation" name="salary_expectation">
+                                        <option value="">Select salary range</option>
+                                        <option value="$30,000 - $40,000" {{ 'selected' if current_user.salary_expectation == '$30,000 - $40,000' else '' }}>$30,000 - $40,000</option>
+                                        <option value="$40,000 - $50,000" {{ 'selected' if current_user.salary_expectation == '$40,000 - $50,000' else '' }}>$40,000 - $50,000</option>
+                                        <option value="$50,000 - $60,000" {{ 'selected' if current_user.salary_expectation == '$50,000 - $60,000' else '' }}>$50,000 - $60,000</option>
+                                        <option value="$60,000 - $70,000" {{ 'selected' if current_user.salary_expectation == '$60,000 - $70,000' else '' }}>$60,000 - $70,000</option>
+                                        <option value="$70,000 - $80,000" {{ 'selected' if current_user.salary_expectation == '$70,000 - $80,000' else '' }}>$70,000 - $80,000</option>
+                                        <option value="$80,000 - $90,000" {{ 'selected' if current_user.salary_expectation == '$80,000 - $90,000' else '' }}>$80,000 - $90,000</option>
+                                        <option value="$90,000 - $100,000" {{ 'selected' if current_user.salary_expectation == '$90,000 - $100,000' else '' }}>$90,000 - $100,000</option>
+                                        <option value="$100,000 - $120,000" {{ 'selected' if current_user.salary_expectation == '$100,000 - $120,000' else '' }}>$100,000 - $120,000</option>
+                                        <option value="$120,000 - $150,000" {{ 'selected' if current_user.salary_expectation == '$120,000 - $150,000' else '' }}>$120,000 - $150,000</option>
+                                        <option value="$150,000 - $180,000" {{ 'selected' if current_user.salary_expectation == '$150,000 - $180,000' else '' }}>$150,000 - $180,000</option>
+                                        <option value="$180,000 - $200,000" {{ 'selected' if current_user.salary_expectation == '$180,000 - $200,000' else '' }}>$180,000 - $200,000</option>
+                                        <option value="$200,000 - $250,000" {{ 'selected' if current_user.salary_expectation == '$200,000 - $250,000' else '' }}>$200,000 - $250,000</option>
+                                        <option value="$250,000+" {{ 'selected' if current_user.salary_expectation == '$250,000+' else '' }}>$250,000+</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="salary_expectation_error"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- About Section -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4 class="mb-3 text-primary">
+                                    <i data-feather="file-text" class="me-2"></i>
+                                    About
+                                </h4>
+                                
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">Professional Summary</label>
+                                    <textarea class="form-control" id="bio" name="bio" rows="4" 
+                                              placeholder="Tell us about yourself, your skills, and career goals...">{{ current_user.bio or '' }}</textarea>
+                                    <div class="invalid-feedback" id="bio_error"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Skills Section -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4 class="mb-3 text-primary">
+                                    <i data-feather="zap" class="me-2"></i>
+                                    Skills
+                                </h4>
+                                
+                                <div class="mb-3">
+                                    <label for="skills" class="form-label">Technical Skills</label>
+                                    <textarea class="form-control" id="skills" name="skills" rows="3" 
+                                              placeholder="List your technical skills separated by commas (e.g., JavaScript, Python, React, Node.js)">{{ current_user.skills or '' }}</textarea>
+                                    <div class="invalid-feedback" id="skills_error"></div>
+                                    <div class="form-text">Enter skills separated by commas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('candidate_profile', user_id=current_user.id) }}" class="btn btn-outline-secondary">
+                                        <i data-feather="x" class="me-2"></i>
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary" id="saveButton">
+                                        <i data-feather="save" class="me-2"></i>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Form Validation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('profileForm');
+    const saveButton = document.getElementById('saveButton');
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(field => {
+            field.classList.remove('is-invalid');
+        });
+        
+        // Required field validation
+        const requiredFields = ['first_name', 'last_name', 'email', 'phone'];
+        requiredFields.forEach(fieldName => {
+            const field = document.getElementById(fieldName);
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                document.getElementById(fieldName + '_error').textContent = 'This field is required';
+                isValid = false;
+            }
+        });
+        
+        // Email validation
+        const emailField = document.getElementById('email');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailField.value && !emailRegex.test(emailField.value)) {
+            emailField.classList.add('is-invalid');
+            document.getElementById('email_error').textContent = 'Please enter a valid email address';
+            isValid = false;
+        }
+        
+        // Phone validation
+        const phoneField = document.getElementById('phone');
+        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+        if (phoneField.value && !phoneRegex.test(phoneField.value.replace(/[\s\-\(\)]/g, ''))) {
+            phoneField.classList.add('is-invalid');
+            document.getElementById('phone_error').textContent = 'Please enter a valid phone number';
+            isValid = false;
+        }
+        
+        // LinkedIn URL validation
+        const linkedinField = document.getElementById('linkedin_url');
+        if (linkedinField.value && !linkedinField.value.includes('linkedin.com')) {
+            linkedinField.classList.add('is-invalid');
+            document.getElementById('linkedin_url_error').textContent = 'Please enter a valid LinkedIn URL';
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        } else {
+            // Show loading state
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+        }
+    });
+    
+    // Real-time validation feedback
+    document.querySelectorAll('input, textarea, select').forEach(field => {
+        field.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.classList.add('is-invalid');
+                document.getElementById(this.name + '_error').textContent = 'This field is required';
+            } else {
+                this.classList.remove('is-invalid');
+                document.getElementById(this.name + '_error').textContent = '';
+            }
+        });
+        
+        field.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+                document.getElementById(this.name + '_error').textContent = '';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
