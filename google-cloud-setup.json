@@ -1,0 +1,77 @@
+{
+  "project": {
+    "name": "Ez2source",
+    "description": "AI-Powered Talent Intelligence Platform",
+    "region": "us-central1",
+    "environment": "production"
+  },
+  "services": {
+    "cloud_run": {
+      "service_name": "ez2source",
+      "container_port": 8080,
+      "memory": "2Gi",
+      "cpu": "2",
+      "min_instances": 0,
+      "max_instances": 10,
+      "timeout": 300,
+      "allow_unauthenticated": true
+    },
+    "cloud_sql": {
+      "instance_name": "ez2source-db",
+      "database_version": "POSTGRES_15",
+      "tier": "db-f1-micro",
+      "storage_type": "SSD",
+      "storage_size": "10GB",
+      "database_name": "ez2source",
+      "username": "ez2source_user"
+    },
+    "secret_manager": {
+      "secrets": [
+        {
+          "name": "database-url",
+          "description": "PostgreSQL connection string for the application"
+        },
+        {
+          "name": "session-secret",
+          "description": "Flask session secret key for secure sessions"
+        },
+        {
+          "name": "openai-api-key",
+          "description": "OpenAI API key for AI-powered features"
+        }
+      ]
+    }
+  },
+  "apis_required": [
+    "run.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "containerregistry.googleapis.com",
+    "sql-component.googleapis.com",
+    "sqladmin.googleapis.com",
+    "secretmanager.googleapis.com"
+  ],
+  "core_web_vitals": {
+    "cls_optimization": {
+      "font_loading": "font-display: optional",
+      "image_dimensions": "explicit width/height attributes",
+      "dynamic_content": "reserved space with min-height",
+      "css_animations": "transform-based animations only",
+      "critical_css": "preloaded and inlined"
+    },
+    "performance_targets": {
+      "lcp": "< 2.5 seconds",
+      "inp": "< 200 milliseconds", 
+      "cls": "< 0.1"
+    }
+  },
+  "deployment_steps": [
+    "1. Configure Google Cloud Project and enable APIs",
+    "2. Create Cloud SQL PostgreSQL instance",
+    "3. Set up Secret Manager with required secrets", 
+    "4. Build and push container image to Container Registry",
+    "5. Deploy to Cloud Run with proper environment configuration",
+    "6. Configure custom domain (optional)",
+    "7. Set up monitoring and logging",
+    "8. Verify Core Web Vitals performance"
+  ]
+}

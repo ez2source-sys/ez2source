@@ -1,0 +1,71 @@
+runtime: python311
+env: standard
+instance_class: F4_1G
+
+# Environment variables
+env_variables:
+  PORT: "8080"
+
+# Configure scaling
+automatic_scaling:
+  min_instances: 0
+  max_instances: 10
+  target_cpu_utilization: 0.6
+  target_throughput_utilization: 0.6
+
+# Resource settings for better performance
+resources:
+  cpu: 2
+  memory_gb: 4
+
+# Health check configuration
+liveness_check:
+  path: "/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 1
+
+readiness_check:
+  path: "/health"
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 1
+  app_start_timeout_sec: 300
+
+# Static file handlers for better CLS performance
+handlers:
+- url: /static/css
+  static_dir: static/css
+  secure: always
+  http_headers:
+    Cache-Control: "public, max-age=31536000"
+    
+- url: /static/js  
+  static_dir: static/js
+  secure: always
+  http_headers:
+    Cache-Control: "public, max-age=31536000"
+    
+- url: /static/images
+  static_dir: static/images
+  secure: always
+  http_headers:
+    Cache-Control: "public, max-age=31536000"
+    
+- url: /static/fonts
+  static_dir: static/fonts
+  secure: always
+  http_headers:
+    Cache-Control: "public, max-age=31536000"
+    
+- url: /static
+  static_dir: static
+  secure: always
+  http_headers:
+    Cache-Control: "public, max-age=86400"
+
+- url: /.*
+  script: auto
+  secure: always
