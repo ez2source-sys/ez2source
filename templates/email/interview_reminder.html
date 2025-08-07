@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Reminder - {{ platform_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .interview-details {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .interview-details h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .detail-item {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+        }
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-weight: bold;
+        }
+        .detail-content {
+            flex: 1;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #6c757d;
+            display: block;
+        }
+        .detail-value {
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .preparation-tips {
+            background: #e7f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .preparation-tips h3 {
+            color: #004085;
+            margin-top: 0;
+        }
+        .preparation-tips ul {
+            color: #004085;
+            margin: 10px 0;
+        }
+        .preparation-tips li {
+            margin: 8px 0;
+        }
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .urgent-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .urgent-notice strong {
+            color: #856404;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Interview Reminder</h1>
+            <p>Don't miss your upcoming interview!</p>
+        </div>
+        
+        <div class="content">
+            <div class="urgent-notice">
+                <strong>⏰ Reminder: Your interview is scheduled for {{ interview_date }}</strong>
+            </div>
+            
+            <p>Hello {{ user_name }},</p>
+            
+            <p>{{ message }}</p>
+            
+            <div class="interview-details">
+                <h3>📋 Interview Details</h3>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">📝</div>
+                    <div class="detail-content">
+                        <span class="detail-label">Interview Title:</span>
+                        <span class="detail-value">{{ interview_title }}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">📅</div>
+                    <div class="detail-content">
+                        <span class="detail-label">Date & Time:</span>
+                        <span class="detail-value">{{ interview_date }}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-icon">🌐</div>
+                    <div class="detail-content">
+                        <span class="detail-label">Interview Link:</span>
+                        <span class="detail-value">{{ interview_url }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ interview_url }}" class="btn">Join Interview</a>
+            </div>
+            
+            <div class="preparation-tips">
+                <h3>💡 Preparation Tips</h3>
+                <ul>
+                    <li><strong>Test your technology:</strong> Check your camera, microphone, and internet connection</li>
+                    <li><strong>Prepare your environment:</strong> Find a quiet, well-lit space for the interview</li>
+                    <li><strong>Review your application:</strong> Refresh your memory about the role and your qualifications</li>
+                    <li><strong>Prepare questions:</strong> Think of thoughtful questions to ask the interviewer</li>
+                    <li><strong>Arrive early:</strong> Join the interview 5-10 minutes before the scheduled time</li>
+                    <li><strong>Have materials ready:</strong> Keep your resume, portfolio, and any relevant documents accessible</li>
+                </ul>
+            </div>
+            
+            <p>We're excited to meet with you and learn more about your background. If you have any technical issues or need to reschedule, please contact us as soon as possible.</p>
+            
+            <p>Good luck with your interview!</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{ current_year }} {{ platform_name }}. All rights reserved.</p>
+            <p>
+                Need help? Contact us at <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+            </p>
+            <p>
+                <a href="{{ platform_url }}">{{ platform_url }}</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

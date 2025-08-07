@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{ platform_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .welcome-message {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .credentials-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .credentials-box h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .credential-item {
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .credential-label {
+            font-weight: bold;
+            color: #6c757d;
+        }
+        .credential-value {
+            color: #007bff;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .features {
+            margin: 30px 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-weight: bold;
+        }
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .security-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .security-note strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ platform_name }}</h1>
+            <p>Welcome to the Future of Talent Management</p>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                Hello {{ user_name }},
+            </div>
+            
+            <p>{{ message }}</p>
+            
+            <p>Your account has been successfully created with the following details:</p>
+            
+            <div class="credentials-box">
+                <h3>🔑 Login Credentials</h3>
+                <div class="credential-item">
+                    <span class="credential-label">Username:</span>
+                    <span class="credential-value">{{ username }}</span>
+                </div>
+                <div class="credential-item">
+                    <span class="credential-label">Password:</span>
+                    <span class="credential-value">{{ temporary_password }}</span>
+                </div>
+                <div class="credential-item">
+                    <span class="credential-label">Role:</span>
+                    <span class="credential-value">{{ role }}</span>
+                </div>
+                <div class="credential-item">
+                    <span class="credential-label">Organization:</span>
+                    <span class="credential-value">{{ organization_name }}</span>
+                </div>
+            </div>
+            
+            <div class="security-note">
+                <strong>🔒 Security Notice:</strong> Please change your password after your first login for security purposes.
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ login_url }}" class="btn">Login to Your Account</a>
+            </div>
+            
+            <div class="features">
+                <h3>What you can do with {{ platform_name }}:</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">👥</div>
+                    <div>
+                        <strong>Talent Discovery</strong><br>
+                        Access our comprehensive candidate database and AI-powered matching
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div>
+                        <strong>Smart Recruiting</strong><br>
+                        Leverage AI for resume screening and candidate evaluation
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div>
+                        <strong>Analytics & Insights</strong><br>
+                        Track hiring metrics and optimize your recruitment process
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🤝</div>
+                    <div>
+                        <strong>Team Collaboration</strong><br>
+                        Coordinate with your team and share candidate feedback
+                    </div>
+                </div>
+            </div>
+            
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{ current_year }} {{ platform_name }}. All rights reserved.</p>
+            <p>
+                Need help? Contact us at <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+            </p>
+            <p>
+                <a href="{{ platform_url }}">{{ platform_url }}</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
