@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Setup - Ez2source{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/accessibility-improvements.css') }}?v={{ range(1,10000) | random }}">
+<script src="{{ url_for('static', filename='js/interview-autocomplete.js') }}"></script>
+<style>
+/* Interview Setup Styles */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #0d6efd;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.practice-question-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.practice-question-card:hover {
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.difficulty-badge {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.difficulty-easy {
+    background: #d4edda;
+    color: #155724;
+}
+
+.difficulty-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.difficulty-hard {
+    background: #f8d7da;
+    color: #721c24;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Interview Setup</li>
+        </ol>
+    </nav>
+
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">
+                <span class="badge bg-primary me-2" style="font-size: 1.2rem;">1</span>
+                Interview Setup
+                <span class="badge bg-info ms-2">AI-Powered</span>
+            </h1>
+            <p class="lead text-muted">Configure your interview topic and difficulty level to get started</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <div class="col-12 col-lg-8 mx-auto">
+            <div class="row mb-4">
+                <div class="col">
+
+                    <!-- Interview Setup Card -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold fs-5 text-dark mb-3">Interview Topic</label>
+                                <input type="text" class="form-control form-control-lg border-2" id="topicInput" 
+                                       placeholder="e.g., Java, React, SQL" 
+                                       list="topicSuggestions" autocomplete="off"
+                                       style="border-color: #dee2e6; padding: 15px;">
+                                <datalist id="topicSuggestions">
+                                    <option value="Java">
+                                    <option value="Python">
+                                    <option value="JavaScript">
+                                    <option value="React">
+                                    <option value="Node.js">
+                                    <option value="SQL">
+                                    <option value="Data Structures">
+                                    <option value="Algorithms">
+                                    <option value="System Design">
+                                    <option value="Machine Learning">
+                                    <option value="Angular">
+                                    <option value="Vue.js">
+                                    <option value="Spring Boot">
+                                    <option value="Django">
+                                    <option value="Flask">
+                                    <option value="MongoDB">
+                                    <option value="PostgreSQL">
+                                    <option value="AWS">
+                                    <option value="Docker">
+                                    <option value="Kubernetes">
+                                </datalist>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold fs-5 text-dark mb-3">Difficulty Level</label>
+                                <input type="text" class="form-control form-control-lg border-2" id="difficultyInput" 
+                                       placeholder="e.g., Medium" 
+                                       list="difficultySuggestions" autocomplete="off" value="Medium"
+                                       style="border-color: #dee2e6; padding: 15px;">
+                                <datalist id="difficultySuggestions">
+                                    <option value="Easy">
+                                    <option value="Medium">
+                                    <option value="Hard">
+                                </datalist>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary btn-lg px-5 py-3" id="generateQuestionsBtn">
+                                    Generate Practice Questions
+                                </button>
+                                {% if active_session %}
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 py-3 ms-3" id="clearSessionBtn">
+                                    <i data-feather="refresh-cw" class="me-2"></i>
+                                    Start Fresh
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Practice Questions Section -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-primary fw-bold">
+                                    <i data-feather="help-circle" class="me-2"></i>
+                                    Practice Questions
+                                </h4>
+                            </div>
+                            
+                            <div id="practiceQuestionsList">
+                                <div class="text-center text-muted py-5">
+                                    <i data-feather="help-circle" style="width: 48px; height: 48px;"></i>
+                                    <p class="mt-3">Select a topic and click "Generate Practice Questions" to get started</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="text-center mb-4">
+                        <a href="{{ url_for('interview_ai_question') }}" class="btn btn-outline-primary btn-lg px-5 py-3">
+                            <i data-feather="arrow-right" class="me-2"></i>
+                            Go to Ask Question
+                        </a>
+                        <p class="text-muted mt-2 mb-0">
+                            <small>Step 2: Move to the question page to practice with AI assistance</small>
+                        </p>
+                    </div>
+
+                    <!-- Loading and Error States -->
+                    <div id="loadingState" class="text-center py-5" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p class="mt-3 text-muted">Generating practice questions...</p>
+                    </div>
+
+                    <div id="errorState" class="alert alert-danger" style="display: none;">
+                        <i data-feather="alert-circle" class="me-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+
+                    <div id="successState" class="alert alert-success" style="display: none;">
+                        <i data-feather="check-circle" class="me-2"></i>
+                        <span id="successMessage"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Generate practice questions
+async function generatePracticeQuestions() {
+    const topic = document.getElementById('topicInput').value.trim();
+    const difficulty = document.getElementById('difficultyInput').value.trim() || 'Medium';
+    
+    if (!topic) {
+        showError('Please enter a topic first');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/interview-ai/practice-questions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic: topic,
+                difficulty: difficulty
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayPracticeQuestions(data.questions);
+            if (data.from_cache) {
+                showSuccess('Restored your saved practice questions!');
+            } else {
+                showSuccess('Practice questions generated!');
+            }
+        } else {
+            showError(data.message || 'Failed to generate questions');
+        }
+    } catch (error) {
+        console.error('Error generating questions:', error);
+        showError('Network error. Please try again.');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Display practice questions
+function displayPracticeQuestions(questions) {
+    const container = document.getElementById('practiceQuestionsList');
+    container.innerHTML = '';
+    
+    questions.forEach(q => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'practice-question-card';
+        questionDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <p class="mb-2">${q.question}</p>
+                    <small class="text-muted">${q.category}</small>
+                </div>
+                <span class="difficulty-badge difficulty-${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+            </div>
+        `;
+        
+        questionDiv.addEventListener('click', () => {
+            // Store the question in localStorage for the Ask Question page
+            localStorage.setItem('selectedQuestion', q.question);
+            localStorage.setItem('selectedTopic', document.getElementById('topicInput').value);
+            // Navigate to Ask Question page
+            window.location.href = '/candidate/interview-ai-question';
+        });
+        
+        container.appendChild(questionDiv);
+    });
+}
+
+// Utility functions
+function showLoading() {
+    document.getElementById('loadingState').style.display = 'block';
+    hideMessages();
+}
+
+function hideLoading() {
+    document.getElementById('loadingState').style.display = 'none';
+}
+
+function hideMessages() {
+    document.getElementById('errorState').style.display = 'none';
+    document.getElementById('successState').style.display = 'none';
+}
+
+function showError(message) {
+    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('errorState').style.display = 'block';
+    setTimeout(() => {
+        document.getElementById('errorState').style.display = 'none';
+    }, 5000);
+}
+
+function showSuccess(message) {
+    document.getElementById('successMessage').textContent = message;
+    document.getElementById('successState').style.display = 'block';
+    setTimeout(() => {
+        document.getElementById('successState').style.display = 'none';
+    }, 3000);
+}
+
+// Clear practice session
+async function clearPracticeSession() {
+    if (!confirm('Are you sure you want to clear the current practice session and start fresh?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/interview-ai/clear-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear the UI
+            document.getElementById('topicInput').value = '';
+            document.getElementById('difficultyInput').value = 'Medium';
+            const container = document.getElementById('practiceQuestionsList');
+            container.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i data-feather="help-circle" style="width: 48px; height: 48px;"></i>
+                    <p class="mt-3">Select a topic and click "Generate Practice Questions" to get started</p>
+                </div>
+            `;
+            feather.replace();
+            showSuccess('Practice session cleared successfully!');
+            
+            // Reload the page to remove the "Start Fresh" button
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showError(data.message || 'Failed to clear session');
+        }
+    } catch (error) {
+        console.error('Error clearing session:', error);
+        showError('Network error. Please try again.');
+    }
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const generateQuestionsBtn = document.getElementById('generateQuestionsBtn');
+    if (generateQuestionsBtn) {
+        generateQuestionsBtn.addEventListener('click', generatePracticeQuestions);
+    }
+    
+    const clearSessionBtn = document.getElementById('clearSessionBtn');
+    if (clearSessionBtn) {
+        clearSessionBtn.addEventListener('click', clearPracticeSession);
+    }
+    
+    // Check if there's an active session and restore questions
+    {% if active_session %}
+    const sessionData = {{ active_session.questions_data | tojson }};
+    if (sessionData && sessionData.length > 0) {
+        document.getElementById('topicInput').value = "{{ active_session.topic }}";
+        document.getElementById('difficultyInput').value = "{{ active_session.difficulty }}";
+        displayPracticeQuestions(sessionData);
+        showSuccess('Restored your previous practice questions from {{ active_session.topic }} ({{ active_session.difficulty }})');
+    }
+    {% endif %}
+    
+    // Initialize feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}
