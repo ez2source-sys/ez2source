@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Important Announcement - Ez2source</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        .content {
+            background: white;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 10px 10px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .announcement {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Ez2source</div>
+        <h1>📢 Important Announcement</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ user_name }}!</h2>
+        
+        <div class="announcement">
+            <h3>Platform Announcement</h3>
+            <p>{{ message }}</p>
+        </div>
+        
+        <p>We wanted to make sure you're aware of this important update that may affect your experience on Ez2source.</p>
+        
+        <div class="highlight">
+            <p><strong>Action Required:</strong> Please review this announcement and take any necessary actions to ensure uninterrupted service.</p>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="{{ platform_url }}" class="button">Access Platform</a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This is an official announcement from Ez2source Platform</p>
+        <p>© 2025 Ez2source. All rights reserved.</p>
+    </div>
+</body>
+</html>
