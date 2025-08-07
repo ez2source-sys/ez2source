@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Profile - {{ candidate.first_name }} {{ candidate.last_name }} - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Header with Back Button -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <a href="{{ url_for('technical_person_dashboard') }}" class="btn btn-outline-secondary me-3">
+                        <i data-feather="arrow-left" class="me-1"></i>Back to Dashboard
+                    </a>
+                    <h2 class="d-inline">
+                        <i data-feather="user" class="me-2"></i>{{ candidate.first_name or 'Unknown' }} {{ candidate.last_name or '' }}
+                    </h2>
+                </div>
+                <div class="btn-group">
+                    {% if assignment.status == 'pending' %}
+                    <a href="{{ url_for('technical_feedback_form', assignment_id=assignment.id) }}" 
+                       class="btn btn-primary">
+                        <i data-feather="edit" class="me-1"></i>Submit Interview Feedback
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('technical_feedback_form', assignment_id=assignment.id) }}" 
+                       class="btn btn-outline-info">
+                        <i data-feather="eye" class="me-1"></i>View Feedback
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Interview Assignment Info -->
+            <div class="card mb-4 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i data-feather="calendar" class="me-2"></i>Interview Assignment
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Position:</strong> {{ assignment.interview.title }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Interview Date:</strong> {{ assignment.interview_date.strftime('%B %d, %Y at %I:%M %p') }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Status:</strong> 
+                            <span class="badge bg-{{ 'warning' if assignment.status == 'pending' else 'success' }}">
+                                {{ assignment.status.title() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column: Personal Information -->
+                <div class="col-md-8">
+                    <!-- Personal Details -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i data-feather="user" class="me-2"></i>Personal Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Email:</strong> {{ candidate.email }}</p>
+                                    <p><strong>Phone:</strong> {{ candidate.phone or 'Not provided' }}</p>
+                                    <p><strong>Location:</strong> {{ candidate.location or 'Not specified' }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Job Title:</strong> {{ candidate.job_title or 'Not specified' }}</p>
+                                    <p><strong>Experience:</strong> {{ candidate.experience_years or 'Not specified' }} years</p>
+                                    <p><strong>Availability:</strong> {{ candidate.availability or 'Not specified' }}</p>
+                                </div>
+                            </div>
+                            {% if candidate.bio %}
+                            <hr>
+                            <h6>Bio:</h6>
+                            <p>{{ candidate.bio }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Skills -->
+                    {% if skills %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i data-feather="code" class="me-2"></i>Technical Skills
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for skill in skills %}
+                                <span class="badge bg-primary">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Experience -->
+                    {% if experience %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i data-feather="briefcase" class="me-2"></i>Work Experience
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% for exp in experience %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <h6>{{ exp.title or 'Position' }} at {{ exp.company or 'Company' }}</h6>
+                                <p class="text-muted">{{ exp.start_date or 'Start Date' }} - {{ exp.end_date or 'Present' }}</p>
+                                {% if exp.description %}
+                                <p>{{ exp.description }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Previous Interview Responses -->
+                    {% if interview_responses %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i data-feather="message-circle" class="me-2"></i>Previous Interview Responses
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% for response in interview_responses %}
+                            <div class="mb-3 p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6>{{ response.interview.title }}</h6>
+                                    <div>
+                                        <span class="badge bg-info">Score: {{ response.ai_score|round(1) }}/100</span>
+                                        <small class="text-muted">{{ response.completed_at.strftime('%B %d, %Y') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ url_for('interview_results', response_id=response.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    View Full Response
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Right Column: Additional Information -->
+                <div class="col-md-4">
+                    <!-- Profile Photo -->
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            {% if candidate.profile_image_url %}
+                            <img src="{{ candidate.profile_image_url }}" alt="{{ candidate.first_name }}" 
+                                 class="rounded-circle mb-3" width="120" height="120" style="object-fit: cover;">
+                            {% else %}
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                                 style="width: 120px; height: 120px; font-size: 2rem;">
+                                {{ candidate.first_name[0] if candidate.first_name else 'C' }}{{ candidate.last_name[0] if candidate.last_name else '' }}
+                            </div>
+                            {% endif %}
+                            <h5>{{ candidate.first_name or 'Unknown' }} {{ candidate.last_name or '' }}</h5>
+                            <p class="text-muted">{{ candidate.job_title or 'Job Title Not Specified' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Quick Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                {% if candidate.resume_url %}
+                                <a href="{{ candidate.resume_url }}" target="_blank" class="btn btn-outline-primary">
+                                    <i data-feather="download" class="me-1"></i>Download Resume
+                                </a>
+                                {% endif %}
+                                {% if candidate.linkedin_url %}
+                                <a href="{{ candidate.linkedin_url }}" target="_blank" class="btn btn-outline-info">
+                                    <i data-feather="linkedin" class="me-1"></i>LinkedIn Profile
+                                </a>
+                                {% endif %}
+                                {% if candidate.portfolio_url %}
+                                <a href="{{ candidate.portfolio_url }}" target="_blank" class="btn btn-outline-success">
+                                    <i data-feather="globe" class="me-1"></i>Portfolio
+                                </a>
+                                {% endif %}
+                                <a href="mailto:{{ candidate.email }}" class="btn btn-outline-secondary">
+                                    <i data-feather="mail" class="me-1"></i>Send Email
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Education -->
+                    {% if candidate.education %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="book" class="me-2"></i>Education
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% set education_list = candidate.education|from_json if candidate.education else [] %}
+                            {% for edu in education_list %}
+                            <div class="mb-2">
+                                <strong>{{ edu.degree or 'Degree' }}</strong><br>
+                                <small class="text-muted">{{ edu.institution or 'Institution' }} ({{ edu.year or 'Year' }})</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Certifications -->
+                    {% if candidate.certifications %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="award" class="me-2"></i>Certifications
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% set cert_list = candidate.certifications|from_json if candidate.certifications else [] %}
+                            {% for cert in cert_list %}
+                            <div class="mb-2">
+                                <span class="badge bg-success">{{ cert.name or cert }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Previous Technical Feedback -->
+                    {% if previous_feedback %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="message-square" class="me-2"></i>Previous Technical Feedback
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% for feedback in previous_feedback %}
+                            <div class="mb-3 p-2 bg-light rounded">
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge bg-{{ 'success' if feedback.decision == 'selected' else 'danger' if feedback.decision == 'rejected' else 'warning' }}">
+                                        {{ feedback.decision.replace('_', ' ').title() }}
+                                    </span>
+                                    <small class="text-muted">{{ feedback.submitted_at.strftime('%m/%d/%Y') }}</small>
+                                </div>
+                                <small>by {{ feedback.technical_person.first_name }} {{ feedback.technical_person.last_name }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+</script>
+{% endblock %}
