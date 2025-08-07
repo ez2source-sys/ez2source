@@ -1,0 +1,28 @@
+{
+  "name": "Ez2source Candidate",
+  "short_name": "Ez2source",
+  "description": "AI-powered talent intelligence and career development platform for candidates",
+  "start_url": "/candidate/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6f42c1",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "images/ez2source-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/ez2source-logo.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "education"],
+  "lang": "en",
+  "dir": "ltr"
+}
