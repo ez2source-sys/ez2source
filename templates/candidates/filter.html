@@ -1,0 +1,818 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Filter - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">Advanced Candidate Filter</h1>
+                    <p class="text-muted">Filter, tag, and manage candidates across your organization</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                        <i data-feather="arrow-left" class="me-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="filter" class="me-2"></i>
+                        Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="filterForm" method="GET">
+                        <!-- Technology Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Technology/Skills</label>
+                            <input type="text" class="form-control" name="technology" 
+                                   value="{{ filters.technology }}" placeholder="e.g., Python, React">
+                        </div>
+
+                        <!-- Location Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="location" 
+                                   value="{{ filters.location }}" placeholder="e.g., New York, Remote">
+                        </div>
+
+                        <!-- Experience Range -->
+                        <div class="mb-3">
+                            <label class="form-label">Experience (Years)</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" name="min_experience" 
+                                           value="{{ filters.min_experience or '' }}" placeholder="Min" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" name="max_experience" 
+                                           value="{{ filters.max_experience or '' }}" placeholder="Max" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interview Score Range -->
+                        <div class="mb-3">
+                            <label class="form-label">Interview Score (%)</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" name="min_score" 
+                                           value="{{ filters.min_score or '' }}" placeholder="Min" min="0" max="100">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" name="max_score" 
+                                           value="{{ filters.max_score or '' }}" placeholder="Max" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Communication Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Communication Status</label>
+                            <select class="form-select" name="communication">
+                                <option value="all">All Candidates</option>
+                                <option value="contacted">Already Contacted</option>
+                                <option value="not_contacted">Not Contacted</option>
+                            </select>
+                        </div>
+
+                        <!-- Tag Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Tags</label>
+                            {% for tag in available_tags %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="tags" value="{{ tag.id }}"
+                                       {% if tag.id|string in filters.selected_tags %}checked{% endif %}>
+                                <label class="form-check-label">
+                                    <span class="badge" style="background-color: {{ tag.color }}">{{ tag.name }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i data-feather="search" class="me-2"></i>
+                            Apply Filters
+                        </button>
+                        
+                        <a href="{{ url_for('filter_candidates') }}" class="btn btn-outline-secondary w-100 mt-2">
+                            Clear All
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-sm btn-outline-primary w-100 mb-2" onclick="createNewTag()">
+                        <i data-feather="tag" class="me-2"></i>
+                        Create New Tag
+                    </button>
+                    <button class="btn btn-sm btn-outline-success w-100" onclick="createNewList()">
+                        <i data-feather="list" class="me-2"></i>
+                        Create New List
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="col-lg-9">
+            <!-- Action Bar -->
+            <div class="card mb-3">
+                <div class="card-body py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <input type="checkbox" id="selectAll" class="form-check-input me-3">
+                                <span class="text-muted">
+                                    Found {{ candidates|length }} candidates
+                                    <span id="selectedCount" class="fw-bold"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" 
+                                            data-bs-toggle="dropdown" id="tagButton" disabled>
+                                        <i data-feather="tag" class="me-1"></i>
+                                        Tag Selected
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        {% for tag in available_tags %}
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="tagSelected({{ tag.id }})">
+                                                <span class="badge me-2" style="background-color: {{ tag.color }}">{{ tag.name }}</span>
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" 
+                                            data-bs-toggle="dropdown" id="listButton" disabled>
+                                        <i data-feather="list" class="me-1"></i>
+                                        Add to List
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><h6 class="dropdown-header">Existing Lists</h6></li>
+                                        {% for list in candidate_lists %}
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="addToExistingList({{ list.id }}, '{{ list.name }}')">
+                                                <i data-feather="list" class="me-2" style="width: 16px; height: 16px;"></i>
+                                                {{ list.name }}
+                                            </a>
+                                        </li>
+                                        {% else %}
+                                        <li><span class="dropdown-item-text text-muted">No lists yet</span></li>
+                                        {% endfor %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="createNewListWithSelected()">
+                                                <i data-feather="plus" class="me-2" style="width: 16px; height: 16px;"></i>
+                                                Create New List
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" 
+                                            data-bs-toggle="dropdown" id="exportButton" disabled>
+                                        <i data-feather="download" class="me-1"></i>
+                                        Export
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="exportSelected('excel')">
+                                                <i data-feather="file-text" class="me-2" style="width: 16px; height: 16px;"></i>
+                                                Export as CSV
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="exportSelected('pdf')">
+                                                <i data-feather="file" class="me-2" style="width: 16px; height: 16px;"></i>
+                                                Export as PDF
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <button class="btn btn-outline-warning btn-sm" onclick="emailSelected()" id="emailButton" disabled>
+                                    <i data-feather="mail" class="me-1"></i>
+                                    Bulk Email
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candidates Grid -->
+            <div class="row" id="candidatesGrid">
+                {% for candidate in candidates %}
+                <div class="col-xl-4 col-lg-6 mb-4">
+                    <div class="card h-100 candidate-card position-relative">
+                        <!-- Communication Status Badge -->
+                        <div class="position-absolute top-0 end-0 m-2">
+                            {% if candidate.communication.has_communicated %}
+                            <span class="badge bg-success" title="Already contacted - {{ candidate.communication.interaction_count }} interaction(s)">
+                                <i data-feather="check-circle" style="width: 12px; height: 12px;"></i>
+                                Contacted
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark" title="Not yet contacted">
+                                <i data-feather="clock" style="width: 12px; height: 12px;"></i>
+                                New
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="d-flex align-items-start mb-3">
+                                <input type="checkbox" class="form-check-input me-3 candidate-checkbox" 
+                                       value="{{ candidate.id }}">
+                                <div class="flex-grow-1" style="margin-right: 60px;">
+                                    <h6 class="mb-1">{{ candidate.first_name or '' }} {{ candidate.last_name or '' }}</h6>
+                                    <small class="text-muted">{{ candidate.email }}</small>
+                                    {% if candidate.communication.last_interaction %}
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        Last contact: {{ candidate.communication.last_interaction.strftime('%m/%d/%Y') }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                                        <i data-feather="more-vertical" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="/profile/{{ candidate.id }}">View Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Quick Tag</h6></li>
+                                        {% for tag in available_tags %}
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="quickTagCandidate({{ candidate.id }}, {{ tag.id }})">
+                                                <span class="badge me-2" style="background-color: {{ tag.color }}">{{ tag.name }}</span>
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="sendQuickEmail({{ candidate.id }})">Send Email</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {% if candidate.location %}
+                                <small class="text-muted d-block">
+                                    <i data-feather="map-pin" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {{ candidate.location }}
+                                </small>
+                                {% endif %}
+                                {% if candidate.experience_years %}
+                                <small class="text-muted d-block">
+                                    <i data-feather="briefcase" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {{ candidate.experience_years }} years experience
+                                </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Interview Performance -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted">Interview Performance</small>
+                                    <small class="fw-bold">{{ "%.1f"|format(candidate.avg_score) }}%</small>
+                                </div>
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar 
+                                        {% if candidate.avg_score >= 80 %}bg-success
+                                        {% elif candidate.avg_score >= 60 %}bg-warning
+                                        {% else %}bg-danger{% endif %}" 
+                                         style="width: {{ candidate.avg_score }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ candidate.interview_count }} interviews completed</small>
+                            </div>
+
+                            <!-- Skills -->
+                            {% if candidate.skills %}
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1">Skills:</small>
+                                <div class="skills-container">
+                                    {% set skills_list = candidate.skills %}
+                                    {% if skills_list.startswith('[') %}
+                                        {% set skills_list = skills_list|from_json %}
+                                    {% else %}
+                                        {% set skills_list = skills_list.split(',') %}
+                                    {% endif %}
+                                    {% for skill in skills_list[:3] %}
+                                    <span class="badge bg-light text-dark me-1 mb-1">{{ skill.strip() }}</span>
+                                    {% endfor %}
+                                    {% if skills_list|length > 3 %}
+                                    <span class="badge bg-secondary">+{{ skills_list|length - 3 }} more</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Tags -->
+                            {% if candidate.tags %}
+                            <div class="mb-2">
+                                {% for tag in candidate.tags %}
+                                <span class="badge me-1" style="background-color: {{ tag.color }}">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i data-feather="users" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                        <h4 class="text-muted">No candidates found</h4>
+                        <p class="text-muted">Try adjusting your filters or search criteria</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Create Tag Modal -->
+<div class="modal fade" id="createTagModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Tag</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createTagForm">
+                    <div class="mb-3">
+                        <label class="form-label">Tag Name</label>
+                        <input type="text" class="form-control" id="tagName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Color</label>
+                        <input type="color" class="form-control" id="tagColor" value="#6c757d">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveNewTag()">Create Tag</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create List Modal -->
+<div class="modal fade" id="createListModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Candidate List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createListForm">
+                    <div class="mb-3">
+                        <label class="form-label">List Name</label>
+                        <input type="text" class="form-control" id="listName" required placeholder="e.g., Senior Developers">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="listDescription" rows="3" 
+                                  placeholder="Brief description of this candidate list..."></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        <small><i data-feather="info" class="me-1"></i>
+                        <span id="selectedCountForList">0</span> candidates will be added to this list.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveNewList()">Create List</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Email Modal -->
+<div class="modal fade" id="bulkEmailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Bulk Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bulkEmailForm">
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="emailSubject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" id="emailMessage" rows="8" required 
+                                  placeholder="Dear candidate..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Interview Invitation (Optional)</label>
+                        <select class="form-select" id="interviewSelect">
+                            <option value="">No interview invitation</option>
+                            {% for interview in recruiter_interviews %}
+                            <option value="{{ interview.id }}">{{ interview.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendBulkEmail()">Send Emails</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Selection Management
+let selectedCandidates = new Set();
+
+function updateSelectionUI() {
+    const count = selectedCandidates.size;
+    const hasSelection = count > 0;
+    
+    document.getElementById('selectedCount').textContent = hasSelection ? `(${count} selected)` : '';
+    document.getElementById('tagButton').disabled = !hasSelection;
+    document.getElementById('listButton').disabled = !hasSelection;
+    document.getElementById('exportButton').disabled = !hasSelection;
+    document.getElementById('emailButton').disabled = !hasSelection;
+}
+
+// Select All functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.candidate-checkbox');
+    selectedCandidates.clear();
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+        if (this.checked) {
+            selectedCandidates.add(parseInt(checkbox.value));
+        }
+    });
+    
+    updateSelectionUI();
+});
+
+// Individual checkbox handling
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('candidate-checkbox')) {
+        const candidateId = parseInt(e.target.value);
+        
+        if (e.target.checked) {
+            selectedCandidates.add(candidateId);
+        } else {
+            selectedCandidates.delete(candidateId);
+            document.getElementById('selectAll').checked = false;
+        }
+        
+        updateSelectionUI();
+    }
+});
+
+// Tag Functions
+function tagSelected(tagId) {
+    if (selectedCandidates.size === 0) return;
+    
+    fetch('/candidates/tag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            candidate_ids: Array.from(selectedCandidates),
+            tag_id: tagId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Tagged ${data.tagged_count} candidates`, 'success');
+            location.reload();
+        } else {
+            showAlert(data.error || 'Failed to tag candidates', 'error');
+        }
+    });
+}
+
+function createNewTag() {
+    document.getElementById('createTagModal').classList.add('show');
+    document.getElementById('createTagModal').style.display = 'block';
+}
+
+function saveNewTag() {
+    const name = document.getElementById('tagName').value;
+    const color = document.getElementById('tagColor').value;
+    
+    if (!name) return;
+    
+    fetch('/tags/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, color })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Tag created successfully', 'success');
+            location.reload();
+        } else {
+            showAlert(data.error || 'Failed to create tag', 'error');
+        }
+    });
+}
+
+// Export Functions
+function exportSelected(format) {
+    if (selectedCandidates.size === 0) {
+        showAlert('Please select candidates to export', 'error');
+        return;
+    }
+    
+    console.log('Exporting candidates:', Array.from(selectedCandidates), 'Format:', format);
+    
+    fetch('/candidates/export', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            candidate_ids: Array.from(selectedCandidates),
+            format: format
+        })
+    })
+    .then(response => {
+        console.log('Export response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `candidates_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'csv' : 'txt'}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showAlert(`Exported ${selectedCandidates.size} candidates successfully`, 'success');
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        showAlert('Export failed: ' + error.message, 'error');
+    });
+}
+
+// List Management Functions
+function addToExistingList(listId, listName) {
+    if (selectedCandidates.size === 0) {
+        showAlert('Please select candidates to add to list', 'error');
+        return;
+    }
+    
+    fetch('/lists/add-members', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            list_id: listId,
+            candidate_ids: Array.from(selectedCandidates)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Added ${selectedCandidates.size} candidates to "${listName}"`, 'success');
+        } else {
+            showAlert(data.error || 'Failed to add candidates to list', 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Error adding to list: ' + error.message, 'error');
+    });
+}
+
+function createNewListWithSelected() {
+    if (selectedCandidates.size === 0) {
+        showAlert('Please select candidates to create a list', 'error');
+        return;
+    }
+    
+    document.getElementById('selectedCountForList').textContent = selectedCandidates.size;
+    const modal = new bootstrap.Modal(document.getElementById('createListModal'));
+    modal.show();
+}
+
+function saveNewList() {
+    const name = document.getElementById('listName').value.trim();
+    const description = document.getElementById('listDescription').value.trim();
+    
+    if (!name) {
+        showAlert('Please enter a list name', 'error');
+        return;
+    }
+    
+    fetch('/lists/create', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            name: name,
+            description: description,
+            candidate_ids: Array.from(selectedCandidates)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Created list "${name}" with ${selectedCandidates.size} candidates`, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createListModal'));
+            modal.hide();
+            // Clear form
+            document.getElementById('listName').value = '';
+            document.getElementById('listDescription').value = '';
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert(data.error || 'Failed to create list', 'error');
+        }
+    })
+    .catch(error => {
+        showAlert('Error creating list: ' + error.message, 'error');
+    });
+}
+
+// Email Functions
+function emailSelected() {
+    if (selectedCandidates.size === 0) return;
+    document.getElementById('bulkEmailModal').classList.add('show');
+    document.getElementById('bulkEmailModal').style.display = 'block';
+}
+
+function sendBulkEmail() {
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+    const interviewId = document.getElementById('interviewSelect').value;
+    
+    if (!subject || !message) return;
+    
+    fetch('/candidates/bulk-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            candidate_ids: Array.from(selectedCandidates),
+            subject: subject,
+            message: message,
+            interview_id: interviewId || null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Sent emails to ${data.sent_count} candidates`, 'success');
+            document.getElementById('bulkEmailModal').classList.remove('show');
+            document.getElementById('bulkEmailModal').style.display = 'none';
+        } else {
+            showAlert(data.error || 'Failed to send emails', 'error');
+        }
+    });
+}
+
+// Quick Tag Individual Candidate
+function quickTagCandidate(candidateId, tagId) {
+    console.log('Quick tagging candidate:', candidateId, 'with tag:', tagId);
+    
+    fetch('/candidates/tag', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            candidate_ids: [candidateId],
+            tag_id: tagId
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            showAlert(`Candidate tagged successfully! Tagged ${data.tagged_count} candidates.`, 'success');
+            // Refresh the specific candidate card or reload page
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert(data.error || 'Failed to tag candidate', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error tagging candidate:', error);
+        showAlert('Error tagging candidate: ' + error.message, 'error');
+    });
+}
+
+// Quick Email Individual Candidate
+function sendQuickEmail(candidateId) {
+    // Set the candidate for bulk email and open modal
+    selectedCandidates.clear();
+    selectedCandidates.add(candidateId);
+    document.getElementById('bulkEmailModal').classList.add('show');
+    document.getElementById('bulkEmailModal').style.display = 'block';
+    updateSelectionUI();
+}
+
+function showAlert(message, type) {
+    // Simple alert implementation
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 5000);
+}
+
+// Initialize
+feather.replace();
+updateSelectionUI();
+</script>
+
+<style>
+.candidate-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.candidate-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.skills-container {
+    max-height: 60px;
+    overflow: hidden;
+}
+
+.progress {
+    border-radius: 2px;
+}
+
+.modal.show {
+    background: rgba(0,0,0,0.5);
+}
+</style>
+{% endblock %}
