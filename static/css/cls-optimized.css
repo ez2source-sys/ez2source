@@ -1,0 +1,330 @@
+/* Core Web Vitals - CLS Optimization CSS */
+
+/* Font loading optimization to prevent layout shifts */
+@font-face {
+    font-family: 'Primary';
+    src: url('/static/fonts/primary.woff2') format('woff2');
+    font-display: optional; /* Prevents layout shifts during font loading */
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Primary';
+    src: url('/static/fonts/primary-bold.woff2') format('woff2');
+    font-display: optional;
+    font-weight: 700;
+}
+
+/* Base styles with dimension reservations */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Primary', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+/* Container with fixed dimensions to prevent shifts */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero section with reserved space */
+.hero-section {
+    min-height: 400px; /* Reserve minimum space */
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.hero-content {
+    text-align: center;
+    max-width: 600px;
+    padding: 2rem;
+}
+
+/* Image containers with aspect ratio preservation */
+.image-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+}
+
+.image-container.aspect-16-9 {
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.image-container.aspect-4-3 {
+    padding-bottom: 75%; /* 4:3 aspect ratio */
+}
+
+.image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Card components with reserved space */
+.card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    min-height: 200px; /* Reserve minimum height */
+}
+
+.card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+    min-height: 80px; /* Reserve header space */
+}
+
+.card-body {
+    padding: 1.5rem;
+    min-height: 120px; /* Reserve body space */
+}
+
+/* Navigation with fixed height */
+.navbar {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: 70px; /* Fixed height prevents shifts */
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: #333;
+}
+
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    margin-left: auto;
+}
+
+.nav-item {
+    margin-left: 2rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #666;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+    color: #007bff;
+}
+
+/* Button styles with consistent dimensions */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px; /* Prevent width changes */
+    min-height: 48px; /* Ensure tap target size */
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px); /* Use transform instead of changing margin/padding */
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Form elements with reserved space */
+.form-group {
+    margin-bottom: 1.5rem;
+    min-height: 80px; /* Reserve space for label + input + error */
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    height: 20px; /* Reserve label height */
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: 48px; /* Fixed height */
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+/* Error message container with reserved space */
+.form-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    min-height: 20px; /* Reserve space for errors */
+}
+
+/* Loading states to prevent shifts */
+.loading-placeholder {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Content placeholder dimensions */
+.content-placeholder {
+    min-height: 300px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+/* Dynamic content containers with reserved space */
+.dynamic-content {
+    min-height: 200px; /* Reserve space for dynamic loading */
+}
+
+.sidebar-ad {
+    width: 300px;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.sidebar-ad.small {
+    height: 250px;
+}
+
+.sidebar-ad.medium {
+    height: 300px;
+}
+
+.sidebar-ad.large {
+    height: 400px;
+}
+
+/* Animation optimizations - use transforms only */
+.animate-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-in {
+    transform: translateX(-100%);
+    animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Responsive design without layout shifts */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .hero-section {
+        min-height: 300px; /* Adjusted for mobile */
+    }
+    
+    .navbar {
+        height: 60px; /* Smaller on mobile but still fixed */
+        padding: 0 1rem;
+    }
+    
+    .btn {
+        min-width: 100px; /* Adjusted for mobile */
+        min-height: 44px;
+    }
+    
+    .card {
+        min-height: 150px; /* Adjusted for mobile */
+    }
+}
+
+/* Utility classes for dimension management */
+.h-50 { height: 50px !important; }
+.h-100 { height: 100px !important; }
+.h-150 { height: 150px !important; }
+.h-200 { height: 200px !important; }
+.h-250 { height: 250px !important; }
+.h-300 { height: 300px !important; }
+
+.min-h-50 { min-height: 50px !important; }
+.min-h-100 { min-height: 100px !important; }
+.min-h-150 { min-height: 150px !important; }
+.min-h-200 { min-height: 200px !important; }
+.min-h-250 { min-height: 250px !important; }
+.min-h-300 { min-height: 300px !important; }
