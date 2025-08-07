@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Technical Person Dashboard - Ez2source{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i data-feather="user-check" class="me-2"></i>Technical Interview Dashboard</h2>
+                    <p class="text-muted">Manage your assigned technical interviews and provide feedback</p>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ url_for('technical_assignments') }}" class="btn btn-outline-primary">
+                        <i data-feather="list" class="me-1"></i>View All Assignments
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ pending_count }}</h4>
+                                    <p class="mb-0">Pending Interviews</p>
+                                </div>
+                                <div>
+                                    <i data-feather="clock" style="width: 2rem; height: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ completed_count }}</h4>
+                                    <p class="mb-0">Completed</p>
+                                </div>
+                                <div>
+                                    <i data-feather="check-circle" style="width: 2rem; height: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">{{ upcoming_interviews|length }}</h4>
+                                    <p class="mb-0">This Week</p>
+                                </div>
+                                <div>
+                                    <i data-feather="calendar" style="width: 2rem; height: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-0">100%</h4>
+                                    <p class="mb-0">Completion Rate</p>
+                                </div>
+                                <div>
+                                    <i data-feather="trending-up" style="width: 2rem; height: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Interviews -->
+            {% if upcoming_interviews %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Upcoming Interviews (Next 7 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Candidate</th>
+                                    <th>Position</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in upcoming_interviews %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ assignment.interview_date.strftime('%B %d, %Y') }}</strong><br>
+                                        <small class="text-muted">{{ assignment.interview_date.strftime('%I:%M %p') }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-2">
+                                                {% if assignment.candidate.profile_image_url %}
+                                                <img src="{{ assignment.candidate.profile_image_url }}" alt="{{ assignment.candidate.first_name }}" class="rounded-circle" width="32" height="32">
+                                                {% else %}
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                    {{ assignment.candidate.first_name[0] if assignment.candidate.first_name else 'C' }}{{ assignment.candidate.last_name[0] if assignment.candidate.last_name else '' }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <strong>{{ assignment.candidate.first_name or 'Unknown' }} {{ assignment.candidate.last_name or '' }}</strong><br>
+                                                <small class="text-muted">{{ assignment.candidate.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ assignment.interview.title }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'warning' if assignment.status == 'pending' else 'success' }}">
+                                            {{ assignment.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if assignment.meeting_link %}
+                                            <a href="{{ assignment.meeting_link }}" target="_blank" 
+                                               class="btn btn-primary" title="Join Meeting">
+                                                <i data-feather="video" class="me-1"></i>Join
+                                            </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('technical_candidate_profile', candidate_id=assignment.candidate_id) }}" 
+                                               class="btn btn-outline-primary" title="View Candidate Profile">
+                                                <i data-feather="user"></i>
+                                            </a>
+                                            {% if assignment.status == 'pending' %}
+                                            <a href="{{ url_for('technical_feedback_form', assignment_id=assignment.id) }}" 
+                                               class="btn btn-outline-success" title="Submit Feedback">
+                                                <i data-feather="edit"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Completed Interviews -->
+            {% if recent_completed %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="check-circle" class="me-2"></i>
+                        Recently Completed Interviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Candidate</th>
+                                    <th>Position</th>
+                                    <th>Decision</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in recent_completed %}
+                                <tr>
+                                    <td>{{ assignment.interview_date.strftime('%B %d, %Y') }}</td>
+                                    <td>{{ assignment.candidate.first_name or 'Unknown' }} {{ assignment.candidate.last_name or '' }}</td>
+                                    <td>{{ assignment.interview.title }}</td>
+                                    <td>
+                                        {% if assignment.feedback %}
+                                        <span class="badge bg-{{ 'success' if assignment.feedback[0].decision == 'selected' else 'danger' if assignment.feedback[0].decision == 'rejected' else 'warning' }}">
+                                            {{ assignment.feedback[0].decision.replace('_', ' ').title() }}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('technical_candidate_profile', candidate_id=assignment.candidate_id) }}" 
+                                               class="btn btn-outline-primary" title="View Candidate">
+                                                <i data-feather="user"></i>
+                                            </a>
+                                            <a href="{{ url_for('technical_feedback_form', assignment_id=assignment.id) }}" 
+                                               class="btn btn-outline-info" title="View/Edit Feedback">
+                                                <i data-feather="eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Empty State -->
+            {% if not upcoming_interviews and not recent_completed %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i data-feather="calendar" style="width: 4rem; height: 4rem;" class="text-muted mb-3"></i>
+                    <h4 class="text-muted">No Interviews Assigned</h4>
+                    <p class="text-muted">You don't have any technical interviews assigned yet. HR will notify you when interviews are scheduled.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Feather icons
+feather.replace();
+
+// Auto-refresh every 5 minutes for real-time updates
+setTimeout(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}
