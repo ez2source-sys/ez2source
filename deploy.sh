@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_ID=""
+PROJECT_ID="ez2source"
 REGION="us-central1"
 SERVICE_NAME="ez2source"
 DATABASE_INSTANCE_NAME="ez2source-db"
