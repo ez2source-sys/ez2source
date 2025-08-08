@@ -39,8 +39,8 @@ class EnhancedEmailService:
             'username': os.environ.get('SMTP_USERNAME', ''),
             'password': os.environ.get('SMTP_PASSWORD', ''),
             'use_tls': os.environ.get('SMTP_USE_TLS', 'true').lower() == 'true',
-            'from_email': os.environ.get('SMTP_FROM_EMAIL', 'noreply@ez2hire.com'),
-            'from_name': os.environ.get('SMTP_FROM_NAME', 'Ez2Hire Platform')
+            'from_email': os.environ.get('SMTP_FROM_EMAIL', 'noreply@ez2source.com'),
+            'from_name': os.environ.get('SMTP_FROM_NAME', 'Ez2source Platform')
         }
     
     def send_email(self, to_email: str, subject: str, template_name: str, 
@@ -122,9 +122,9 @@ class EnhancedEmailService:
             
             # Add common context variables
             context.update({
-                'platform_name': 'Ez2Hire',
-                'platform_url': 'https://ez2hire.eduaiart.com',
-                'support_email': 'support@ez2hire.com',
+                'platform_name': 'Ez2source',
+                'platform_url': 'https://ez2source.com',
+                'support_email': 'support@ez2source.com',
                 'current_year': datetime.now().year,
                 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             })
@@ -172,7 +172,7 @@ class EnhancedEmailService:
                     <h1>{{ platform_name }}</h1>
                 </div>
                 <div class="content">
-                    <p>{{ message | default('This is an automated notification from Ez2Hire.') }}</p>
+                    <p>{{ message | default('This is an automated notification from Ez2source.') }}</p>
                     {% if action_url %}
                     <p><a href="{{ action_url }}" class="btn">Take Action</a></p>
                     {% endif %}
@@ -191,20 +191,20 @@ class EnhancedEmailService:
         html_content = f"""
         <html>
         <body>
-            <h2>Ez2Hire Notification</h2>
+            <h2>Ez2source Notification</h2>
             <p>{context.get('message', 'This is an automated notification.')}</p>
-            <p>Best regards,<br>Ez2Hire Team</p>
+            <p>Best regards,<br>Ez2source Team</p>
         </body>
         </html>
         """
         
         text_content = f"""
-        Ez2Hire Notification
+        Ez2source Notification
         
         {context.get('message', 'This is an automated notification.')}
         
         Best regards,
-        Ez2Hire Team
+        Ez2source Team
         """
         
         return html_content, text_content
@@ -348,7 +348,7 @@ class EnhancedEmailService:
                 
                 result = self.send_email(
                     to_email=recipient['email'],
-                    subject=recipient.get('subject', base_context.get('subject', 'Ez2Hire Notification')),
+                    subject=recipient.get('subject', base_context.get('subject', 'Ez2source Notification')),
                     template_name=template_name,
                     context=context,
                     user_id=recipient.get('user_id')
@@ -393,14 +393,14 @@ def send_user_invitation_email(user: User, organization: Organization,
         'username': user.username,
         'temporary_password': temporary_password,
         'organization_name': organization.name,
-        'login_url': 'https://ez2hire.eduaiart.com/login',
+        'login_url': 'https://ez2source.com/login',
         'role': user.role.replace('_', ' ').title(),
-        'message': f'Welcome to Ez2Hire! Your account has been created for {organization.name}.'
+        'message': f'Welcome to Ez2source! Your account has been created for {organization.name}.'
     }
     
     return email_service.send_email(
         to_email=user.email,
-        subject=f'Welcome to Ez2Hire - {organization.name}',
+        subject=f'Welcome to Ez2source - {organization.name}',
         template_name='user_invitation',
         context=context,
         user_id=user.id

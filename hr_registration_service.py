@@ -227,7 +227,7 @@ class HRRegistrationService:
                 'message': body,
                 'user_name': 'Super Admin',
                 'title': 'HR Registration Request',
-                'action_url': 'https://ez2hire.eduaiart.com/admin'
+                'action_url': 'https://ez2source.com/admin'
             })
         
         return {
@@ -275,7 +275,7 @@ class HRRegistrationService:
                 'message': body,
                 'user_name': admin.first_name or 'Admin',
                 'title': 'HR Registration Request',
-                'action_url': 'https://ez2hire.eduaiart.com/admin'
+                'action_url': 'https://ez2source.com/admin'
             })
         
         return {
@@ -315,7 +315,7 @@ class HRRegistrationService:
             'message': body,
             'user_name': 'Organization Administrator',
             'title': 'HR Registration Verification',
-            'action_url': 'https://ez2hire.eduaiart.com/'
+            'action_url': 'https://ez2source.com/'
         })
     
     def _get_or_create_guest_organization(self) -> Organization:
@@ -347,7 +347,7 @@ class HRRegistrationService:
             from werkzeug.security import generate_password_hash
             guest_admin = User(
                 username='guest_admin',
-                email='guest.admin@ez2hire.com',
+                email='guest.admin@ez2source.com',
                 password_hash=generate_password_hash('GuestAdmin2025!'),
                 role='admin',
                 first_name='Guest',
@@ -440,14 +440,14 @@ class HRRegistrationService:
             'message': body,
             'user_name': 'Guest Admin',
             'title': 'New HR Registration in Guest Organization',
-            'action_url': 'https://ez2hire.eduaiart.com/admin'
+            'action_url': 'https://ez2source.com/admin'
         })
     
     def _send_guest_hr_credentials(self, hr_user: User, temp_password: str, original_org_name: str):
         """Send login credentials to Guest HR user"""
-        subject = f"Welcome to Ez2Hire - Guest HR Access"
+        subject = f"Welcome to Ez2source - Guest HR Access"
         body = f"""
-        Welcome to Ez2Hire, {hr_user.first_name}!
+        Welcome to Ez2source, {hr_user.first_name}!
         
         Your HR registration for {original_org_name} has been processed and you have been assigned to our Guest Organization system for review.
         
@@ -470,14 +470,14 @@ class HRRegistrationService:
         
         If you have any questions, please contact our support team.
         
-        Welcome to Ez2Hire!
+        Welcome to Ez2source!
         """
         
         send_notification_email(hr_user.email, subject, 'notification', {
             'message': body,
             'user_name': hr_user.first_name or 'HR Professional',
             'title': 'HR Registration Confirmation',
-            'action_url': 'https://ez2hire.eduaiart.com/login'
+            'action_url': 'https://ez2source.com/login'
         })
 
 # Service instance
