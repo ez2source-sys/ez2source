@@ -1,0 +1,32 @@
+/* Direct fix for interview form text visibility */
+textarea.form-control {
+    color: #ffffff !important;
+    background-color: #1f2937 !important;
+    border: 1px solid #4b5563 !important;
+}
+
+textarea.form-control:focus {
+    color: #ffffff !important;
+    background-color: #1f2937 !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+textarea.form-control::placeholder {
+    color: #9ca3af !important;
+}
+
+/* Ensure all form controls have proper visibility */
+input.form-control,
+select.form-control {
+    color: #ffffff !important;
+    background-color: #1f2937 !important;
+    border: 1px solid #4b5563 !important;
+}
+
+input.form-control:focus,
+select.form-control:focus {
+    color: #ffffff !important;
+    background-color: #1f2937 !important;
+    border-color: #3b82f6 !important;
+}
