@@ -10,12 +10,12 @@
     <title>{% block title %}Ez2source - AI-Powered Talent Intelligence Platform{% endblock %}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ez2source-logo.png') }}">
     
-    <!-- PWA Manifest -->
-    {% if current_user.is_authenticated and current_user.role == 'candidate' %}
+    <!-- PWA Manifest - DISABLED -->
+    <!-- {% if current_user.is_authenticated and current_user.role == 'candidate' %}
     <link rel="manifest" href="{{ url_for('static', filename='manifest-candidate.json') }}">
     {% else %}
     <link rel="manifest" href="{{ url_for('static', filename='manifest-recruiter.json') }}">
-    {% endif %}
+    {% endif %} -->
     
     <!-- Apple PWA Meta Tags -->
     <meta name="apple-mobile-web-app-title" content="{% if current_user.is_authenticated and current_user.role == 'candidate' %}Ez2source Candidate{% else %}Ez2source Recruiting{% endif %}">
@@ -1220,14 +1220,13 @@
     </script>
     {% endif %}
     
-    <!-- PWA Manager -->
+    <!-- PWA Manager User Role -->
     <script>
-        // Pass user role to JavaScript for PWA manager
+        // Pass user role to JavaScript for PWA manager (script already loaded above)
         {% if current_user.is_authenticated %}
         window.userRole = '{{ current_user.role }}';
         {% endif %}
     </script>
-    <script src="{{ url_for('static', filename='js/pwa-manager.js') }}?v={{ range(1, 10000) | random }}"></script>
 
     {% block scripts %}{% endblock %}
 </body>
