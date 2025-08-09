@@ -6,6 +6,7 @@ instance_class: F4_1G
 env_variables:
   PORT: "8080"
   DATABASE_URL: "postgresql://ez2source_user:Ju$tD01t1time@35.239.238.123:5432/ez2source"
+  SESSION_SECRET: "ez2source-production-secret-key-2025"
 
 # Configure scaling
 automatic_scaling:
@@ -29,11 +30,11 @@ liveness_check:
 
 readiness_check:
   path: "/health"
-  check_interval_sec: 5
-  timeout_sec: 4
-  failure_threshold: 2
+  check_interval_sec: 10
+  timeout_sec: 10
+  failure_threshold: 3
   success_threshold: 1
-  app_start_timeout_sec: 300
+  app_start_timeout_sec: 600
 
 # Static file handlers for better CLS performance
 handlers:
