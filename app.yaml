@@ -5,6 +5,7 @@ instance_class: F4_1G
 # Environment variables
 env_variables:
   PORT: "8080"
+  DATABASE_URL: "postgresql://ez2source_user:Ju$tD01t1time@35.239.238.123:5432/ez2source"
 
 # Configure scaling
 automatic_scaling:
